@@ -2,7 +2,7 @@
 
 
 /**
- * Checks if two things are equal. Not by reference but by value
+ * Checks if two things are equal, not by reference but by value
  */
 export function deepEquals(left: any, right: any): boolean {
     if (typeof (left) !== typeof (right)) {
@@ -41,7 +41,7 @@ export function newId() {
 
 
 /**
- * Create an element of type, type with attributes defined by attrs and children defined by children. An optional parent may be provided
+ * Creates an element of type, type with attributes defined by attrs and children defined by children. An optional parent may be provided
  */
 export function newElm(type: string = "div", attrs: { [name: string]: string } = {}, children: Node[] = [], parent: Node | undefined = undefined): HTMLElement {
     let elm = document.createElement(type)
@@ -61,19 +61,19 @@ export function newElm(type: string = "div", attrs: { [name: string]: string } =
     return elm
 }
 /**
- * Use newElm to create a div
+ * Uses newElm to create a div
  */
 export function div(attrs: { [name: string]: string } = {}, children: Node[] = [], parent: Node | undefined = undefined): HTMLElement {
     return newElm("div", attrs, children, parent)
 }
 /**
- * Use newElm to create a span
+ * Uses newElm to create a span
  */
 export function span(attrs: { [name: string]: string } = {}, children: Node[] = [], parent: Node | undefined = undefined): HTMLElement {
     return newElm("span", attrs, children, parent)
 }
 /**
- * Create a text node 
+ * Creates a text node 
  */
 export function text(txt: string): Text {
     return document.createTextNode(txt)
