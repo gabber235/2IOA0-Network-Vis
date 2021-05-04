@@ -115,3 +115,19 @@ function swapRemove<T>(list: T[], index: number): T {
     return x
 }
 
+
+
+/**
+ * Loads a file from a path relative to server's root ($PROJECT/dist) using an XML request 
+ */
+export function loadFile(path:string, callback:(text: string) => void, type:string = "application/json") {
+    var xobj = new XMLHttpRequest();
+    xobj.overrideMimeType(type);
+    xobj.open('GET', path, true);
+    xobj.onreadystatechange = function () {
+      if (xobj.readyState == 4 && xobj.status == 200) {
+        callback(xobj.responseText);
+      }
+    };
+    xobj.send(null);
+  }
