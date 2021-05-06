@@ -3,13 +3,13 @@ import { div, text } from "./utils"
 
 
 window.addEventListener("load", () => {
-    document.body.appendChild(div({}, [text('Hello World ❤️')]))
+    document.body.appendChild(div({}, [text('Hello World ❤️')]));
 
-    fetch('./enron-v1.csv')
-    .then(r => r.text())
-    .then(text => {
+    (async () => {
+        let file = await fetch('./enron-v1.csv')
+        let text = await file.text()
         let list = parseData(text)
         console.log(getCorrespondants(list))
         console.log(list.slice(0,10))
-    })
+    })()
 })
