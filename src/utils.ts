@@ -114,4 +114,3 @@ function swapRemove<T>(list: T[], index: number): T {
 
     return x
 }
-
