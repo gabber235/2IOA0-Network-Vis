@@ -16,7 +16,7 @@ export type Email = {
 export type Person = {
     id: number,
     title: Title,
-    email: string
+    emailAdress: string
 }
 
 /**
@@ -57,12 +57,12 @@ export function getCorrespondants(dataset: Email[]): {[id:number]: Person} {
     for (let email of dataset) {
         personDict[email.fromId] = {
             id: email.fromId,
-            email: email.fromEmail,
+            emailAdress: email.fromEmail,
             title: email.fromJobtitle
         }
         personDict[email.toId] = {
             id: email.toId,
-            email: email.toEmail,
+            emailAdress: email.toEmail,
             title: email.toJobtitle
         }
     }
