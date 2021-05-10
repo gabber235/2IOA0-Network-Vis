@@ -44,5 +44,8 @@
     "sass": "^1.32.12",
     "webpack-encoding-plugin": "^0.3.1"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@types/d3": "^6.3.0",
+    "d3": "^6.7.0"
+  }
 }

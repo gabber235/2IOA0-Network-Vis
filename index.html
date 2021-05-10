@@ -1,15 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 
+    <!-- For adjacency matrix -->
+<style>
+    .grid {
+        stroke: #9A8B7A;
+        stroke-width: 1px;
+        fill: #CF7D1C;
+    }
+
+    .arc {
+        stroke: #9A8B7A;
+        fill: none;
+    }
+
+    .node {
+        fill: #EBD8C1;
+        stroke: #9A8B7A;
+        stroke-width: 1px;
+    }
+
+    circle.active {
+        fill: #FE9922;
+    }
+
+    path.active {
+        stroke: #FE9922;
+    }
+
+    circle.source {
+        fill: #93C464;
+    }
+
+    circle.target {
+        fill: #41A368;
+    }
+</style>
+
 <head>
     <meta charset="UTF-8">
     <meta content="IE=edge" http-equiv="X-UA-Compatible">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <link href="css/stylesheet.css" rel="stylesheet">
     <title>2IOA0 - Network Visualization</title>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://d3js.org/d3-selection-multi.v0.4.min.js"></script>
 </head>
 
 <body>
+    <svg width="650" height="650"></svg>
 
 </body>
 
