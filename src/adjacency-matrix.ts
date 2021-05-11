@@ -294,8 +294,8 @@ let edges: Edge[] = [
 
 function createAdjacencyMatrix(nodes: Node[], edges: Edge[]) {
   // for drawing in SVG
-  let width: number = 600;
-  let height: number = 600;
+  let width = 600;
+  let height = 600;
 
   // hash of which edges we have
   let edgeHash: { [id: string]: Edge } = {};
