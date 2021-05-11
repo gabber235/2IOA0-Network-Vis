@@ -15,9 +15,9 @@ export type Node = {
 }
 
 export type Cell = {
-    id: string, 
-    weight: number, 
-    x: number, 
+    id: string,
+    weight: number,
+    x: number,
     y: number
 }
 
@@ -33,14 +33,17 @@ window.addEventListener("load", async () => {
     let emails = parseData(await file.text());
     const correspondants = getCorrespondants(emails); //dictionary with persons
 
-    //Creating array with person objects...
+    // Creating array with person objects...
     let correspondantList = Object.values(correspondants);
 
+    // Testing the function
+    let filteredCorrespondants = filterCorrespondants(["Unknown"], correspondantList);
+    // console.log(filteredCorrespondants)
 
-    //Testing the function
 
-    let filtered = filterCorrespondants(["Unknown"], correspondantList);
-    // console.log(filtered)
+    console.log(emails)
+    console.log(filterEmail(filteredCorrespondants, emails));
+
 
     // Add SVG to document to use for adjacency matrix
     //TODO: fix this, currently works with SVG in index.html
@@ -59,8 +62,8 @@ window.addEventListener("load", async () => {
     createAdjacencyMatrix(nodes, edges);
 });
 
-//Returns an array (filtered) with the persons who have one of the jobtitles that is given as an array (jobTitleList) in the input.
-function filterCorrespondants(jobTitleList: Title[], correspondants: Person[]) {
+// Returns an array (filtered) with the persons who have one of the jobtitles that is given as an array (jobTitleList) in the input.
+export function filterCorrespondants(jobTitleList: Title[], correspondants: Person[]) {
     let filtered: Person[] = [];
     for (let person in correspondants) {
         for (let job in jobTitleList) {
@@ -70,6 +73,20 @@ function filterCorrespondants(jobTitleList: Title[], correspondants: Person[]) {
             }
         }
     }
+    return filtered;
+}
+
+// Returns filtered email array based on correspondant list and emails 
+export function filterEmail(correspondants: Person[], emails: Email[]) {
+    const filtered: Email[] = [];
+
+    // for each email check if the sender and receiver are both in the correspondants
+    emails.forEach(email => {
+        if (correspondants.some(x => x.id === email.fromId) && correspondants.some(x => x.id === email.toId)) {
+            filtered.push(email);
+        }
+    });
+
     return filtered;
 }
 
@@ -286,7 +303,7 @@ function createAdjacencyMatrix(nodes: Node[], edges: Edge[]) {
     let matrix: Cell[] = []
     nodes.forEach((source, a) => {
         nodes.forEach((target, b) => {
-            var grid = { id: source.id + "-" + target.id, x: b, y: a, weight: 0 };
+            let grid = { id: source.id + "-" + target.id, x: b, y: a, weight: 0 };
             if (edgeHash[grid.id]) {
                 grid.weight = edgeHash[grid.id].weight;
             }
@@ -321,7 +338,7 @@ function createAdjacencyMatrix(nodes: Node[], edges: Edge[]) {
         .data(nodes)
         .enter()
         .append("text")
-        .attr("x", (d, i) => i * boxSize + boxSize/2)
+        .attr("x", (d, i) => i * boxSize + boxSize / 2)
         .text(d => d.id)
         .style("text-anchor", "middle")
         .style("font-size", "10px")
@@ -332,20 +349,20 @@ function createAdjacencyMatrix(nodes: Node[], edges: Edge[]) {
         .data(nodes)
         .enter()
         .append("text")
-        .attr("y", (d, i) => i * boxSize + boxSize/2)
+        .attr("y", (d, i) => i * boxSize + boxSize / 2)
         .text(d => d.id)
         .style("text-anchor", "end")
         .style("font-size", "10px")
 
 
     d3.selectAll("rect.grid").on("mouseover", gridOver);
-    
+
     function gridOver(d: any) {
         d3.selectAll("rect").style("stroke-width", function (p: Cell) {
             //TODO: Below is the original line which works in JS but not in TS for some reason
             // return p.x === d.x || p.y == d.y ? "3px" : "1px" 
             //this only works like half of the time but the idea is there
-            return p.x === Math.floor((d.layerX-boxSize)/boxSize) || p.y == Math.floor((d.layerY-boxSize)/boxSize) ? "3px" : "1px" 
+            return p.x === Math.floor((d.layerX - boxSize) / boxSize) || p.y == Math.floor((d.layerY - boxSize) / boxSize) ? "3px" : "1px"
         });
     };
 };
