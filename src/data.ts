@@ -36,7 +36,8 @@ export function parseData(text: string): Email[] {
 
   for (let line of text
     .split(/\r?\n/) // split on linebreaks
-    .slice(1)) { // ignore first list because it contains the titles
+    .slice(1)) {
+    // ignore first list because it contains the titles
     if (line !== "") {
       // we ignore empty lines
       let d = line.split(",");
