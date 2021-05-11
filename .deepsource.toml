@@ -1,0 +1,20 @@
+version = 1
+
+test_patterns = [
+    "src/**.js",
+    "src/**.ts"
+]
+
+exclude_patterns = ["dist/"]
+
+[[analyzers]]
+name = "javascript"
+enabled = true
+
+[[analyzers]]
+name = "secrets"
+enabled = true
+
+[[transformers]]
+name = "prettier"
+enabled = true
