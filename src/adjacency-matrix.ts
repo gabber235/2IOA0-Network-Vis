@@ -3,15 +3,9 @@ import { div, text } from "./utils";
 import * as d3 from "d3";
 
 export type Edge = {
-  source: string;
-  target: string;
+  source: number;
+  target: number;
   weight: number;
-};
-
-export type Node = {
-  id: string;
-  role: string;
-  salary: number;
 };
 
 export type Cell = {
@@ -43,8 +37,8 @@ window.addEventListener("load", async () => {
   );
   // console.log(filteredCorrespondants)
 
-  console.log(emails);
-  console.log(filterEmail(filteredCorrespondants, emails));
+  // console.log(emails);
+  // console.log(filterEmail(filteredCorrespondants, emails));
 
   // Add SVG to document to use for adjacency matrix
   //TODO: fix this, currently works with SVG in index.html
@@ -58,12 +52,15 @@ window.addEventListener("load", async () => {
   //     "650"
   // );
   // document.body.append(svg);
+  let svg = document.getElementsByTagName('svg')[0]
 
-  // call adjacency matrix
-  createAdjacencyMatrix(nodes, edges);
+  // call adjacency matrix  
+  createAdjacencyMatrix(filteredCorrespondants, emailsToEdges(emails), svg);
 });
 
-// Returns an array (filtered) with the persons who have one of the jobtitles that is given as an array (jobTitleList) in the input.
+
+
+// Returns a filtered array with the persons who have one of the jobtitles that is given as an array (jobTitleList) in the input.
 export function filterCorrespondants(
   jobTitleList: Title[],
   correspondants: Person[]
@@ -79,6 +76,7 @@ export function filterCorrespondants(
   }
   return filtered;
 }
+
 
 // Returns filtered email array based on correspondant list and emails
 export function filterEmail(correspondants: Person[], emails: Email[]) {
@@ -97,205 +95,44 @@ export function filterEmail(correspondants: Person[], emails: Email[]) {
   return filtered;
 }
 
-let nodes: Node[] = [
-  {
-    id: "Irene",
-    role: "manager",
-    salary: 300000,
-  },
-  {
-    id: "Zan",
-    role: "manager",
-    salary: 380000,
-  },
-  {
-    id: "Jim",
-    role: "employee",
-    salary: 150000,
-  },
-  {
-    id: "Susie",
-    role: "employee",
-    salary: 90000,
-  },
-  {
-    id: "Kai",
-    role: "employee",
-    salary: 135000,
-  },
-  {
-    id: "Shirley",
-    role: "employee",
-    salary: 60000,
-  },
-  {
-    id: "Erik",
-    role: "employee",
-    salary: 90000,
-  },
-  {
-    id: "Shelby",
-    role: "employee",
-    salary: 150000,
-  },
-  {
-    id: "Tony",
-    role: "employee",
-    salary: 72000,
-  },
-  {
-    id: "Fil",
-    role: "employee",
-    salary: 35000,
-  },
-  {
-    id: "Adam",
-    role: "employee",
-    salary: 85000,
-  },
-  {
-    id: "Ian",
-    role: "employee",
-    salary: 83000,
-  },
-  {
-    id: "Miles",
-    role: "employee",
-    salary: 99000,
-  },
-  {
-    id: "Sarah",
-    role: "employee",
-    salary: 160000,
-  },
-  {
-    id: "Nadieh",
-    role: "contractor",
-    salary: 240000,
-  },
-  {
-    id: "Hajra",
-    role: "contractor",
-    salary: 280000,
-  },
-];
-let edges: Edge[] = [
-  {
-    source: "Jim",
-    target: "Irene",
-    weight: 5,
-  },
-  {
-    source: "Susie",
-    target: "Irene",
-    weight: 5,
-  },
-  {
-    source: "Jim",
-    target: "Susie",
-    weight: 5,
-  },
-  {
-    source: "Susie",
-    target: "Kai",
-    weight: 5,
-  },
-  {
-    source: "Shirley",
-    target: "Kai",
-    weight: 5,
-  },
-  {
-    source: "Shelby",
-    target: "Kai",
-    weight: 5,
-  },
-  {
-    source: "Kai",
-    target: "Susie",
-    weight: 5,
-  },
-  {
-    source: "Kai",
-    target: "Shirley",
-    weight: 5,
-  },
-  {
-    source: "Kai",
-    target: "Shelby",
-    weight: 5,
-  },
-  {
-    source: "Erik",
-    target: "Zan",
-    weight: 5,
-  },
-  {
-    source: "Tony",
-    target: "Zan",
-    weight: 5,
-  },
-  {
-    source: "Tony",
-    target: "Fil",
-    weight: 5,
-  },
-  {
-    source: "Tony",
-    target: "Ian",
-    weight: 5,
-  },
-  {
-    source: "Tony",
-    target: "Adam",
-    weight: 5,
-  },
-  {
-    source: "Fil",
-    target: "Tony",
-    weight: 4,
-  },
-  {
-    source: "Ian",
-    target: "Miles",
-    weight: 1,
-  },
-  {
-    source: "Adam",
-    target: "Tony",
-    weight: 3,
-  },
-  {
-    source: "Miles",
-    target: "Ian",
-    weight: 2,
-  },
-  {
-    source: "Miles",
-    target: "Ian",
-    weight: 3,
-  },
-  {
-    source: "Erik",
-    target: "Kai",
-    weight: 2,
-  },
-  {
-    source: "Erik",
-    target: "Nadieh",
-    weight: 2,
-  },
-  {
-    source: "Jim",
-    target: "Nadieh",
-    weight: 2,
-  },
-];
 
-function createAdjacencyMatrix(nodes: Node[], edges: Edge[]) {
+// Returns array of edges based on input emails
+function emailsToEdges(emails: Email[]) {
+  const edges: Edge[] = [];
+
+  // first check if an edge already exist, if it does, increase weight, else add it
+  emails.forEach(email => {
+    // find in edges
+    let edge = edges.find(element => (element.source === email.fromId && element.target === email.toId))
+
+    if (edge === undefined) {
+      // add a new edge since it doesn't exist yet
+      const newEdge: Edge = { source: email.fromId, target: email.toId, weight: 1 };
+      edges.push(newEdge);
+    } else {
+      // increase weight of edge that already exists
+      edge.weight += 1;
+    }
+  });
+
+  console.log(edges)
+
+  return edges;
+}
+
+
+function createAdjacencyMatrix(nodes: Person[], edges: Edge[], SVG: SVGSVGElement) {
+  const numberOfNodes = nodes.length;
+
   // for drawing in SVG
-  let width: number = 600;
-  let height: number = 600;
+  const width: number = 0.9 * parseInt(SVG.getAttribute('width'));
+  const height: number = 0.9 * parseInt(SVG.getAttribute('height'));
+  const boxWidth: number = width / numberOfNodes; // pixels
+  const boxHeight: number = height / numberOfNodes; // pixels
+
+  // get max weight
+  const maxWeight: number = edges.reduce((a, b) => a.weight > b.weight ? a : b).weight;
+  // console.log(maxWeight)
 
   // hash of which edges we have
   let edgeHash: { [id: string]: Edge } = {};
@@ -318,8 +155,6 @@ function createAdjacencyMatrix(nodes: Node[], edges: Edge[]) {
 
   // console.log(matrix)
 
-  let boxSize = 35; // pixels
-
   let svg = d3.select("svg");
 
   d3.select("svg")
@@ -331,11 +166,11 @@ function createAdjacencyMatrix(nodes: Node[], edges: Edge[]) {
     .enter()
     .append("rect")
     .attr("class", "grid")
-    .attr("width", boxSize)
-    .attr("height", boxSize)
-    .attr("x", (d) => d.x * boxSize)
-    .attr("y", (d) => d.y * boxSize)
-    .style("fill-opacity", (d) => d.weight * 0.2);
+    .attr("width", boxWidth)
+    .attr("height", boxHeight)
+    .attr("x", (d) => d.x * boxWidth)
+    .attr("y", (d) => d.y * boxHeight)
+    .style("fill-opacity", (d) => scaleOpacity(d.weight, maxWeight));
 
   d3.select("svg")
     .append("g")
@@ -344,7 +179,7 @@ function createAdjacencyMatrix(nodes: Node[], edges: Edge[]) {
     .data(nodes)
     .enter()
     .append("text")
-    .attr("x", (d, i) => i * boxSize + boxSize / 2)
+    .attr("x", (d, i) => i * boxWidth + boxWidth / 2)
     .text((d) => d.id)
     .style("text-anchor", "middle")
     .style("font-size", "10px");
@@ -356,7 +191,7 @@ function createAdjacencyMatrix(nodes: Node[], edges: Edge[]) {
     .data(nodes)
     .enter()
     .append("text")
-    .attr("y", (d, i) => i * boxSize + boxSize / 2)
+    .attr("y", (d, i) => i * boxHeight + boxHeight / 2)
     .text((d) => d.id)
     .style("text-anchor", "end")
     .style("font-size", "10px");
@@ -368,10 +203,22 @@ function createAdjacencyMatrix(nodes: Node[], edges: Edge[]) {
       //TODO: Below is the original line which works in JS but not in TS for some reason
       // return p.x === d.x || p.y == d.y ? "3px" : "1px"
       //this only works like half of the time but the idea is there
-      return p.x === Math.floor((d.layerX - boxSize) / boxSize) ||
-        p.y == Math.floor((d.layerY - boxSize) / boxSize)
+      return p.x === Math.floor((d.layerX) / boxWidth) ||
+        p.y == Math.floor((d.layerY) / boxHeight)
         ? "3px"
         : "1px";
     });
   }
+}
+
+
+// Takes input and the max of all inputs and scales opacity accordingly
+function scaleOpacity(inp: number, maxInp: number) {
+  // linear
+  // let opacity: number = inp * (1/ maxInp);
+
+  // log scaling
+  let opacity: number = Math.log(inp) / Math.log(maxInp);
+  if (opacity < 0) { opacity = 0 }
+  return opacity;
 }
