@@ -32,7 +32,7 @@ window.addEventListener("load", async () => {
 
   // Testing the function
   let filteredCorrespondants = filterCorrespondants(
-    ["Unknown"],
+    ["CEO", "Trader"],
     correspondantList
   );
   // console.log(filteredCorrespondants)
@@ -114,9 +114,7 @@ function emailsToEdges(emails: Email[]) {
       edge.weight += 1;
     }
   });
-
-  console.log(edges)
-
+  // console.log(edges)
   return edges;
 }
 
@@ -129,6 +127,8 @@ function createAdjacencyMatrix(nodes: Person[], edges: Edge[], SVG: SVGSVGElemen
   const height: number = 0.9 * parseInt(SVG.getAttribute('height'));
   const boxWidth: number = width / numberOfNodes; // pixels
   const boxHeight: number = height / numberOfNodes; // pixels
+
+  console.log(nodes)
 
   // get max weight
   const maxWeight: number = edges.reduce((a, b) => a.weight > b.weight ? a : b).weight;
@@ -181,7 +181,7 @@ function createAdjacencyMatrix(nodes: Person[], edges: Edge[], SVG: SVGSVGElemen
     .enter()
     .append("text")
     .attr("x", (d, i) => i * boxWidth + boxWidth / 2)
-    .text((d) => d.id)
+    .text((d) => d.title + " " + d.id)
     .style("text-anchor", "middle")
     .style("font-size", "10px");
 
@@ -193,7 +193,7 @@ function createAdjacencyMatrix(nodes: Person[], edges: Edge[], SVG: SVGSVGElemen
     .enter()
     .append("text")
     .attr("y", (d, i) => i * boxHeight + boxHeight / 2)
-    .text((d) => d.id)
+    .text((d) => d.title + " " + d.id)
     .style("text-anchor", "end")
     .style("font-size", "10px");
 
@@ -202,10 +202,10 @@ function createAdjacencyMatrix(nodes: Person[], edges: Edge[], SVG: SVGSVGElemen
   function gridOver(d: any) {
     d3.selectAll("rect").style("stroke-width", function (p: Cell) {
       //TODO: Below is the original line which works in JS but not in TS for some reason
-      // return p.x === d.x || p.y == d.y ? "3px" : "1px"
+      // return p.x == d.x || p.y == d.y ? "3px" : "1px"
       //this only works like half of the time but the idea is there
-      return p.x === Math.floor((d.layerX) / boxWidth) ||
-        p.y == Math.floor((d.layerY) / boxHeight)
+      return p.x === Math.floor((d.layerX - boxWidth) / boxWidth) ||
+        p.y == Math.floor((d.layerY - boxHeight) / boxHeight)
         ? "3px"
         : "1px";
     });
