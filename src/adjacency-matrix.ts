@@ -134,6 +134,7 @@ function createAdjacencyMatrix(nodes: Person[], edges: Edge[], SVG: SVGSVGElemen
   const maxWeight: number = edges.reduce((a, b) => a.weight > b.weight ? a : b).weight;
   // console.log(maxWeight)
 
+
   // hash of which edges we have
   let edgeHash: { [id: string]: Edge } = {};
   edges.forEach((edge) => {
