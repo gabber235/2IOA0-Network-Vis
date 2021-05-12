@@ -430,17 +430,17 @@
         .attr("width", width)
         .attr("height", height);
 
-      var row = svg.selectAll(".row")
+      var rows = svg.selectAll(".row")
         .data(matrix)
         .enter().append("g")
         .attr("class", "row")
         .attr("transform", function (d, i) { return "translate(0," + x(i) + ")"; })
         .each(row);
 
-      row.append("line")
+      rows.append("line")
         .attr("x2", width);
 
-      row.append("text")
+      rows.append("text")
         .attr("x", -6)
         .attr("y", x.rangeBand() / 2)
         .attr("dy", ".32em")

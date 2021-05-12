@@ -508,7 +508,7 @@ export function createAdjacencyMatrix() {
     .attr("height", height);
 
   // @ts-expect-error
-  let row = svg.selectAll(".row")
+  let rows = svg.selectAll(".row")
     .data(matrix)
     .enter().append("g")
     .attr("class", "row")
@@ -516,11 +516,11 @@ export function createAdjacencyMatrix() {
     .each(row);
 
     // @ts-expect-error
-  row.append("line")
+  rows.append("line")
     .attr("x2", width);
 
     // @ts-expect-error
-  row.append("text")
+  rows.append("text")
     .attr("x", -6)
     .attr("y", x.rangeBand() / 2)
     .attr("dy", ".32em")
