@@ -1,15 +1,15 @@
-import { getCorrespondants, parseData } from "./data"
-import { div, text } from "./utils"
+import { getCorrespondants, parseData } from "./data";
+import { div, text } from "./utils";
+import "./adjacency-matrix";
 
-const dataFile = require('../resources/static/enron-v1.csv')
-
+const dataFile = require("../resources/static/enron-v1.csv");
 
 window.addEventListener("load", async () => {
-    document.body.appendChild(div({}, [text('Hello World ❤️')]))
+  document.body.appendChild(div({}, [text("Hello World ❤️")]));
 
-    let file = await fetch(dataFile.default)
-    let emails = parseData(await file.text())
-    const correspondants = getCorrespondants(emails)
-    console.table(correspondants)
-    console.table(emails.slice(0, 10))
-})
+  // let file = await fetch(dataFile.default)
+  // let emails = parseData(await file.text())
+  // const correspondants = getCorrespondants(emails)
+  // console.table(correspondants)
+  // console.table(emails.slice(0, 10))
+});

@@ -2,15 +2,33 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta content="IE=edge" http-equiv="X-UA-Compatible">
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <link href="css/stylesheet.css" rel="stylesheet">
-    <title>2IOA0 - Network Visualization</title>
+  <meta charset="UTF-8" />
+  <meta content="IE=edge" http-equiv="X-UA-Compatible" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <link href="css/stylesheet.css" rel="stylesheet" />
+  <title>2IOA0 - Network Visualization</title>
+  <style>
+    .background {
+      fill: #eee;
+    }
+
+    line {
+      stroke: #fff;
+    }
+
+    text.active {
+      fill: red;
+    }
+  </style>
 </head>
 
 <body>
 
+  <p>Order: <select id="order">
+      <option value="name">by Name</option>
+      <option value="count">by Frequency</option>
+      <option value="group">by Cluster</option>
+    </select></p>
 </body>
 
 </html>
