@@ -1,36 +1,41 @@
-import { Observable } from "rxjs"
+
+export type DataSet<A> = { [id: number]: A }
+
+type DataSetChange<A> = { type: "add", id: number, value: A } | { type: "update", id: number, value: A } | { type: "remove", id: number }
 
 export class DataSetDiff<A> {
 
-    public readonly type: "add"|"remove"
-    public readonly content: A[]
+    public readonly changes: DataSetChange<A>[]
 
-    constructor(type: "add"|"remove", content: A[]) {
-        this.type = type
-        this.content = content
+    constructor(changes: DataSetChange<A>[] = []) {
+        this.changes = changes
     }
 
-    static add<A>(content: A[]) {
-        return new DataSetDiff("add", content)
+    add(id: number, value: A): DataSetChange<A> {
+        const change: DataSetChange<A> = { type: "add", id: id, value: value }
+        this.changes.push(change)
+        return change
     }
-    static remove<A>(content: A[]) {
-        return new DataSetDiff("remove", content)
+    update(id: number, value: A): DataSetChange<A> {
+        const change: DataSetChange<A> = { type: "update", id: id, value: value }
+        this.changes.push(change)
+        return change
+    }
+    remove(id: number): DataSetChange<A> {
+        const change: DataSetChange<A> = { type: "remove", id: id }
+        this.changes.push(change)
+        return change
     }
 
-    map<B>(f: (a: A) => B) {
-        return new DataSetDiff(this.type, this.content.map(f))
+    map<B>(f: (a: A) => B): DataSetDiff<B> {
+        return new DataSetDiff(this.changes.map(i => {
+            if (i.type === "add") {
+                return Object.assign({}, i, { value: f(i.value) })
+            } else if (i.type === "update") {
+                return Object.assign({}, i, { value: f(i.value) })
+            } else {
+                return i
+            }
+        }))
     }
-}
-
-
-
-export function bindVisDataSet<A extends vis.DataItem | vis.Edge | vis.Node | vis.DataGroup>(dataset: vis.DataSet<A>, dynamicData: Observable<DataSetDiff<A>>) {
-    dynamicData.subscribe({next (diff) {
-
-        if (diff.type === "add") {
-            dataset.add(diff.content)
-        } else if (diff.type === "remove") {
-            dataset.remove(diff.content.map(i => i.id))
-        }
-    }})
 }

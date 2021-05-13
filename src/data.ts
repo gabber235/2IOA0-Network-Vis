@@ -84,20 +84,3 @@ export function getCorrespondants(dataset: Email[]): Correspondants {
 
   return personDict;
 }
-
-
-
-export function personToNode(p: Person): vis.Node {
-  return {
-    id: p.id,
-    title: p.emailAdress
-  }
-}
-export function emailToEdge(e: Email): vis.Edge {
-  return {
-    id: e.id,
-    from: e.fromId,
-    to: e.toId
-  }
-}
-

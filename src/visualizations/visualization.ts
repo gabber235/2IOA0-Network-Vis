@@ -1,7 +1,9 @@
-import { Correspondants, Email } from "../data";
+import { Observable } from "rxjs";
+import { Email, Person } from "../data";
+import { DataSetDiff } from "../pipeline/dynamicDataSet";
 
 export interface Visualization {
 
-    visualize(emails: Email[], correspondants: Correspondants): Promise<void>
+    visualize(data: Observable<[DataSetDiff<Person>, DataSetDiff<Email>]>): Promise<void>
 
 }

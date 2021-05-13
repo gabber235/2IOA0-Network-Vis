@@ -1,10 +1,12 @@
 import { Visualization } from './visualization'
-import { Email, Correspondants } from "../data";
+import { Email, Person } from "../data";
 import * as d3 from "d3";
+import { Observable } from 'rxjs';
+import { DataSetDiff } from '../pipeline/dynamicDataSet';
 
 
 export class AdjacencyMatrix implements Visualization {
-  async visualize(emails: Email[], correspondants: Correspondants): Promise<void> {
+  async visualize(data: Observable<[DataSetDiff<Person>, DataSetDiff<Email>]>): Promise<void> {
     // variable to store node information
     const nodes = [
       { "name": "Myriel", "group": 1 },
@@ -489,7 +491,6 @@ export class AdjacencyMatrix implements Visualization {
     }
 
     d3.select("#order").on("change", function () {
-      clearTimeout(timeout);
       // @ts-expect-error
       order(this.value);
     });
@@ -512,11 +513,6 @@ export class AdjacencyMatrix implements Visualization {
         .attr("transform", function (d, i) { return "translate(" + x(i) + ")rotate(-90)"; });
     }
 
-    let timeout = setTimeout(function () {
-      order("group");
-      // @ts-expect-error
-      d3.select("#order").property("selectedIndex", 2).node().focus();
-    }, 5000);
   }
 
 }

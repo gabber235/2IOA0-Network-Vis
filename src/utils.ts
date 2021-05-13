@@ -143,11 +143,11 @@ export class ArraySlice<A> {
 
 /**
  */
- export function binarySearch<A>(array: (index: number) => A|undefined, target: A, cmp: (left: A, right: A, indexLeft: number) => number, firstIndex: number, lastIndex: number): number|undefined {
+export function binarySearch<A>(array: (index: number) => A | undefined, target: A, cmp: (left: A, right: A, indexLeft: number) => number, firstIndex: number, lastIndex: number): number | undefined {
 
     if (firstIndex === lastIndex) {
         let current = array(firstIndex)
-        
+
         if (current !== undefined) {
             if (cmp(current, target, firstIndex) === 0) return firstIndex
             else return undefined
@@ -156,7 +156,7 @@ export class ArraySlice<A> {
 
     let index = Math.floor((firstIndex + lastIndex) / 2)
     let current = array(index)
-    
+
     if (current !== undefined) {
         let dist = cmp(current, target, index)
 
@@ -173,12 +173,12 @@ export class ArraySlice<A> {
 }
 
 // this function is dumb and stupid. We can do this in a better way, by imlementing binary search properly
-export function binarySearchForGreatestCandidate<A>(array: (index: number) => A|undefined, target: A, cmp: (left: A, right: A, indexLeft: number) => number, firstIndex: number, lastIndex: number): number|undefined {
-    return binarySearch(array, target, (a,b,i) => {
-        if (cmp(a,b,i) <= 0) { // a <= b
+export function binarySearchForGreatestCandidate<A>(array: (index: number) => A | undefined, target: A, cmp: (left: A, right: A, indexLeft: number) => number, firstIndex: number, lastIndex: number): number | undefined {
+    return binarySearch(array, target, (a, b, i) => {
+        if (cmp(a, b, i) <= 0) { // a <= b
             let next = array(i + 1)
             if (next !== undefined) {
-                if (cmp(next,target,i+1) <= 0) { // next <= target
+                if (cmp(next, target, i + 1) <= 0) { // next <= target
                     return -1
                 } else {
                     return 0
@@ -192,3 +192,11 @@ export function binarySearchForGreatestCandidate<A>(array: (index: number) => A|
     }, firstIndex, lastIndex)
 }
 
+
+
+/**
+ * Swaps the members of a tuple
+ */
+export function swap<X, Y>([x, y]: [X, Y]): [Y, X] {
+    return [y, x]
+}
