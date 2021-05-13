@@ -47,6 +47,7 @@
   },
   "dependencies": {
     "@types/vis": "^4.21.21",
+    "rxjs": "^7.0.0",
     "vis": "^4.21.0-EOL"
   }
 }

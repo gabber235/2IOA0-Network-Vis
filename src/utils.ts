@@ -114,3 +114,81 @@ function swapRemove<T>(list: T[], index: number): T {
 
     return x
 }
+
+
+
+
+
+
+
+
+
+export class ArraySlice<A> {
+    public readonly array: A[]
+    public readonly start: number
+    public readonly length: number
+
+    constructor(array: A[], start: number, length: number) {
+        this.array = array
+        this.start = start
+        this.length = length
+    }
+
+    getItem(index: number): A {
+        return this.array[this.start + index]
+    }
+}
+
+
+
+/**
+ */
+ export function binarySearch<A>(array: (index: number) => A|undefined, target: A, cmp: (left: A, right: A, indexLeft: number) => number, firstIndex: number, lastIndex: number): number|undefined {
+
+    if (firstIndex === lastIndex) {
+        let current = array(firstIndex)
+        
+        if (current !== undefined) {
+            if (cmp(current, target, firstIndex) === 0) return firstIndex
+            else return undefined
+        }
+    }
+
+    let index = Math.floor((firstIndex + lastIndex) / 2)
+    let current = array(index)
+    
+    if (current !== undefined) {
+        let dist = cmp(current, target, index)
+
+        if (dist < 0) { // current < target
+            return binarySearch(array, target, cmp, index + 1, lastIndex)
+        } else if (dist === 0) { // current = target
+            return index
+        } else { // current > target
+            return binarySearch(array, target, cmp, firstIndex, index - 1)
+        }
+    } else {
+        return undefined
+    }
+}
+
+// this function is dumb and stupid. We can do this in a better way, by imlementing binary search properly
+export function binarySearchForGreatestCandidate<A>(array: (index: number) => A|undefined, target: A, cmp: (left: A, right: A, indexLeft: number) => number, firstIndex: number, lastIndex: number): number|undefined {
+    return binarySearch(array, target, (a,b,i) => {
+        if (cmp(a,b,i) <= 0) { // a <= b
+            let next = array(i + 1)
+            if (next !== undefined) {
+                if (cmp(next,target,i+1) <= 0) { // next <= target
+                    return -1
+                } else {
+                    return 0
+                }
+            } else {
+                return 0
+            }
+        } else { // a > b
+            return 1
+        }
+    }, firstIndex, lastIndex)
+}
+

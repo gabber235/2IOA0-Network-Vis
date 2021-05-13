@@ -2,6 +2,7 @@
 export type Title = "Trader"|"Employee"|"Unknown"|"Vice President"|"Manager"|"CEO"|"Managing Director"|"Director"|"President"|"In House Lawyer"
 
 export type Email = {
+    id: number,
     date: string,
     fromId: number,
     fromEmail: string,
@@ -24,6 +25,7 @@ export type Person = {
  */
 export function parseData(text: string): Email[] {
     let list: Email[] = []
+    let idCounter = 0
         
     for (let line of 
         text
@@ -33,6 +35,7 @@ export function parseData(text: string): Email[] {
         if (line !== "") { // we ignore empty lines
             let d = line.split(',')
             list.push({
+                id: idCounter++,
                 date: d[0],
                 fromId: +d[1],
                 fromEmail: d[2],
@@ -69,3 +72,20 @@ export function getCorrespondants(dataset: Email[]): {[id:number]: Person} {
 
     return personDict
 }
+
+
+
+export function personToNode(p: Person): vis.Node {
+    return {
+        id: p.id,
+        title: p.email
+    }
+}
+export function emailToEdge(e: Email): vis.Edge {
+    return {
+        id: e.id,
+        from: e.fromId,
+        to: e.toId
+    }
+}
+
