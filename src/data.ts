@@ -28,6 +28,8 @@ export type Person = {
   emailAdress: string;
 };
 
+export type Correspondants = { [id: number]: Person }
+
 /**
  * Parses the data from enron-v1.csv into a list of objects
  */
@@ -60,8 +62,8 @@ export function parseData(text: string): Email[] {
 /**
  * Takes a list of emails and returns a dictionary of the correspondants
  */
-export function getCorrespondants(dataset: Email[]): { [id: number]: Person } {
-  let personDict: { [id: number]: Person } = {};
+export function getCorrespondants(dataset: Email[]): Correspondants {
+  let personDict: Correspondants = {};
 
   for (let email of dataset) {
     personDict[email.fromId] = {
