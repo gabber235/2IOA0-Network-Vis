@@ -5,7 +5,7 @@ import "./adjacency-matrix";
 const dataFile = require("../resources/static/enron-v1.csv");
 
 window.addEventListener("load", async () => {
-  document.body.appendChild(div({}, [text("Hello World ❤️")]));
+  // document.body.appendChild(div({}, [text("Hello World ❤️")]));
 
   // let file = await fetch(dataFile.default)
   // let emails = parseData(await file.text())
