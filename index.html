@@ -30,11 +30,14 @@
       <option value="group">by Cluster</option>
     </select>
   </p>
+  <input type="range" min="0" max="10000" value="0" class="slider" id="range1">
+  <input type="range" min="0" max="200" value="200" class="slider" id="range2">
 
   <div id="visualizations">
-    <div id="adj-matrix" class="vis"></div>
-    <div class="vis">
-      <div style="position: absolute; top: 0px; right: 0px; bottom: 0px; left: 0px;" id="node-links"></div>
+    <div id="adj-matrix" class="visual"></div>
+    <div class="visual">
+      <div id="node-links"
+        style="position: absolute; top: 0px; right: 0px; bottom: 0px; left: 0px; width: 1000px; height: 1000px"></div>
     </div>
   </div>
 </body>

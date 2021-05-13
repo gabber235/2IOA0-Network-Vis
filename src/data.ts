@@ -11,16 +11,17 @@ export type Title =
   | "In House Lawyer";
 
 export type Email = {
-  date: string;
-  fromId: number;
-  fromEmail: string;
-  fromJobtitle: Title;
-  toId: number;
-  toEmail: string;
-  toJobtitle: Title;
-  messageType: "CC" | "TO";
-  sentiment: number;
-};
+  id: number,
+  date: string,
+  fromId: number,
+  fromEmail: string,
+  fromJobtitle: Title,
+  toId: number,
+  toEmail: string,
+  toJobtitle: Title,
+  messageType: "CC" | "TO",
+  sentiment: number
+}
 
 export type Person = {
   id: number;
@@ -34,16 +35,18 @@ export type Correspondants = { [id: number]: Person }
  * Parses the data from enron-v1.csv into a list of objects
  */
 export function parseData(text: string): Email[] {
-  let list: Email[] = [];
+  let list: Email[] = []
+  let idCounter = 0
 
-  for (let line of text
-    .split(/\r?\n/u) // split on linebreaks
-    .slice(1)) {
-    // ignore first list because it contains the titles
-    if (line !== "") {
-      // we ignore empty lines
-      let d = line.split(",");
+  for (let line of
+    text
+      .split(/\r?\n/) // split on linebreaks
+      .slice(1) // ignore first list because it contains the titles
+  ) {
+    if (line !== "") { // we ignore empty lines
+      let d = line.split(',')
       list.push({
+        id: idCounter++,
         date: d[0],
         fromId: +d[1],
         fromEmail: d[2],
@@ -52,10 +55,11 @@ export function parseData(text: string): Email[] {
         toEmail: d[5],
         toJobtitle: d[6] as any,
         messageType: d[7] as any,
-        sentiment: +d[8],
-      });
+        sentiment: +d[8]
+      })
     }
   }
+
   return list;
 }
 
@@ -80,3 +84,20 @@ export function getCorrespondants(dataset: Email[]): Correspondants {
 
   return personDict;
 }
+
+
+
+export function personToNode(p: Person): vis.Node {
+  return {
+    id: p.id,
+    title: p.emailAdress
+  }
+}
+export function emailToEdge(e: Email): vis.Edge {
+  return {
+    id: e.id,
+    from: e.fromId,
+    to: e.toId
+  }
+}
+
