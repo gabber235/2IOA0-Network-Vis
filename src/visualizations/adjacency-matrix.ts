@@ -3,7 +3,7 @@ import { Email, Correspondants } from "../data";
 import * as d3 from "d3";
 
 
-export class AdjacencyMatrix extends Visualization {
+export class AdjacencyMatrix implements Visualization {
   async visualize(emails: Email[], correspondants: Correspondants): Promise<void> {
     // variable to store node information
     const nodes = [
@@ -381,7 +381,6 @@ export class AdjacencyMatrix extends Visualization {
     let svg = d3.select("#adj-matrix").append("svg")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
-      .style("margin-left", -margin.left + "px")
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 

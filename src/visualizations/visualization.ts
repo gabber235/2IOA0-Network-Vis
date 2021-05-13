@@ -1,7 +1,7 @@
 import { Correspondants, Email } from "../data";
 
-export abstract class Visualization {
+export interface Visualization {
 
-    abstract visualize(emails: Email[], correspondants: Correspondants): Promise<void>
+    visualize(emails: Email[], correspondants: Correspondants): Promise<void>
 
 }

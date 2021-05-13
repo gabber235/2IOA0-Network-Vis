@@ -2,7 +2,7 @@ import * as vis from 'vis';
 import { Email, Correspondants } from '../data';
 import { Visualization } from './visualization'
 
-export class NodeLink extends Visualization {
+export class NodeLink implements Visualization {
     async visualize(emails: Email[], correspondants: Correspondants): Promise<void> {
         const maxSent = Math.max(...emails.map(i => i.sentiment))
         const minSent = Math.min(...emails.map(i => i.sentiment))
