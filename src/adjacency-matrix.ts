@@ -2,6 +2,14 @@ import { getCorrespondants, parseData, Email, Person, Title } from "./data";
 import { div, text } from "./utils";
 import * as d3 from "d3";
 
+type Node = {
+  name: string,
+  id: number,
+  group: string,  // used for titles in our dataset
+  index?: number, // used in adjacency matrix
+  count?: number, // used in adjacency matrix
+}
+
 // get used data
 const dataFile = require("../resources/static/enron-v1.csv");
 
@@ -22,105 +30,7 @@ window.addEventListener("load", async () => {
     ["CEO", "Trader"],
     correspondantList
   );
-  // console.log(filteredCorrespondants)
 
-  // console.log(emails);
-  // console.log(filterEmail(filteredCorrespondants, emails));
-
-  // Add SVG to document to use for adjacency matrix
-  //TODO: fix this, currently works with SVG in index.html
-  // let svg = document.createElement("svg");
-  // svg.setAttribute(
-  //     "width",
-  //     "650"
-  // );
-  // svg.setAttribute(
-  //     "height",
-  //     "650"
-  // );
-  // document.body.append(svg);
-  let svg = document.getElementsByTagName('svg')[0]
-
-  // variable to store node information
-  const nodes = [
-    { "name": "Myriel", "group": 1 },
-    { "name": "Napoleon", "group": 1 },
-    { "name": "Mlle.Baptistine", "group": 1 },
-    { "name": "Mme.Magloire", "group": 1 },
-    { "name": "CountessdeLo", "group": 1 },
-    { "name": "Geborand", "group": 1 },
-    { "name": "Champtercier", "group": 1 },
-    { "name": "Cravatte", "group": 1 },
-    { "name": "Count", "group": 1 },
-    { "name": "OldMan", "group": 1 },
-    { "name": "Labarre", "group": 2 },
-    { "name": "Valjean", "group": 2 },
-    { "name": "Marguerite", "group": 3 },
-    { "name": "Mme.deR", "group": 2 },
-    { "name": "Isabeau", "group": 2 },
-    { "name": "Gervais", "group": 2 },
-    { "name": "Tholomyes", "group": 3 },
-    { "name": "Listolier", "group": 3 },
-    { "name": "Fameuil", "group": 3 },
-    { "name": "Blacheville", "group": 3 },
-    { "name": "Favourite", "group": 3 },
-    { "name": "Dahlia", "group": 3 },
-    { "name": "Zephine", "group": 3 },
-    { "name": "Fantine", "group": 3 },
-    { "name": "Mme.Thenardier", "group": 4 },
-    { "name": "Thenardier", "group": 4 },
-    { "name": "Cosette", "group": 5 },
-    { "name": "Javert", "group": 4 },
-    { "name": "Fauchelevent", "group": 0 },
-    { "name": "Bamatabois", "group": 2 },
-    { "name": "Perpetue", "group": 3 },
-    { "name": "Simplice", "group": 2 },
-    { "name": "Scaufflaire", "group": 2 },
-    { "name": "Woman1", "group": 2 },
-    { "name": "Judge", "group": 2 },
-    { "name": "Champmathieu", "group": 2 },
-    { "name": "Brevet", "group": 2 },
-    { "name": "Chenildieu", "group": 2 },
-    { "name": "Cochepaille", "group": 2 },
-    { "name": "Pontmercy", "group": 4 },
-    { "name": "Boulatruelle", "group": 6 },
-    { "name": "Eponine", "group": 4 },
-    { "name": "Anzelma", "group": 4 },
-    { "name": "Woman2", "group": 5 },
-    { "name": "MotherInnocent", "group": 0 },
-    { "name": "Gribier", "group": 0 },
-    { "name": "Jondrette", "group": 7 },
-    { "name": "Mme.Burgon", "group": 7 },
-    { "name": "Gavroche", "group": 8 },
-    { "name": "Gillenormand", "group": 5 },
-    { "name": "Magnon", "group": 5 },
-    { "name": "Mlle.Gillenormand", "group": 5 },
-    { "name": "Mme.Pontmercy", "group": 5 },
-    { "name": "Mlle.Vaubois", "group": 5 },
-    { "name": "Lt.Gillenormand", "group": 5 },
-    { "name": "Marius", "group": 8 },
-    { "name": "BaronessT", "group": 5 },
-    { "name": "Mabeuf", "group": 8 },
-    { "name": "Enjolras", "group": 8 },
-    { "name": "Combeferre", "group": 8 },
-    { "name": "Prouvaire", "group": 8 },
-    { "name": "Feuilly", "group": 8 },
-    { "name": "Courfeyrac", "group": 8 },
-    { "name": "Bahorel", "group": 8 },
-    { "name": "Bossuet", "group": 8 },
-    { "name": "Joly", "group": 8 },
-    { "name": "Grantaire", "group": 8 },
-    { "name": "MotherPlutarch", "group": 9 },
-    { "name": "Gueulemer", "group": 4 },
-    { "name": "Babet", "group": 4 },
-    { "name": "Claquesous", "group": 4 },
-    { "name": "Montparnasse", "group": 4 },
-    { "name": "Toussaint", "group": 5 },
-    { "name": "Child1", "group": 10 },
-    { "name": "Child2", "group": 10 },
-    { "name": "Brujon", "group": 4 },
-    { "name": "Mme.Hucheloup", "group": 8 }
-  ]
   // variable to store link information
   const links = [
     { "source": 1, "target": 0, "value": 1 },
@@ -379,12 +289,56 @@ window.addEventListener("load", async () => {
     { "source": 76, "target": 58, "value": 1 }
   ]
 
+  // get nodes from people list
+  const nodes = peopleToNodes(filteredCorrespondants);
+
   // call adjacency matrix  
   // createAdjacencyMatrix(filteredCorrespondants, emailsToEdges(emails), svg);
-  createAdjacencyMatrix(nodes, links);
+  createAdjacencyMatrix(nodes, []);
 });
 
+// function to turn people objects into node usable by the matrix
+function peopleToNodes(people: Person[]) {
+  const nodes: Node[] = [];
 
+  people.forEach((person) => {
+    const newNode: Node = {
+      name: emailToName(person.emailAdress),
+      id: person.id,
+      group: person.title,
+    };
+    nodes.push(newNode);
+  })
+
+  return nodes;
+}
+
+// tries to turn email into name with proper capitalisation of letters
+export function emailToName(email: string){
+  let name: string = "";
+
+  // remove everything behind @ and replace space with dot for next step
+  let withoutAt = email.split('@')[0].replace(" ", ".")
+
+  // split string at dots for each name part
+  let parts: string[] = withoutAt.split(".");
+
+  // capitalise first letter of each part
+  for (let i = 0; i < parts.length; i++){
+    parts[i] = parts[i].charAt(0).toUpperCase() + parts[i].slice(1);
+  }
+
+  // add parts back together, adding a dot if part is just one letter
+  parts.forEach((part) => {
+    if (part.length === 1) {
+      name += part + ". ";
+    } else {
+      name += part + " ";
+    }
+  });
+
+  return name;
+}
 
 // Returns a filtered array with the persons who have one of the jobtitles that is given as an array (jobTitleList) in the input.
 export function filterCorrespondants(
@@ -422,12 +376,7 @@ export function filterEmail(correspondants: Person[], emails: Email[]) {
 }
 
 
-export function createAdjacencyMatrix(nodes: {
-  name: string,
-  group: number,
-  index?: number,
-  count?: number,
-}[],
+export function createAdjacencyMatrix(nodes: Node[],
   links: {
     source: number,
     target: number,
@@ -493,7 +442,7 @@ export function createAdjacencyMatrix(nodes: {
   let orders = {
     name: d3.range(n).sort(function (a, b) { return d3.ascending(nodes[a].name, nodes[b].name); }),
     count: d3.range(n).sort(function (a, b) { return nodes[b].count - nodes[a].count; }),
-    group: d3.range(n).sort(function (a, b) { return nodes[b].group - nodes[a].group; })
+    group: d3.range(n).sort(),
   };
 
   // The default sort order.
