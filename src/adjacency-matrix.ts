@@ -7,7 +7,7 @@ const dataFile = require("../resources/static/enron-v1.csv");
 
 // temp
 window.addEventListener("load", async () => {
-  document.body.appendChild(div({}, [text("Adjacency-matrix")]));
+  // document.body.appendChild(div({}, [text("Adjacency-matrix")]));
 
   // Get data
   let file = await fetch(dataFile.default);
@@ -434,13 +434,13 @@ export function createAdjacencyMatrix(nodes: {
     value: number,
   }[]) {
   let margin = {
-    top: 80,
+    top: 150,
     right: 0,
     bottom: 10,
-    left: 80
+    left: 150
   };
-  let width = 900;
-  let height = 900;
+  let width = 800;
+  let height = 800;
 
   // @ts-expect-error
   let x = d3.scale.ordinal().rangeBands([0, width]);
