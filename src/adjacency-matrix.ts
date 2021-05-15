@@ -10,6 +10,13 @@ type Node = {
   count?: number, // used in adjacency matrix
 }
 
+// used in adjacency matrix, meaningless without linklist, needs to be hashed from emails
+type Edge = {
+  source: number,
+  target: number,
+  value: number,
+}
+
 // get used data
 const dataFile = require("../resources/static/enron-v1.csv");
 
@@ -27,23 +34,21 @@ window.addEventListener("load", async () => {
 
   // Testing the function
   let filteredCorrespondants = filterCorrespondants(
-    ["CEO", "Trader"],
+    ["CEO", "Trader", "Employee"],
     correspondantList
   );
 
   // get nodes from people list
   const nodes = peopleToNodes(filteredCorrespondants);
-  console.log(nodes)
+  console.log(nodes, emails)
+
+  // get edges
+  const filteredEmail = filterEmail(filteredCorrespondants, emails);
+  const links = edgeHash(filteredEmail, nodes);
 
   // call adjacency matrix  
   // createAdjacencyMatrix(filteredCorrespondants, emailsToEdges(emails), svg);
-  createAdjacencyMatrix(nodes, [
-    { source: 0, target: 1, value: 2 },
-    { source: 1, target: 2, value: 1 },
-    { source: 2, target: 3, value: 1 },
-    { source: 3, target: 4, value: 1 },
-    { source: 4, target: 5, value: 1 },
-  ]);
+  createAdjacencyMatrix(nodes, links);
 });
 
 // function to turn people objects into node usable by the matrix
@@ -89,6 +94,44 @@ export function emailToName(email: string) {
   return name;
 }
 
+// takes emails and turns them into edges for the adjacency matrix
+function edgeHash(emails: Email[], nodes: Node[]){
+  const edges: Edge[] = [];
+
+  // for each email check if it is already in the edge list
+  // if so, increase it's value, else add it with value 1
+  emails.forEach((email) => {
+    // get source in nodelist
+    const source = nodes.findIndex((node) => {
+      return email.fromId === node.id;
+    });
+    // get target in nodelist
+    const target = nodes.findIndex((node) => {
+      return email.toId === node.id;
+    });
+
+    const indexInEdges = edges.findIndex((edge) => {
+      return edge.source === source && edge.target === target;
+    })
+
+    if (indexInEdges === -1){
+      // new edge
+      let edge: Edge = {
+        source: source,
+        target: target,
+        value: 1,
+      }
+      edges.push(edge);
+    } else {
+      // edge already exists
+      edges[indexInEdges].value++;
+    }
+    
+  })
+
+  return edges;
+}
+
 // Returns a filtered array with the persons who have one of the jobtitles that is given as an array (jobTitleList) in the input.
 export function filterCorrespondants(
   jobTitleList: Title[],
@@ -125,12 +168,7 @@ export function filterEmail(correspondants: Person[], emails: Email[]) {
 }
 
 
-export function createAdjacencyMatrix(nodes: Node[],
-  links: {
-    source: number,
-    target: number,
-    value: number,
-  }[]) {
+export function createAdjacencyMatrix(nodes: Node[], links: Edge[]) {
   let margin = {
     top: 150,
     right: 0,
@@ -185,7 +223,7 @@ export function createAdjacencyMatrix(nodes: Node[],
     // matrix[link.source][link.source].z += link.value;
     // matrix[link.target][link.target].z += link.value;
     nodes[link.source].count += link.value;
-    // nodes[link.target].count += link.value;
+    nodes[link.target].count += link.value;
   });
 
   // Precompute the orders.
