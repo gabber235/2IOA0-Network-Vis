@@ -35,17 +35,15 @@ export type Correspondants = { [id: number]: Person }
  * Parses the data from enron-v1.csv into a list of objects
  */
 export function parseData(text: string): Email[] {
-  let list: Email[] = []
   let idCounter = 0
 
-  for (let line of
-    text
-      .split(/\r?\n/) // split on linebreaks
-      .slice(1) // ignore first list because it contains the titles
-  ) {
-    if (line !== "") { // we ignore empty lines
-      let d = line.split(',')
-      list.push({
+  return text
+    .split(/\r?\n/) // split on linebreaks
+    .slice(1) // ignore first list because it contains the titles
+    .filter(i => i !== "") // ignore empty lines
+    .map(line => {
+      let d = line.split(/ *, */) // split on comma's
+      return {
         id: idCounter++,
         date: d[0],
         fromId: +d[1],
@@ -56,11 +54,27 @@ export function parseData(text: string): Email[] {
         toJobtitle: d[6] as any,
         messageType: d[7] as any,
         sentiment: +d[8]
-      })
-    }
-  }
+      }
+    })
+}
 
-  return list;
+
+/**
+ * Gets the sender and reciever of an email
+ */
+export function getCorrespondantsFromSingleEmail(email: Email): [Person, Person] {
+  return [
+    {
+      id: email.fromId,
+      emailAdress: email.fromEmail,
+      title: email.fromJobtitle,
+    },
+    {
+      id: email.toId,
+      emailAdress: email.toEmail,
+      title: email.toJobtitle,
+    }
+  ]
 }
 
 /**
@@ -70,16 +84,9 @@ export function getCorrespondants(dataset: Email[]): Correspondants {
   let personDict: Correspondants = {};
 
   for (let email of dataset) {
-    personDict[email.fromId] = {
-      id: email.fromId,
-      emailAdress: email.fromEmail,
-      title: email.fromJobtitle,
-    };
-    personDict[email.toId] = {
-      id: email.toId,
-      emailAdress: email.toEmail,
-      title: email.toJobtitle,
-    };
+    const [from, to] = getCorrespondantsFromSingleEmail(email)
+    personDict[email.fromId] = from;
+    personDict[email.toId] = to;
   }
 
   return personDict;

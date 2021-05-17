@@ -1,12 +1,11 @@
-
-
+import "vis/dist/vis.min.css"
 import { AdjacencyMatrix } from "./visualizations/adjacency-matrix";
 import { NodeLink } from "./visualizations/node-link";
 import { Email, getCorrespondants, parseData, Person } from "./data"
 import { Observable } from "rxjs";
-import { pureBoth } from "./pipeline/pure";
 import { map } from "rxjs/operators";
-import { DataSet } from "./pipeline/dynamicDataSet";
+import { DataSet, diffDataSet } from "./pipeline/dynamicDataSet";
+import { diffMapFirst, swap } from "./utils";
 
 const visualizations = [
     new AdjacencyMatrix(),
@@ -32,7 +31,10 @@ window.addEventListener("load", async () => {
     const changes = baseEmailObservable.pipe(
         map(([correspondants, emails]): [DataSet<Person>, Email[]] => [correspondants, emails.slice(0, 100)]),
         map(([correspondants, emails]): [DataSet<Person>, DataSet<Email>] => [correspondants, Object.assign({}, ...emails.map(email => { return { [email.id]: email } }))]),
-        pureBoth
+        diffMapFirst({} as DataSet<Person>, diffDataSet),
+        map(swap),
+        diffMapFirst({} as DataSet<Email>, diffDataSet),
+        map(swap)
     )
 
     visualizations.forEach(vis => vis.visualize(changes))

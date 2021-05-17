@@ -1,3 +1,4 @@
+import { Observable } from "rxjs"
 
 
 
@@ -120,78 +121,18 @@ function swapRemove<T>(list: T[], index: number): T {
 
 
 
-
-
-
-export class ArraySlice<A> {
-    public readonly array: A[]
-    public readonly start: number
-    public readonly length: number
-
-    constructor(array: A[], start: number, length: number) {
-        this.array = array
-        this.start = start
-        this.length = length
-    }
-
-    getItem(index: number): A {
-        return this.array[this.start + index]
-    }
-}
-
-
-
 /**
+ * Returns the first index at which 'target' should be inserted into the sorted array represented by 'items' such that it remains sorted.
  */
-export function binarySearch<A>(array: (index: number) => A | undefined, target: A, cmp: (left: A, right: A, indexLeft: number) => number, firstIndex: number, lastIndex: number): number | undefined {
+export function binarySearch<A>(items: (index: number) => A, target: A, begin: number, end: number, cmp: (a: A, b: A) => number): number {
+    if (begin === end) return begin
 
-    if (firstIndex === lastIndex) {
-        let current = array(firstIndex)
+    const index = begin + Math.floor((end - begin) / 2)
+    const item = items(index)
 
-        if (current !== undefined) {
-            if (cmp(current, target, firstIndex) === 0) return firstIndex
-            else return undefined
-        }
-    }
-
-    let index = Math.floor((firstIndex + lastIndex) / 2)
-    let current = array(index)
-
-    if (current !== undefined) {
-        let dist = cmp(current, target, index)
-
-        if (dist < 0) { // current < target
-            return binarySearch(array, target, cmp, index + 1, lastIndex)
-        } else if (dist === 0) { // current = target
-            return index
-        } else { // current > target
-            return binarySearch(array, target, cmp, firstIndex, index - 1)
-        }
-    } else {
-        return undefined
-    }
+    if (cmp(item, target) < 0) return binarySearch(items, target, index + 1, end, cmp)
+    else return binarySearch(items, target, begin, index, cmp)
 }
-
-// this function is dumb and stupid. We can do this in a better way, by imlementing binary search properly
-export function binarySearchForGreatestCandidate<A>(array: (index: number) => A | undefined, target: A, cmp: (left: A, right: A, indexLeft: number) => number, firstIndex: number, lastIndex: number): number | undefined {
-    return binarySearch(array, target, (a, b, i) => {
-        if (cmp(a, b, i) <= 0) { // a <= b
-            let next = array(i + 1)
-            if (next !== undefined) {
-                if (cmp(next, target, i + 1) <= 0) { // next <= target
-                    return -1
-                } else {
-                    return 0
-                }
-            } else {
-                return 0
-            }
-        } else { // a > b
-            return 1
-        }
-    }, firstIndex, lastIndex)
-}
-
 
 
 /**
@@ -199,4 +140,25 @@ export function binarySearchForGreatestCandidate<A>(array: (index: number) => A 
  */
 export function swap<X, Y>([x, y]: [X, Y]): [Y, X] {
     return [y, x]
+}
+
+
+
+
+/**
+ * Applies a given diff'ing function to the first item in a tuple in an observable of tuples
+ */
+export function diffMapFirst<A, B, X>(initial: A, f: (prev: A, cur: A) => B): (stream: Observable<[A, X]>) => Observable<[B, X]> {
+    return stream => {
+        let prev: A = initial
+
+        return new Observable(sub => {
+            stream.subscribe({
+                next([cur, x]) {
+                    sub.next([f(prev, cur), x])
+                    prev = cur
+                }
+            })
+        })
+    }
 }

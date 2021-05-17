@@ -11,6 +11,7 @@ export class NodeLink implements Visualization {
         const nodes = new vis.DataSet()
         const edges = new vis.DataSet<vis.Edge>()
 
+        // PROBLEM: This won't always work cus simultaneity
         bindVisDataSet(nodes, data.pipe(map(i => i[0].map(personToNode))))
         bindVisDataSet(edges, data.pipe(map(i => i[1].map(emailToEdge))))
 
@@ -49,6 +50,7 @@ function emailToEdge(e: Email): vis.Edge {
     return {
         id: e.id,
         from: e.fromId,
-        to: e.toId
+        to: e.toId,
+        title: "" + e.sentiment
     }
 }
