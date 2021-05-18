@@ -1,6 +1,6 @@
 import { getCorrespondants, parseData } from "./data";
 import { div, text } from "./utils";
-import "./adjacency-matrix";
+import "../visualisations/adjacency-matrix";
 
 const dataFile = require("../resources/static/enron-v1.csv");
 
