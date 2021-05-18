@@ -1,5 +1,5 @@
-import { getCorrespondants, parseData, Email, Person, Title } from "../src/data";
-import { div, text } from "../src/utils";
+import { getCorrespondants, parseData, Email, Person, Title } from "../../src/data";
+import { div, text } from "../../src/utils";
 import * as d3 from "d3";
 
 type Node = {
@@ -18,7 +18,7 @@ type Edge = {
 }
 
 // get used data
-const dataFile = require("../resources/static/enron-v1.csv");
+const dataFile = require("../../resources/static/enron-v1.csv");
 
 // temp
 window.addEventListener("load", async () => {

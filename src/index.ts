@@ -1,8 +1,6 @@
 import { getCorrespondants, parseData } from "./data";
 import { div, text } from "./utils";
-import "../visualisations/adjacency-matrix";
-
-const dataFile = require("../resources/static/enron-v1.csv");
+import "../src/visualizations/adjacency-matrix";
 
 window.addEventListener("load", async () => {
   // document.body.appendChild(div({}, [text("Hello World ❤️")]));
