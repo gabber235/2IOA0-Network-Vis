@@ -1,5 +1,5 @@
-import { getCorrespondants, parseData, Email, Person, Title } from "../../src/data";
-import { div, text } from "../../src/utils";
+import { getCorrespondants, parseData, Email, Person, Title } from "../data";
+import { div, text } from "../utils";
 import * as d3 from "d3";
 
 type Node = {
