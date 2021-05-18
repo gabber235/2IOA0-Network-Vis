@@ -32,7 +32,7 @@ window.addEventListener("load", async () => {
   // Creating array with person objects...
   let correspondantList = Object.values(correspondants);
 
-  // Testing the function
+  // Testing filtering
   let filteredCorrespondants = filterCorrespondants(
     ["CEO", "Trader", "Employee"],
     correspondantList
@@ -95,7 +95,7 @@ export function emailToName(email: string) {
 }
 
 // takes emails and turns them into edges for the adjacency matrix
-function edgeHash(emails: Email[], nodes: Node[]){
+function edgeHash(emails: Email[], nodes: Node[]) {
   const edges: Edge[] = [];
 
   // for each email check if it is already in the edge list
@@ -114,7 +114,7 @@ function edgeHash(emails: Email[], nodes: Node[]){
       return edge.source === source && edge.target === target;
     })
 
-    if (indexInEdges === -1){
+    if (indexInEdges === -1) {
       // new edge
       let edge: Edge = {
         source: source,
@@ -126,7 +126,7 @@ function edgeHash(emails: Email[], nodes: Node[]){
       // edge already exists
       edges[indexInEdges].value++;
     }
-    
+
   })
 
   return edges;
@@ -230,7 +230,7 @@ export function createAdjacencyMatrix(nodes: Node[], links: Edge[]) {
   let orders = {
     name: d3.range(n).sort(function (a, b) { return d3.ascending(nodes[a].name, nodes[b].name); }),
     count: d3.range(n).sort(function (a, b) { return nodes[b].count - nodes[a].count; }),
-    group: d3.range(n).sort(function (a, b) { return nodes[a].group.localeCompare(nodes[b].group);}),
+    group: d3.range(n).sort(function (a, b) { return nodes[a].group.localeCompare(nodes[b].group); }),
   };
 
   // The default sort order.
