@@ -106,6 +106,7 @@ export class AdjacencyMatrix implements Visualization {
       links.forEach(function (link) {
         // we have a directional dataset
         matrix[link.source][link.target].z += link.value;
+        // these would be for undirected-graphs
         // matrix[link.target][link.source].z += link.value;
         // matrix[link.source][link.source].z += link.value;
         // matrix[link.target][link.target].z += link.value;
@@ -113,7 +114,7 @@ export class AdjacencyMatrix implements Visualization {
         nodes[link.target].count += link.value;
       });
 
-      // Precompute the orders.
+      // Precompute the sorting orders
       let orders = {
         name: d3.range(n).sort(function (a, b) { return d3.ascending(nodes[a].name, nodes[b].name); }),
         count: d3.range(n).sort(function (a, b) { return nodes[b].count - nodes[a].count; }),
@@ -217,7 +218,7 @@ export class AdjacencyMatrix implements Visualization {
   }
 }
 
-// function to turn people objects into node usable by the matrix
+  // function to turn people objects into node usable by the matrix
 function peopleToNodes(people: Person[]) {
   const nodes: Node[] = [];
 
