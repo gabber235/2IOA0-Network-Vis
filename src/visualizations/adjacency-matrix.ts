@@ -72,7 +72,7 @@ export class AdjacencyMatrix implements Visualization {
       // @ts-expect-error
       let c = d3.scale.category10().domain(d3.range(10));
 
-      let svg = d3.select("body").append("svg")
+      let svg = d3.select("#adj-matrix").append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         .style("margin-left", -margin.left + "px")
