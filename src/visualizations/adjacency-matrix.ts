@@ -23,10 +23,6 @@ type Edge = {
 
 export class AdjacencyMatrix implements Visualization {
   async visualize(data: Observable<[DataSetDiff<Person>, DataSetDiff<Email>]>): Promise<void> {
-
-
-
-
     // document.body.appendChild(div({}, [text("Adjacency-matrix")]));
 
     // Get data
@@ -121,6 +117,8 @@ export class AdjacencyMatrix implements Visualization {
         group: d3.range(n).sort(function (a, b) { return nodes[a].group.localeCompare(nodes[b].group); }),
       };
 
+      console.log(nodes)
+
       // The default sort order.
       x.domain(orders.name);
 
@@ -171,7 +169,10 @@ export class AdjacencyMatrix implements Visualization {
           .attr("width", x.rangeBand())
           .attr("height", x.rangeBand())
           .style("fill-opacity", function (d) { return z(d.z); })
+          // coloring based on title
           .style("fill", function (d) { return nodes[d.x].group == nodes[d.y].group ? c(nodes[d.x].group) : null; })
+          // coloring based on ? (testing)
+          // .style("fill", function (d) { console.log(d); return c(d.z)})
           .on("mouseover", mouseover)
           .on("mouseout", mouseout);
       }
@@ -213,7 +214,7 @@ export class AdjacencyMatrix implements Visualization {
         order("group");
         // @ts-expect-error
         d3.select("#order").property("selectedIndex", 2).node().focus();
-      }, 5000);
+      }, 1000);
     }
   }
 }
