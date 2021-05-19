@@ -1,5 +1,8 @@
-# 2IOA0-Network-Vis
-2IOA0 Network visualisations
+# 2IOA0 | CoVis 19
+CoVis 19 is a 2IOA0 Network visualization representing data from the email chain of [Enron](https://en.wikipedia.org/wiki/Enron). It has two visualizations that give insight into the emails sent during their scandal.
+
+## Online website
+To view the CoVis 19 visualizations online, visit [covis19.nl](https://covis19.nl)
 
 
 

@@ -217,7 +217,7 @@ export class AdjacencyMatrix implements Visualization {
   }
 }
 
-  // function to turn people objects into node usable by the matrix
+// function to turn people objects into node usable by the matrix
 function peopleToNodes(people: Person[]) {
   const nodes: Node[] = [];
 
