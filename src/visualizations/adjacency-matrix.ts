@@ -174,7 +174,8 @@ export class AdjacencyMatrix implements Visualization {
           // coloring based on ? (testing)
           // .style("fill", function (d) { console.log(d); return c(d.z)})
           .on("mouseover", mouseover)
-          .on("mouseout", mouseout);
+          .on("mouseout", mouseout)
+          .on("click", clickCell);
       }
 
       function mouseover(p: Cell) {
@@ -184,6 +185,10 @@ export class AdjacencyMatrix implements Visualization {
 
       function mouseout() {
         d3.selectAll("text").classed("active", false);
+      }
+
+      function clickCell(cell: Cell) {
+        console.log("I've been clicked! my original coordinates are: "+ cell.x + ", " + cell.y);
       }
 
       d3.select("#order").on("change", function () {
