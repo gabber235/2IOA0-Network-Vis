@@ -41,7 +41,6 @@ export class AdjacencyMatrix implements Visualization {
 
     // get nodes from people list
     const nodes = peopleToNodes(filteredCorrespondants);
-    console.log(nodes, emails)
 
     // get edges
     const filteredEmail = filterEmail(filteredCorrespondants, emails);
@@ -80,6 +79,7 @@ export class AdjacencyMatrix implements Visualization {
         x: number,
         y: number,
         z: number,
+        selected?: boolean,
       }
 
       // declare variable to store the matrix values
@@ -93,7 +93,7 @@ export class AdjacencyMatrix implements Visualization {
       nodes.forEach(function (node, i) {
         node.index = i;
         node.count = 0;
-        matrix[i] = d3.range(n).map(function (j) { return { x: j, y: i, z: 0 }; });
+        matrix[i] = d3.range(n).map(function (j) { return { x: j, y: i, z: 0, selected: false}; });
       });
 
 
@@ -117,7 +117,7 @@ export class AdjacencyMatrix implements Visualization {
         group: d3.range(n).sort(function (a, b) { return nodes[a].group.localeCompare(nodes[b].group); }),
       };
 
-      console.log(nodes)
+      //   console.log(nodes)
 
       // The default sort order.
       x.domain(orders.name);
@@ -170,12 +170,20 @@ export class AdjacencyMatrix implements Visualization {
           .attr("height", x.rangeBand())
           .style("fill-opacity", function (d) { return z(d.z); })
           // coloring based on title
-          .style("fill", function (d) { return nodes[d.x].group == nodes[d.y].group ? c(nodes[d.x].group) : null; })
+          .style("fill", selectColor)
           // coloring based on ? (testing)
           // .style("fill", function (d) { console.log(d); return c(d.z)})
           .on("mouseover", mouseover)
           .on("mouseout", mouseout)
           .on("click", clickCell);
+      }
+
+      function selectColor(d: Cell) {
+        if (d.selected === true) {
+          return "#FF0000";
+        } else {
+          return nodes[d.x].group == nodes[d.y].group ? c(nodes[d.x].group) : null;
+        }
       }
 
       function mouseover(p: Cell) {
@@ -188,11 +196,15 @@ export class AdjacencyMatrix implements Visualization {
       }
 
       function clickCell(cell: Cell) {
-        console.log("I've been clicked! my original coordinates are: "+ cell.x + ", " + cell.y);
+        cell.selected = !cell.selected;
+        d3.select(document).selectAll(".cell")
+        .style("fill", selectColor);       
+
+        // console.log("I've been clicked! my original coordinates are: " + cell.x + ", " + cell.y);
       }
 
       d3.select("#order").on("change", function () {
-        clearTimeout(timeout);
+        // clearTimeout(timeout);
         // @ts-expect-error
         order(this.value);
       });
@@ -215,16 +227,16 @@ export class AdjacencyMatrix implements Visualization {
           .attr("transform", function (d, i) { return "translate(" + x(i) + ")rotate(-90)"; });
       }
 
-      let timeout = setTimeout(function () {
-        order("group");
-        // @ts-expect-error
-        d3.select("#order").property("selectedIndex", 2).node().focus();
-      }, 1000);
+      //   let timeout = setTimeout(function () {
+      //     order("group");
+      //     // @ts-expect-error
+      //     d3.select("#order").property("selectedIndex", 2).node().focus();
+      //   }, 1000);
     }
   }
 }
 
-  // function to turn people objects into node usable by the matrix
+// function to turn people objects into node usable by the matrix
 function peopleToNodes(people: Person[]) {
   const nodes: Node[] = [];
 
