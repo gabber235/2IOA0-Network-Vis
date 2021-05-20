@@ -53,7 +53,7 @@ window.addEventListener("load", async () => {
     )
 
     new AdjacencyMatrix().visualize(changes)
-    visualizeNodeLinkDiagram(document.getElementById("node-links"), changes, nodeLinkOptions)
+    visualizeNodeLinkDiagram(document.getElementById("node-links"), changes, nodeLinkOptions, 150)
 })
 
 
