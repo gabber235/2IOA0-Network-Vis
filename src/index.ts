@@ -20,7 +20,12 @@ window.addEventListener("load", async () => {
             const fileList: FileList = event.target.files;
 
             for (let i = 0; i < fileList.length; i++) {
-                const txt = await fileList.item(i).text()
+                const file = fileList.item(i);
+
+                const label = fileSelector.nextElementSibling;
+                label.innerHTML = file.name
+
+                const txt = await file.text()
                 const emails = parseData(txt)
                 const correspondants = getCorrespondants(emails)
                 sub.next([correspondants, emails])

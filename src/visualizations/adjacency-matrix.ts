@@ -75,7 +75,7 @@ export class AdjacencyMatrix implements Visualization {
       let svg = d3.select("#adj-matrix").append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
-        .style("margin-left", -margin.left + "px")
+        // .style("margin-left", -margin.left + "px")
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -218,7 +218,7 @@ export class AdjacencyMatrix implements Visualization {
   }
 }
 
-  // function to turn people objects into node usable by the matrix
+// function to turn people objects into node usable by the matrix
 function peopleToNodes(people: Person[]) {
   const nodes: Node[] = [];
 

@@ -27,16 +27,28 @@
 </head>
 
 <body>
-  <input type="file" id="file-selector" accept=".csv">
-  <p>Order:
-    <select id="order">
-      <option value="name">by Name</option>
-      <option value="count">by Frequency</option>
-      <option value="group">by Cluster</option>
-    </select>
-  </p>
-  <input type="range" min="0" max="10000" value="0" class="slider" id="range1">
-  <input type="range" min="0" max="200" value="200" class="slider" id="range2">
+
+  <div id="heading">
+    <h1>CoVis 19</h1>
+    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Facilis quisquam laudantium assumenda nihil delectus
+      minus obcaecati molestias illo quod nostrum et tempore quae tempora explicabo tenetur, incidunt alias repudiandae
+      enim!</p>
+
+    <input type="file" name="file-selector" id="file-selector" accept=".csv">
+    <label for="file-selector">Choose a dataset</label>
+
+    <div id="selectors">
+      <p>Order:
+        <select id="order">
+          <option value="name">by Name</option>
+          <option value="count">by Frequency</option>
+          <option value="group">by Cluster</option>
+        </select>
+      </p>
+      <input type="range" min="0" max="10000" value="0" class="slider" id="range1">
+      <input type="range" min="0" max="200" value="200" class="slider" id="range2">
+    </div>
+  </div>
 
   <div id="visualizations">
     <div id="adj-matrix" class="visual"></div>
