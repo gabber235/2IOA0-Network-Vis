@@ -7,12 +7,16 @@ import { map } from "rxjs/operators";
 import { DataSet, diffDataSet } from "./pipeline/dynamicDataSet";
 import { diffMapFirst, swap } from "./utils";
 
+const logo = require('../resources/static/logo.png')
+
 const visualizations = [
     new AdjacencyMatrix(),
     new NodeLink(),
 ]
 
 window.addEventListener("load", async () => {
+
+    console.log('Image:', logo.default)
 
     const baseEmailObservable = new Observable<[DataSet<Person>, Email[]]>(sub => {
         const fileSelector = document.getElementById('file-selector');
