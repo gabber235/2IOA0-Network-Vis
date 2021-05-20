@@ -80,7 +80,7 @@ export function nodeLinkOptionsToVisOptions(config: NodeLinkOptions): vis.Option
                 enabled: options.hierarchical,
                 nodeSpacing: 10,
                 treeSpacing: 10,
-            }
+            },
         },
         physics: {
             enabled: options.physics,

@@ -34,7 +34,7 @@ window.addEventListener("load", async () => {
         })
 
         const layoutCheckBox: any = document.getElementById("hierarchical")
-        sub.next({physics: layoutCheckBox.checked})
+        sub.next({hierarchical: layoutCheckBox.checked})
 
         layoutCheckBox.addEventListener("change", (e: any) => {
             sub.next({hierarchical: e.target.checked})
