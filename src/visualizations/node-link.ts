@@ -2,7 +2,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import * as vis from 'vis';
 import { Email, Correspondants, Person, Title } from '../data';
-import { DataSetDiff } from '../pipeline/dynamicDataSet';
+import { DataSet, DataSetDiff } from '../pipeline/dynamicDataSet';
 
 export type NodeLinkOptions = {
     hierarchical?: boolean,
@@ -14,23 +14,44 @@ export type NodeLinkOptions = {
  */
 export async function visualizeNodeLinkDiagram(container: HTMLElement, data: Observable<[DataSetDiff<Person>, DataSetDiff<Email>]>, options: Observable<NodeLinkOptions>): Promise<vis.Network> {
 
+    const people: DataSet<Person> = {}
+    const emails: DataSet<Email> = {}
+
     const nodes = new vis.DataSet()
     const edges = new vis.DataSet<vis.Edge>()
+
+    const prevOptions = defaultNodeLinkOptions
 
     let visualisation = new vis.Network(container, { nodes: nodes, edges: edges }, {})
 
     options.subscribe({next (options) {
-        visualisation.setOptions(nodeLinkOptionsToVisOptions(options))
+
+        const fullReset = 'hierarchical' in options && prevOptions.hierarchical !== options.hierarchical
+
+        if (fullReset) {
+            nodes.clear()
+            edges.clear()
+        }
+
+        visualisation.setOptions(nodeLinkOptionsToVisOptions(Object.assign(prevOptions, options)))
+
+        if (fullReset) {
+            nodes.add(Object.values(people).map(personToNode))
+            edges.add(Object.values(emails).map(emailToEdge))
+        }
     }})
-    data.subscribe({next ([people, emails]) {
-        nodes.add(people.insertions.map(({value}) => personToNode(value)))
-        edges.add(emails.insertions.map(({value}) => emailToEdge(value)))
+    data.subscribe({next ([personDiff, emailDiff]) {
+        nodes.add(personDiff.insertions.map(({value}) => personToNode(value)))
+        edges.add(emailDiff.insertions.map(({value}) => emailToEdge(value)))
 
-        nodes.update(people.updates.map(({value}) => personToNode(value)))
-        edges.update(emails.updates.map(({value}) => emailToEdge(value)))
+        nodes.update(personDiff.updates.map(({value}) => personToNode(value)))
+        edges.update(emailDiff.updates.map(({value}) => emailToEdge(value)))
 
-        edges.remove(emails.deletions.map(({id}) => id))
-        nodes.remove(people.deletions.map(({id}) => id))
+        edges.remove(emailDiff.deletions.map(({id}) => id))
+        nodes.remove(personDiff.deletions.map(({id}) => id))
+
+        personDiff.apply(people)
+        emailDiff.apply(emails)
     }})
 
     return visualisation

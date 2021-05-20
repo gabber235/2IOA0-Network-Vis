@@ -44,6 +44,18 @@ export class DataSetDiff<A> {
             this.deletions.concat(other.deletions),
         )
     }
+
+    apply(dataSet: DataSet<A>) {
+        for (let {id, value} of this.insertions) {
+            dataSet[id] = value
+        }
+        for (let {id, value} of this.updates) {
+            dataSet[id] = value
+        }
+        for (let {id} of this.deletions) {
+            delete dataSet[id]
+        }
+    }
 }
 
 

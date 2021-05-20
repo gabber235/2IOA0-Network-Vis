@@ -24,6 +24,24 @@ window.addEventListener("load", async () => {
         });
     })
 
+
+    const nodeLinkOptions = new Observable<NodeLinkOptions>(sub => {
+        const physicsCheckBox: any = document.getElementById("physics")
+        sub.next({physics: physicsCheckBox.checked})
+
+        physicsCheckBox.addEventListener("change", (e: any) => {
+            sub.next({physics: e.target.checked})
+        })
+
+        const layoutCheckBox: any = document.getElementById("hierarchical")
+        sub.next({physics: layoutCheckBox.checked})
+
+        layoutCheckBox.addEventListener("change", (e: any) => {
+            sub.next({hierarchical: e.target.checked})
+        })
+    })
+    
+
     const changes = baseEmailObservable.pipe(
         map(([correspondants, emails]): [DataSet<Person>, Email[]] => [correspondants, emails.slice(0, 100)]),
         map(([correspondants, emails]): [DataSet<Person>, DataSet<Email>] => [correspondants, Object.assign({}, ...emails.map(email => { return { [email.id]: email } }))]),
@@ -35,7 +53,7 @@ window.addEventListener("load", async () => {
     )
 
     new AdjacencyMatrix().visualize(changes)
-    visualizeNodeLinkDiagram(document.getElementById("node-links"), changes, of({}))
+    visualizeNodeLinkDiagram(document.getElementById("node-links"), changes, nodeLinkOptions)
 })
 
 
