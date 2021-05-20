@@ -5,51 +5,44 @@ import { Email, getCorrespondantsFromSingleEmail, Person } from "../data"
 export type DataSet<A> = { [id: number]: A }
 
 /**
- * Represents a single change/insertion/deletion in a dataset
- */
-type DataSetChange<A> = { type: "add", id: number, value: A } | { type: "update", id: number, value: A } | { type: "remove", id: number }
-
-/**
  * Represents a set of changes to a dataset
  */
 export class DataSetDiff<A> {
 
-    public readonly changes: DataSetChange<A>[]
+    public readonly insertions: {id: number, value: A}[]
+    public readonly updates: {id: number, value: A}[]
+    public readonly deletions: {id: number}[]
 
-    constructor(changes: DataSetChange<A>[] = []) {
-        this.changes = changes
+    constructor(insertions: {id: number, value: A}[] = [], updates: {id: number, value: A}[] = [], deletions: {id: number}[] = []) {
+        this.insertions = insertions
+        this.updates = updates
+        this.deletions = deletions
     }
 
-    add(id: number, value: A): DataSetChange<A> {
-        const change: DataSetChange<A> = { type: "add", id: id, value: value }
-        this.changes.push(change)
-        return change
+    add(id: number, value: A) {
+        this.insertions.push({id: id, value: value})
     }
-    update(id: number, value: A): DataSetChange<A> {
-        const change: DataSetChange<A> = { type: "update", id: id, value: value }
-        this.changes.push(change)
-        return change
+    update(id: number, value: A) {
+        this.updates.push({id: id, value: value})
     }
-    remove(id: number): DataSetChange<A> {
-        const change: DataSetChange<A> = { type: "remove", id: id }
-        this.changes.push(change)
-        return change
+    remove(id: number) {
+        this.deletions.push({id: id})
     }
 
     map<B>(f: (a: A) => B): DataSetDiff<B> {
-        return new DataSetDiff(this.changes.map(i => {
-            if (i.type === "add") {
-                return Object.assign({}, i, { value: f(i.value) })
-            } else if (i.type === "update") {
-                return Object.assign({}, i, { value: f(i.value) })
-            } else {
-                return i
-            }
-        }))
+        return new DataSetDiff(
+            this.insertions.map(({id, value}) => {return {id: id, value: f(value)}}),
+            this.updates.map(({id, value}) => {return {id: id, value: f(value)}}),
+            this.deletions.slice()
+        )
     }
 
     andThen(other: DataSetDiff<A>): DataSetDiff<A> {
-        return new DataSetDiff(this.changes.concat(other.changes))
+        return new DataSetDiff(
+            this.insertions.concat(other.insertions),
+            this.updates.concat(other.updates),
+            this.deletions.concat(other.deletions),
+        )
     }
 }
 
@@ -89,20 +82,20 @@ export function ignoreDoubles<A, X>(data: Observable<[DataSetDiff<A>, X]>): Obse
 
                 let newDiff = new DataSetDiff<A>()
 
-                for (let change of diff.changes) {
-                    if (change.type === 'add') {
-                        if (!idSet.has(change.id)) {
-                            idSet.add(change.id)
-                            newDiff.add(change.id, change.value)
-                        }
-                    } else if (change.type === 'update') {
-                        if (idSet.has(change.id)) {
-                            newDiff.update(change.id, change.value)
-                        }
-                    } else {
-                        if (idSet.has(change.id)) {
-                            newDiff.remove(change.id)
-                        }
+                for (let change of diff.insertions) {
+                    if (!idSet.has(change.id)) {
+                        idSet.add(change.id)
+                        newDiff.add(change.id, change.value)
+                    }
+                }
+                for (let change of diff.updates) {
+                    if (idSet.has(change.id)) {
+                        newDiff.update(change.id, change.value)
+                    }
+                }
+                for (let change of diff.deletions) {
+                    if (idSet.has(change.id)) {
+                        newDiff.remove(change.id)
                     }
                 }
 

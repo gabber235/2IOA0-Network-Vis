@@ -1,16 +1,12 @@
 import "vis/dist/vis.min.css"
 import { AdjacencyMatrix } from "./visualizations/adjacency-matrix";
-import { NodeLink } from "./visualizations/node-link";
+import { visualizeNodeLinkDiagram, NodeLinkOptions } from "./visualizations/node-link";
 import { Email, getCorrespondants, parseData, Person } from "./data"
-import { Observable } from "rxjs";
+import { Observable, of } from "rxjs";
 import { map } from "rxjs/operators";
-import { DataSet, diffDataSet } from "./pipeline/dynamicDataSet";
+import { DataSet, DataSetDiff, diffDataSet } from "./pipeline/dynamicDataSet";
 import { diffMapFirst, swap } from "./utils";
 
-const visualizations = [
-    new AdjacencyMatrix(),
-    new NodeLink(),
-]
 
 window.addEventListener("load", async () => {
 
@@ -34,10 +30,12 @@ window.addEventListener("load", async () => {
         diffMapFirst({} as DataSet<Person>, diffDataSet),
         map(swap),
         diffMapFirst({} as DataSet<Email>, diffDataSet),
-        map(swap)
+        map(swap),
+        
     )
 
-    visualizations.forEach(vis => vis.visualize(changes))
+    new AdjacencyMatrix().visualize(changes)
+    visualizeNodeLinkDiagram(document.getElementById("node-links"), changes, of({}))
 })
 
 
