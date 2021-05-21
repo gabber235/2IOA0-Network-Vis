@@ -4,6 +4,7 @@ import * as d3 from "d3";
 import { Observable } from 'rxjs';
 import { DataSetDiff } from '../pipeline/dynamicDataSet';
 
+
 // get used data
 const dataFile = require("../../resources/static/enron-v1.csv");
 
@@ -30,24 +31,27 @@ export class AdjacencyMatrix implements Visualization {
       let emailsDiff = event[1].changes;
 
       // this is an extremely hacky temporary solution
-      const persons: Person[] = [];
-      personDiff.forEach(p => {
-        // @ts-expect-error
-        persons.push(p.value)
-      });
       const emails: Email[] = [];
       emailsDiff.forEach(e => {
         // @ts-expect-error
         emails.push(e.value);
       });
 
+      // const persons: Person[] = [];
+      // personDiff.forEach(p => {
+      //   // @ts-expect-error
+      //   persons.push(p.value)
+      // });
+
+      // Creating array with person object
+      const correspondants = getCorrespondants(emails); //dictionary with persons
+      let persons = Object.values(correspondants);
+      
+
       // // Get data
       // let file = await fetch(dataFile.default);
       // let emails = parseData(await file.text());
-      // const correspondants = getCorrespondants(emails); //dictionary with persons
 
-      // // Creating array with person objects...
-      // let correspondantList = Object.values(correspondants);
 
       // // Testing filtering
       // let filteredCorrespondants = filterCorrespondants(
@@ -339,7 +343,7 @@ function edgeHash(emails: Email[], nodes: Node[]) {
 }
 
 // Returns a filtered array with the persons who have one of the jobtitles that is given as an array (jobTitleList) in the input.
-export function filterCorrespondants(
+function filterCorrespondants(
   jobTitleList: Title[],
   correspondants: Person[]
 ) {
@@ -355,9 +359,8 @@ export function filterCorrespondants(
   return filtered;
 }
 
-
 // Returns filtered email array based on correspondant list and emails
-export function filterEmail(correspondants: Person[], emails: Email[]) {
+function filterEmail(correspondants: Person[], emails: Email[]) {
   const filtered: Email[] = [];
 
   // for each email check if the sender and receiver are both in the correspondants
