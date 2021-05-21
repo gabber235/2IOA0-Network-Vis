@@ -79,7 +79,7 @@ export class AdjacencyMatrix implements Visualization {
         top: 150,
         right: 0,
         bottom: 10,
-        left: 150
+        left: 0
       };
       let width = 750;
       let height = 750;
