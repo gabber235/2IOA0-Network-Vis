@@ -35,23 +35,23 @@ window.addEventListener("load", async () => {
 
     const nodeLinkOptions = new Observable<NodeLinkOptions>(sub => {
         const physicsCheckBox: any = document.getElementById("physics")
-        sub.next({physics: physicsCheckBox.checked})
+        sub.next({ physics: physicsCheckBox.checked })
 
         physicsCheckBox.addEventListener("change", (e: any) => {
-            sub.next({physics: e.target.checked})
+            sub.next({ physics: e.target.checked })
         })
 
         const layoutCheckBox: any = document.getElementById("hierarchical")
-        sub.next({hierarchical: layoutCheckBox.checked})
+        sub.next({ hierarchical: layoutCheckBox.checked })
 
         layoutCheckBox.addEventListener("change", (e: any) => {
-            sub.next({hierarchical: e.target.checked})
+            sub.next({ hierarchical: e.target.checked })
         })
     })
-    
+
 
     const changes = baseEmailObservable.pipe(
-        map((emails): [Email[], DataSet<Person>] => [emails.slice(0,100), getCorrespondants(emails)]),
+        map((emails): [Email[], DataSet<Person>] => [emails.slice(0, 100), getCorrespondants(emails)]),
         map(([emails, allPeople]): [DataSet<Email>, DataSet<Person>] => [arrayToDataSet(emails, email => email.id), allPeople]),
         diffMapFirst({} as DataSet<Email>, diffDataSet),
         map(swap),
