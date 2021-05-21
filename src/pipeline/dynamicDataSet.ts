@@ -29,11 +29,11 @@ export class DataSetDiff<A> {
         this.deletions.push({id: id})
     }
 
-    map<B>(f: (a: A) => B): DataSetDiff<B> {
+    map<B>(f: (a: A) => B, idMap: (id: number) => number): DataSetDiff<B> {
         return new DataSetDiff(
-            this.insertions.map(({id, value}) => {return {id: id, value: f(value)}}),
-            this.updates.map(({id, value}) => {return {id: id, value: f(value)}}),
-            this.deletions.slice()
+            this.insertions.map(({id, value}) => {return {id: idMap(id), value: f(value)}}),
+            this.updates.map(({id, value}) => {return {id: idMap(id), value: f(value)}}),
+            this.deletions.map(({id}) => {return {id: idMap(id)}})
         )
     }
 
@@ -121,10 +121,18 @@ export function ignoreDoubles<A, X>(data: Observable<[DataSetDiff<A>, X]>): Obse
  * Takes a dynamic dataset of emails and adds to it a dynamic dataset of the relevant correspondants
  */
 export function getDynamicCorrespondants<X>(emails: Observable<[DataSetDiff<Email>, X]>): Observable<[DataSetDiff<Person>, DataSetDiff<Email>, X]> {
+
+    let emailsSet: DataSet<Email> = {}
+
     return emails.pipe(
         map(([emailDiff, x]): [DataSetDiff<Person>, [DataSetDiff<Email>, X]] => {
-            let senderDiff = emailDiff.map(email => getCorrespondantsFromSingleEmail(email)[0])
-            let recieverDiff = emailDiff.map(email => getCorrespondantsFromSingleEmail(email)[1])
+
+            for (let {id, value} of emailDiff.insertions) {
+                emailsSet[id] = value
+            }
+
+            let senderDiff = emailDiff.map(email => getCorrespondantsFromSingleEmail(email)[0], id => emailsSet[id].fromId)
+            let recieverDiff = emailDiff.map(email => getCorrespondantsFromSingleEmail(email)[1], id => emailsSet[id].toId)
 
             return [senderDiff.andThen(recieverDiff), [emailDiff, x]]
         }),

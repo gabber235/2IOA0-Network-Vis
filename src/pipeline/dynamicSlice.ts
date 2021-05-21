@@ -1,6 +1,9 @@
 // import { Observable } from "rxjs"
 // import { DataSetDiff } from "./dynamicDataSet"
 
+import { Observable } from "rxjs";
+import { DataSetDiff } from "./dynamicDataSet";
+
 // export function dynamicSlice<A>(array: A[], range: Observable<[number, number]>): Observable<DataSetDiff<A>> {
 
 //     function getDiff(oldIndex: number, newIndex: number): DataSetDiff<A> | undefined {
@@ -35,5 +38,3 @@
 //         })
 //     })
 // }
-
-

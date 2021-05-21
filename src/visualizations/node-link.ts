@@ -48,6 +48,7 @@ export async function visualizeNodeLinkDiagram(container: HTMLElement, data: Obs
         }
     }})
     data.subscribe({next ([personDiff, emailDiff]) {
+
         nodes.add(personDiff.insertions.map(({value}) => Object.assign({}, personToNode(value), nodeLocation(value))))
         edges.add(emailDiff.insertions.map(({value}) => emailToEdge(value)))
 
@@ -93,8 +94,8 @@ export function nodeLinkOptionsToVisOptions(config: NodeLinkOptions): vis.Option
         layout: {
             hierarchical: {
                 enabled: options.hierarchical,
-                nodeSpacing: 10,
-                treeSpacing: 10,
+                nodeSpacing: 20,
+                treeSpacing: 20,
             },
         },
         physics: {
