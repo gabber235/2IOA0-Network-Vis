@@ -27,13 +27,12 @@ export class AdjacencyMatrix implements Visualization {
     // document.body.appendChild(div({}, [text("Adjacency-matrix")]));
 
     data.subscribe(event => {
-      let personDiff = event[0].changes;
-      let emailsDiff = event[1].changes;
+      let personDiff = event[0].insertions;
+      let emailsDiff = event[1].insertions;
 
       // this is an extremely hacky temporary solution
       const emails: Email[] = [];
       emailsDiff.forEach(e => {
-        // @ts-expect-error
         emails.push(e.value);
       });
 
