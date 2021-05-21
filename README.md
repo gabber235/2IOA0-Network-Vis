@@ -4,7 +4,7 @@ CoVis 19 is a 2IOA0 Network visualization representing data from the email chain
 ## Online website
 To view the CoVis 19 visualizations online, visit [covis19.nl](https://covis19.nl)
 
-
+![Site view](readme/site.png)
 
 # Getting started
 
