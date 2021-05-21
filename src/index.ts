@@ -3,7 +3,7 @@ import { AdjacencyMatrix } from "./visualizations/adjacency-matrix";
 import { visualizeNodeLinkDiagram, NodeLinkOptions } from "./visualizations/node-link";
 import { Email, getCorrespondants, parseData, Person } from "./data"
 import { Observable, of } from "rxjs";
-import { map } from "rxjs/operators";
+import { map, share } from "rxjs/operators";
 import { DataSet, DataSetDiff, diffDataSet, getDynamicCorrespondants } from "./pipeline/dynamicDataSet";
 import { diffMapFirst, swap } from "./utils";
 
@@ -48,7 +48,7 @@ window.addEventListener("load", async () => {
             sub.next({hierarchical: e.target.checked})
         })
     })
-    
+
 
     const changes = baseEmailObservable.pipe(
         map((emails): [Email[], DataSet<Person>] => [emails.slice(0,100), getCorrespondants(emails)]),
@@ -56,6 +56,7 @@ window.addEventListener("load", async () => {
         diffMapFirst({} as DataSet<Email>, diffDataSet),
         map(swap),
         diffMapFirst({} as DataSet<Person>, diffDataSet),
+        share()
     )
 
     const changesWithFewerNodes = changes.pipe(

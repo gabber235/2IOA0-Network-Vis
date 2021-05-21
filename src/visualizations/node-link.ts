@@ -49,6 +49,8 @@ export async function visualizeNodeLinkDiagram(container: HTMLElement, data: Obs
     }})
     data.subscribe({next ([personDiff, emailDiff]) {
 
+        // console.log(emailDiff)
+
         nodes.add(personDiff.insertions.map(({value}) => Object.assign({}, personToNode(value), nodeLocation(value))))
         edges.add(emailDiff.insertions.map(({value}) => emailToEdge(value)))
 

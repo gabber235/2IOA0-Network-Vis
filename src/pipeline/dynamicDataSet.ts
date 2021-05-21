@@ -130,7 +130,9 @@ export function getDynamicCorrespondants<X>(emails: Observable<[DataSetDiff<Emai
             for (let {id, value} of emailDiff.insertions) {
                 emailsSet[id] = value
             }
-
+            for (let {id, value} of emailDiff.updates) {
+                emailsSet[id] = value
+            }
             let senderDiff = emailDiff.map(email => getCorrespondantsFromSingleEmail(email)[0], id => emailsSet[id].fromId)
             let recieverDiff = emailDiff.map(email => getCorrespondantsFromSingleEmail(email)[1], id => emailsSet[id].toId)
 
