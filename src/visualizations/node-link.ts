@@ -1,49 +1,118 @@
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import * as vis from 'vis';
-import { Email, Correspondants, Person } from '../data';
-import { DataSetDiff } from '../pipeline/dynamicDataSet';
-import { Visualization } from './visualization'
+import { Email, Correspondants, Person, Title } from '../data';
+import { DataSet, DataSetDiff } from '../pipeline/dynamicDataSet';
 
-export class NodeLink implements Visualization {
-    async visualize(data: Observable<[DataSetDiff<Person>, DataSetDiff<Email>]>): Promise<void> {
+export type NodeLinkOptions = {
+    hierarchical?: boolean,
+    physics?: boolean
+}
 
-        const nodes = new vis.DataSet()
-        const edges = new vis.DataSet<vis.Edge>()
+const nodeSize = 10
 
-        // PROBLEM: This won't always work cus simultaneity
-        bindVisDataSet(nodes, data.pipe(map(i => i[0].map(personToNode))))
-        bindVisDataSet(edges, data.pipe(map(i => i[1].map(emailToEdge))))
+/**
+ * Create a new vis.Network instance and bind it to 'container'
+ */
+export async function visualizeNodeLinkDiagram(container: HTMLElement, data: Observable<[DataSetDiff<Person>, DataSetDiff<Email>]>, options: Observable<NodeLinkOptions>, maxNodes: number): Promise<void> {
 
-        const config = {
-            nodes: {
-                shape: 'dot',
-                size: 20,
-            },
-            edges: {
-                arrows: "to"
-            }
+    const people: DataSet<Person> = {}
+    const emails: DataSet<Email> = {}
+
+    let nodeCount = 0
+
+    const circleLayoutRadius = maxNodes * (nodeSize * 2 + 2) / Math.PI / 2
+
+    const nodes = new vis.DataSet()
+    const edges = new vis.DataSet<vis.Edge>()
+
+    const prevOptions = defaultNodeLinkOptions
+
+    let visualisation = new vis.Network(container, { nodes: nodes, edges: edges }, {})
+
+
+    options.subscribe({next (options) {
+
+        const fullReset = 'hierarchical' in options && prevOptions.hierarchical !== options.hierarchical
+
+        if (fullReset) {
+            nodes.clear()
+            edges.clear()
         }
 
-        new vis.Network(document.getElementById("node-links"), { nodes: nodes, edges: edges }, config)
+        visualisation.setOptions(nodeLinkOptionsToVisOptions(Object.assign(prevOptions, options)))
+
+        if (fullReset) {
+            nodes.add(Object.values(people).map(person => Object.assign({}, personToNode(person), nodeLocation(person))))
+            edges.add(Object.values(emails).map(emailToEdge))
+        }
+    }})
+    data.subscribe({next ([personDiff, emailDiff]) {
+
+        nodes.add(personDiff.insertions.map(({value}) => Object.assign({}, personToNode(value), nodeLocation(value))))
+        edges.add(emailDiff.insertions.map(({value}) => emailToEdge(value)))
+
+        nodes.update(personDiff.updates.map(({value}) => personToNode(value)))
+        edges.update(emailDiff.updates.map(({value}) => emailToEdge(value)))
+
+        edges.remove(emailDiff.deletions.map(({id}) => id))
+        nodes.remove(personDiff.deletions.map(({id}) => id))
+
+        personDiff.apply(people)
+        emailDiff.apply(emails)
+
+        nodeCount += personDiff.insertions.length
+        nodeCount -= personDiff.deletions.length
+    }})
+
+    function nodeLocation(person: Person): {x:number,y:number} {
+        return {
+            x: circleLayoutRadius * Math.cos(2 * Math.PI * person.id / maxNodes),
+            y: circleLayoutRadius * Math.sin(2 * Math.PI * person.id / maxNodes),
+        }
     }
 }
 
-export function bindVisDataSet<A extends vis.DataItem | vis.Edge | vis.Node | vis.DataGroup>(dataset: vis.DataSet<A>, dynamicData: Observable<DataSetDiff<A>>) {
-    dynamicData.subscribe({
-        next(diff) {
-            dataset.add(diff.changes.filter(i => i.type === 'add').map((i: any) => i.value))
-            dataset.update(diff.changes.filter(i => i.type === 'update').map((i: any) => i.value))
-            dataset.remove(diff.changes.filter(i => i.type === 'remove').map(i => i.id))
+
+const defaultNodeLinkOptions: NodeLinkOptions = {
+    physics: true,
+    hierarchical: false
+}
+
+export function nodeLinkOptionsToVisOptions(config: NodeLinkOptions): vis.Options {
+
+    const options = Object.assign({}, defaultNodeLinkOptions, config)
+
+    return {
+        nodes: {
+            shape: 'dot',
+            size: nodeSize,
+        },
+        edges: {
+            arrows: "to"
+        },
+        layout: {
+            hierarchical: {
+                enabled: options.hierarchical,
+                nodeSpacing: 20,
+                treeSpacing: 20,
+            },
+        },
+        physics: {
+            enabled: options.physics,
+            barnesHut: {
+                centralGravity: 1
+            }
         }
-    })
+    }
 }
 
 function personToNode(p: Person): vis.Node {
     return {
         id: p.id,
-        title: p.emailAdress,
-        group: p.title
+        title: `${p.emailAdress}, ${p.title}`,
+        group: p.title,
+        level: titleRanks[p.title],
     }
 }
 function emailToEdge(e: Email): vis.Edge {
@@ -53,4 +122,18 @@ function emailToEdge(e: Email): vis.Edge {
         to: e.toId,
         title: "" + e.sentiment
     }
+}
+
+
+const titleRanks = {
+    "CEO": 0,
+    "President": 1,
+    "Vice President": 2,
+    "Managing Director": 3,
+    "Director": 4,
+    "Manager": 5,
+    "Trader": 6,
+    "Employee": 7,
+    "In House Lawyer": 8,
+    "Unknown": 9,
 }
