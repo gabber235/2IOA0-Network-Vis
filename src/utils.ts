@@ -1,3 +1,4 @@
+import { Observable } from "rxjs"
 
 
 
@@ -113,4 +114,51 @@ function swapRemove<T>(list: T[], index: number): T {
     list.pop()
 
     return x
+}
+
+
+
+
+
+
+/**
+ * Returns the first index at which 'target' should be inserted into the sorted array represented by 'items' such that it remains sorted.
+ */
+export function binarySearch<A>(items: (index: number) => A, target: A, begin: number, end: number, cmp: (a: A, b: A) => number): number {
+    if (begin === end) return begin
+
+    const index = begin + Math.floor((end - begin) / 2)
+    const item = items(index)
+
+    if (cmp(item, target) < 0) return binarySearch(items, target, index + 1, end, cmp)
+    else return binarySearch(items, target, begin, index, cmp)
+}
+
+
+/**
+ * Swaps the members of a tuple
+ */
+export function swap<X, Y>([x, y]: [X, Y]): [Y, X] {
+    return [y, x]
+}
+
+
+
+
+/**
+ * Applies a given diff'ing function to the first item in a tuple in an observable of tuples
+ */
+export function diffMapFirst<A, B, X>(initial: A, f: (prev: A, cur: A) => B): (stream: Observable<[A, X]>) => Observable<[B, X]> {
+    return stream => {
+        let prev: A = initial
+
+        return new Observable(sub => {
+            stream.subscribe({
+                next([cur, x]) {
+                    sub.next([f(prev, cur), x])
+                    prev = cur
+                }
+            })
+        })
+    }
 }

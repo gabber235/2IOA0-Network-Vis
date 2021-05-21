@@ -2,15 +2,61 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta content="IE=edge" http-equiv="X-UA-Compatible">
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <link href="css/stylesheet.css" rel="stylesheet">
-    <title>2IOA0 - Network Visualization</title>
+  <meta charset="UTF-8" />
+  <meta content="IE=edge" http-equiv="X-UA-Compatible" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <link href="css/stylesheet.css" rel="stylesheet" />
+  <title>2IOA0 - Network Visualization</title>
 </head>
 
 <body>
 
+  <div id="heading">
+    <div id="header">
+      <img src="./resources/static/logo.png" alt="CoVis 19 Logo">
+      <h1>CoVis 19</h1>
+    </div>
+    <p>Visualizing data is a challenging task due to multiple reasons:  One reason is selecting the most fitting visualizationtechnique. 
+        Data can be presented in different ways and choosing the right visualization technique is vital for understanding whichinformation the data is representing. 
+        As technology is on the rise these challenges become more important to be tackled. 
+        Using thewrong visualization techniques can result to people misunderstanding the data and as as result come to a wrong conclusion. 
+        Thispaper describes two visualization techniques, the node-link diagram and the adjacency matrix, and how these visualizations can bemade dynamic. 
+        Dynamic visualizations are relevant since data is often collected over a period of time. Dynamic visualizations help todiscover trends and changes in the data. 
+        Different methods can be used to make a visualization dynamic, such as animation or the small multiples method. 
+        Furthermore, this report describes different ways of interacting with the visualization to make it fit to theusers needs. 
+        The methods include making use of a time slider, dragging nodes around, selecting certain data points to focus on orselecting clusters of data to be presented in the visualization</p>
+
+    <input type="file" name="file-selector" id="file-selector" accept=".csv">
+    <label for="file-selector">Choose a dataset</label>
+
+    <div id="selectors">
+      <p>Order:
+        <select id="order">
+          <option value="name">by Name</option>
+          <option value="count">by Frequency</option>
+          <option value="group">by Title</option>
+        </select>
+      </p>
+      <input type="range" min="0" max="10000" value="0" class="slider" id="range1" hidden>
+      <input type="range" min="0" max="200" value="200" class="slider" id="range2" hidden>
+      <p>
+        <label for="hierarchical">Hierarchical layout</label>
+        <input type="checkbox" id="hierarchical" name="hierarchical" checked>
+      </p>
+      <p>
+        <label for="physics">Physics</label>
+        <input type="checkbox" id="physics" name="physics" checked>
+      </p>
+    </div>
+  </div>
+
+  <div id="visualizations">
+    <div id="adj-matrix" class="visual"></div>
+    <div class="visual">
+      <div id="node-links"
+        style="position: absolute; top: 0px; right: 0px; bottom: 0px; left: 0px; width: 1000px; height: 1000px"></div>
+    </div>
+  </div>
 </body>
 
 </html>
