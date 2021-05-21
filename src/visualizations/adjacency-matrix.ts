@@ -82,8 +82,8 @@ export class AdjacencyMatrix implements Visualization {
         bottom: 10,
         left: 150
       };
-      let width = 800;
-      let height = 800;
+      let width = 750;
+      let height = 750;
 
       // @ts-expect-error
       let x = d3.scale.ordinal().rangeBands([0, width]);
@@ -162,12 +162,12 @@ export class AdjacencyMatrix implements Visualization {
       rows.append("line")
         .attr("x2", width);
 
-      rows.append("text")
-        .attr("x", -6)
-        .attr("y", x.rangeBand() / 2)
-        .attr("dy", ".32em")
-        .attr("text-anchor", "end")
-        .text(function (d, i) { return nodes[i].name; });
+      // rows.append("text")
+      //   .attr("x", -6)
+      //   .attr("y", x.rangeBand() / 2)
+      //   .attr("dy", ".32em")
+      //   .attr("text-anchor", "end")
+      //   .text(function (d, i) { return nodes[i].name; });
 
       let column = svg.selectAll(".column")
         .data(matrix)
@@ -178,12 +178,12 @@ export class AdjacencyMatrix implements Visualization {
       column.append("line")
         .attr("x1", -width);
 
-      column.append("text")
-        .attr("x", 6)
-        .attr("y", x.rangeBand() / 2)
-        .attr("dy", ".32em")
-        .attr("text-anchor", "start")
-        .text(function (d, i) { return nodes[i].name; });
+      // column.append("text")
+      //   .attr("x", 6)
+      //   .attr("y", x.rangeBand() / 2)
+      //   .attr("dy", ".32em")
+      //   .attr("text-anchor", "start")
+      //   .text(function (d, i) { return nodes[i].name; });
 
       function row(row: Cell[]) {
         let cell = d3.select(this).selectAll(".cell")
