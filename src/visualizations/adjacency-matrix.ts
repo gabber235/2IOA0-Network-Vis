@@ -4,6 +4,7 @@ import * as d3 from "d3";
 import { Observable } from 'rxjs';
 import { DataSetDiff } from '../pipeline/dynamicDataSet';
 
+
 // get used data
 const dataFile = require("../../resources/static/enron-v1.csv");
 
@@ -23,37 +24,56 @@ type Edge = {
 
 export class AdjacencyMatrix implements Visualization {
   async visualize(data: Observable<[DataSetDiff<Person>, DataSetDiff<Email>]>): Promise<void> {
-
-
-
-
     // document.body.appendChild(div({}, [text("Adjacency-matrix")]));
 
-    // Get data
-    let file = await fetch(dataFile.default);
-    let emails = parseData(await file.text());
-    const correspondants = getCorrespondants(emails); //dictionary with persons
+    data.subscribe(event => {
+      let personDiff = event[0].changes;
+      let emailsDiff = event[1].changes;
 
-    // Creating array with person objects...
-    let correspondantList = Object.values(correspondants);
+      // this is an extremely hacky temporary solution
+      const emails: Email[] = [];
+      emailsDiff.forEach(e => {
+        // @ts-expect-error
+        emails.push(e.value);
+      });
 
-    // Testing filtering
-    let filteredCorrespondants = filterCorrespondants(
-      ["CEO", "Trader", "Employee"],
-      correspondantList
-    );
+      // const persons: Person[] = [];
+      // personDiff.forEach(p => {
+      //   // @ts-expect-error
+      //   persons.push(p.value)
+      // });
 
-    // get nodes from people list
-    const nodes = peopleToNodes(filteredCorrespondants);
-    console.log(nodes, emails)
+      // Creating array with person object
+      const correspondants = getCorrespondants(emails); //dictionary with persons
+      let persons = Object.values(correspondants);
+      
 
-    // get edges
-    const filteredEmail = filterEmail(filteredCorrespondants, emails);
-    const links = edgeHash(filteredEmail, nodes);
+      // // Get data
+      // let file = await fetch(dataFile.default);
+      // let emails = parseData(await file.text());
 
-    // call adjacency matrix  
-    // createAdjacencyMatrix(filteredCorrespondants, emailsToEdges(emails), svg);
-    createAdjacencyMatrix(nodes, links);
+
+      // // Testing filtering
+      // let filteredCorrespondants = filterCorrespondants(
+      //   ["CEO", "Trader", "Employee"],
+      //   correspondantList
+      // );
+
+      // // get nodes from people list
+      // const nodes = peopleToNodes(filteredCorrespondants);
+      const nodes = peopleToNodes(persons);
+
+      // // get edges
+      // const filteredEmail = filterEmail(filteredCorrespondants, emails);
+      // const links = edgeHash(filteredEmail, nodes);
+      const links = edgeHash(emails, nodes);
+
+      // call adjacency matrix  
+      // createAdjacencyMatrix(filteredCorrespondants, emailsToEdges(emails), svg);
+      createAdjacencyMatrix(nodes, links);
+    });
+
+
 
     function createAdjacencyMatrix(nodes: Node[], links: Edge[]) {
       let margin = {
@@ -62,8 +82,8 @@ export class AdjacencyMatrix implements Visualization {
         bottom: 10,
         left: 150
       };
-      let width = 800;
-      let height = 800;
+      let width = 750;
+      let height = 750;
 
       // @ts-expect-error
       let x = d3.scale.ordinal().rangeBands([0, width]);
@@ -84,6 +104,7 @@ export class AdjacencyMatrix implements Visualization {
         x: number,
         y: number,
         z: number,
+        selected?: boolean,
       }
 
       // declare variable to store the matrix values
@@ -97,7 +118,7 @@ export class AdjacencyMatrix implements Visualization {
       nodes.forEach(function (node, i) {
         node.index = i;
         node.count = 0;
-        matrix[i] = d3.range(n).map(function (j) { return { x: j, y: i, z: 0 }; });
+        matrix[i] = d3.range(n).map(function (j) { return { x: j, y: i, z: 0, selected: false }; });
       });
 
 
@@ -121,6 +142,8 @@ export class AdjacencyMatrix implements Visualization {
         group: d3.range(n).sort(function (a, b) { return nodes[a].group.localeCompare(nodes[b].group); }),
       };
 
+      //   console.log(nodes)
+
       // The default sort order.
       x.domain(orders.name);
 
@@ -139,12 +162,12 @@ export class AdjacencyMatrix implements Visualization {
       rows.append("line")
         .attr("x2", width);
 
-      rows.append("text")
-        .attr("x", -6)
-        .attr("y", x.rangeBand() / 2)
-        .attr("dy", ".32em")
-        .attr("text-anchor", "end")
-        .text(function (d, i) { return nodes[i].name; });
+      // rows.append("text")
+      //   .attr("x", -6)
+      //   .attr("y", x.rangeBand() / 2)
+      //   .attr("dy", ".32em")
+      //   .attr("text-anchor", "end")
+      //   .text(function (d, i) { return nodes[i].name; });
 
       let column = svg.selectAll(".column")
         .data(matrix)
@@ -155,12 +178,12 @@ export class AdjacencyMatrix implements Visualization {
       column.append("line")
         .attr("x1", -width);
 
-      column.append("text")
-        .attr("x", 6)
-        .attr("y", x.rangeBand() / 2)
-        .attr("dy", ".32em")
-        .attr("text-anchor", "start")
-        .text(function (d, i) { return nodes[i].name; });
+      // column.append("text")
+      //   .attr("x", 6)
+      //   .attr("y", x.rangeBand() / 2)
+      //   .attr("dy", ".32em")
+      //   .attr("text-anchor", "start")
+      //   .text(function (d, i) { return nodes[i].name; });
 
       function row(row: Cell[]) {
         let cell = d3.select(this).selectAll(".cell")
@@ -171,9 +194,21 @@ export class AdjacencyMatrix implements Visualization {
           .attr("width", x.rangeBand())
           .attr("height", x.rangeBand())
           .style("fill-opacity", function (d) { return z(d.z); })
-          .style("fill", function (d) { return nodes[d.x].group == nodes[d.y].group ? c(nodes[d.x].group) : null; })
+          // coloring based on title
+          .style("fill", selectColor)
+          // coloring based on ? (testing)
+          // .style("fill", function (d) { console.log(d); return c(d.z)})
           .on("mouseover", mouseover)
-          .on("mouseout", mouseout);
+          .on("mouseout", mouseout)
+          .on("click", clickCell);
+      }
+
+      function selectColor(d: Cell) {
+        if (d.selected === true) {
+          return "#FF0000";
+        } else {
+          return nodes[d.x].group == nodes[d.y].group ? c(nodes[d.x].group) : null;
+        }
       }
 
       function mouseover(p: Cell) {
@@ -185,8 +220,16 @@ export class AdjacencyMatrix implements Visualization {
         d3.selectAll("text").classed("active", false);
       }
 
+      function clickCell(cell: Cell) {
+        cell.selected = !cell.selected;
+        d3.select(document).selectAll(".cell")
+          .style("fill", selectColor);
+
+        // console.log("I've been clicked! my original coordinates are: " + cell.x + ", " + cell.y);
+      }
+
       d3.select("#order").on("change", function () {
-        clearTimeout(timeout);
+        // clearTimeout(timeout);
         // @ts-expect-error
         order(this.value);
       });
@@ -209,11 +252,11 @@ export class AdjacencyMatrix implements Visualization {
           .attr("transform", function (d, i) { return "translate(" + x(i) + ")rotate(-90)"; });
       }
 
-      let timeout = setTimeout(function () {
-        order("group");
-        // @ts-expect-error
-        d3.select("#order").property("selectedIndex", 2).node().focus();
-      }, 5000);
+      //   let timeout = setTimeout(function () {
+      //     order("group");
+      //     // @ts-expect-error
+      //     d3.select("#order").property("selectedIndex", 2).node().focus();
+      //   }, 1000);
     }
   }
 }
@@ -300,7 +343,7 @@ function edgeHash(emails: Email[], nodes: Node[]) {
 }
 
 // Returns a filtered array with the persons who have one of the jobtitles that is given as an array (jobTitleList) in the input.
-export function filterCorrespondants(
+function filterCorrespondants(
   jobTitleList: Title[],
   correspondants: Person[]
 ) {
@@ -316,9 +359,8 @@ export function filterCorrespondants(
   return filtered;
 }
 
-
 // Returns filtered email array based on correspondant list and emails
-export function filterEmail(correspondants: Person[], emails: Email[]) {
+function filterEmail(correspondants: Person[], emails: Email[]) {
   const filtered: Email[] = [];
 
   // for each email check if the sender and receiver are both in the correspondants
@@ -333,5 +375,3 @@ export function filterEmail(correspondants: Person[], emails: Email[]) {
 
   return filtered;
 }
-
-
