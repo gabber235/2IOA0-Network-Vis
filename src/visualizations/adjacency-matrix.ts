@@ -25,30 +25,51 @@ export class AdjacencyMatrix implements Visualization {
   async visualize(data: Observable<[DataSetDiff<Person>, DataSetDiff<Email>]>): Promise<void> {
     // document.body.appendChild(div({}, [text("Adjacency-matrix")]));
 
-    // Get data
-    let file = await fetch(dataFile.default);
-    let emails = parseData(await file.text());
-    const correspondants = getCorrespondants(emails); //dictionary with persons
+    data.subscribe(event => {
+      let personDiff = event[0].changes;
+      let emailsDiff = event[1].changes;
 
-    // Creating array with person objects...
-    let correspondantList = Object.values(correspondants);
+      // this is an extremely hacky temporary solution
+      const persons: Person[] = [];
+      personDiff.forEach(p => {
+        // @ts-expect-error
+        persons.push(p.value)
+      });
+      const emails: Email[] = [];
+      emailsDiff.forEach(e => {
+        // @ts-expect-error
+        emails.push(e.value);
+      });
 
-    // Testing filtering
-    let filteredCorrespondants = filterCorrespondants(
-      ["CEO", "Trader", "Employee"],
-      correspondantList
-    );
+      // // Get data
+      // let file = await fetch(dataFile.default);
+      // let emails = parseData(await file.text());
+      // const correspondants = getCorrespondants(emails); //dictionary with persons
 
-    // get nodes from people list
-    const nodes = peopleToNodes(filteredCorrespondants);
+      // // Creating array with person objects...
+      // let correspondantList = Object.values(correspondants);
 
-    // get edges
-    const filteredEmail = filterEmail(filteredCorrespondants, emails);
-    const links = edgeHash(filteredEmail, nodes);
+      // // Testing filtering
+      // let filteredCorrespondants = filterCorrespondants(
+      //   ["CEO", "Trader", "Employee"],
+      //   correspondantList
+      // );
 
-    // call adjacency matrix  
-    // createAdjacencyMatrix(filteredCorrespondants, emailsToEdges(emails), svg);
-    createAdjacencyMatrix(nodes, links);
+      // // get nodes from people list
+      // const nodes = peopleToNodes(filteredCorrespondants);
+      const nodes = peopleToNodes(persons);
+
+      // // get edges
+      // const filteredEmail = filterEmail(filteredCorrespondants, emails);
+      // const links = edgeHash(filteredEmail, nodes);
+      const links = edgeHash(emails, nodes);
+
+      // call adjacency matrix  
+      // createAdjacencyMatrix(filteredCorrespondants, emailsToEdges(emails), svg);
+      createAdjacencyMatrix(nodes, links);
+    });
+
+
 
     function createAdjacencyMatrix(nodes: Node[], links: Edge[]) {
       let margin = {
@@ -93,7 +114,7 @@ export class AdjacencyMatrix implements Visualization {
       nodes.forEach(function (node, i) {
         node.index = i;
         node.count = 0;
-        matrix[i] = d3.range(n).map(function (j) { return { x: j, y: i, z: 0, selected: false}; });
+        matrix[i] = d3.range(n).map(function (j) { return { x: j, y: i, z: 0, selected: false }; });
       });
 
 
@@ -198,7 +219,7 @@ export class AdjacencyMatrix implements Visualization {
       function clickCell(cell: Cell) {
         cell.selected = !cell.selected;
         d3.select(document).selectAll(".cell")
-        .style("fill", selectColor);       
+          .style("fill", selectColor);
 
         // console.log("I've been clicked! my original coordinates are: " + cell.x + ", " + cell.y);
       }
@@ -351,5 +372,3 @@ export function filterEmail(correspondants: Person[], emails: Email[]) {
 
   return filtered;
 }
-
-
