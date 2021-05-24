@@ -203,8 +203,8 @@ export class AdjacencyMatrix implements Visualization {
             return tooltip
             // this works but doesn't handle scaling
             // @ts-expect-error
-            .style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 500) + "px")
-            .text(d.from.name + " " + d.to.name);
+            .style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 525) + "px")
+            .html(tooltipHTML(d));
           })
           .on("mouseout", () => {
             return tooltip.style("visibility", "hidden");
@@ -224,7 +224,26 @@ export class AdjacencyMatrix implements Visualization {
         .style("border-radius", "3px")
         .style("padding", "4px")
         .style("font-size", "12px")
+        .style("left", "10px").style("top", "10px")
+        .style("text-align", "left")
 
+
+      function tooltipHTML(c: Cell): string{
+        let html = "";
+        const sender = c.from;
+        const receiver = c.to;
+
+        // sender
+        html += "From: <br>" + sender.name + ", " + sender.group + "<br>";
+
+        // receiver
+        html += "To: <br>" + receiver.name + ", " + receiver.group + "<br>";
+
+        // num of emails
+        html += "n.o. emails: " + c.z;
+
+        return html;
+      }
 
       function selectColor(d: Cell) {
         if (d.selected === true) {
