@@ -334,7 +334,8 @@ export function emailToName(email: string) {
     }
   });
 
-  return name;
+  // remove last space and return
+  return name.slice(0, -1);
 }
 
 // takes emails and turns them into edges for the adjacency matrix
