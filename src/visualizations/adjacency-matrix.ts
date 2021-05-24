@@ -193,17 +193,15 @@ export class AdjacencyMatrix implements Visualization {
           .attr("width", x.rangeBand())
           .attr("height", x.rangeBand())
           .style("fill-opacity", function (d) { return z(d.z); })
-          // coloring based on title
           .style("fill", selectColor)
-          // coloring based on ? (testing)
-          // .style("fill", function (d) { console.log(d); return c(d.z)})
           .on("mouseover", () => {
             return tooltip.style("visibility", "visible");
           })
-          .on("mousemove", () => {
+          .on("mousemove", (d) => {
             return tooltip
-              .style("top", d3.select(this).attr("cy") + "px")
-              .style("left", d3.select(this).attr("cx") + "px");
+            // this works but doesn't handle scaling
+            // @ts-expect-error
+            .style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 400) + "px");	
           })
           .on("mouseout", () => {
             return tooltip.style("visibility", "hidden");
@@ -214,7 +212,7 @@ export class AdjacencyMatrix implements Visualization {
       // create tooltip
       const tooltip = d3.select("#adj-matrix")
         .append("div")
-        .style("position", "relative")
+        .style("position", "absolute")
         .style("visibility", "hidden")
         .text("I'm a tooltip!");
 
