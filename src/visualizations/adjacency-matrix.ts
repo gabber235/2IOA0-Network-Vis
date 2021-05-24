@@ -203,7 +203,7 @@ export class AdjacencyMatrix implements Visualization {
             return tooltip
             // this works but doesn't handle scaling
             // @ts-expect-error
-            .style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 475) + "px")
+            .style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 500) + "px")
             .text(d.from.name + " " + d.to.name);
           })
           .on("mouseout", () => {
