@@ -45,7 +45,7 @@ export class AdjacencyMatrix implements Visualization {
       // Creating array with person object
       const correspondants = getCorrespondants(emails); //dictionary with persons
       let persons = Object.values(correspondants);
-      
+
 
       // // Get data
       // let file = await fetch(dataFile.default);
@@ -197,10 +197,27 @@ export class AdjacencyMatrix implements Visualization {
           .style("fill", selectColor)
           // coloring based on ? (testing)
           // .style("fill", function (d) { console.log(d); return c(d.z)})
-          .on("mouseover", mouseover)
-          .on("mouseout", mouseout)
+          .on("mouseover", () => {
+            return tooltip.style("visibility", "visible");
+          })
+          .on("mousemove", () => {
+            return tooltip
+              .style("top", d3.select(this).attr("cy") + "px")
+              .style("left", d3.select(this).attr("cx") + "px");
+          })
+          .on("mouseout", () => {
+            return tooltip.style("visibility", "hidden");
+          })
           .on("click", clickCell);
       }
+
+      // create tooltip
+      const tooltip = d3.select("#adj-matrix")
+        .append("div")
+        .style("position", "relative")
+        .style("visibility", "hidden")
+        .text("I'm a tooltip!");
+
 
       function selectColor(d: Cell) {
         if (d.selected === true) {
@@ -208,15 +225,6 @@ export class AdjacencyMatrix implements Visualization {
         } else {
           return nodes[d.x].group == nodes[d.y].group ? c(nodes[d.x].group) : null;
         }
-      }
-
-      function mouseover(p: Cell) {
-        d3.selectAll(".row text").classed("active", function (d, i) { return i == p.y; });
-        d3.selectAll(".column text").classed("active", function (d, i) { return i == p.x; });
-      }
-
-      function mouseout() {
-        d3.selectAll("text").classed("active", false);
       }
 
       function clickCell(cell: Cell) {
