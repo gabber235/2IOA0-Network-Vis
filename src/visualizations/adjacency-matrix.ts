@@ -104,6 +104,8 @@ export class AdjacencyMatrix implements Visualization {
         y: number,
         z: number,
         selected?: boolean,
+        from: Node,
+        to: Node,
       }
 
       // declare variable to store the matrix values
@@ -114,10 +116,10 @@ export class AdjacencyMatrix implements Visualization {
 
 
       // Compute index per node.
-      nodes.forEach(function (node, i) {
+      nodes.forEach(function (node: Node, i) {
         node.index = i;
         node.count = 0;
-        matrix[i] = d3.range(n).map(function (j) { return { x: j, y: i, z: 0, selected: false }; });
+        matrix[i] = d3.range(n).map(function (j) { return { x: j, y: i, z: 0, selected: false, from: node, to: nodes[j] }; });
       });
 
 
@@ -197,12 +199,12 @@ export class AdjacencyMatrix implements Visualization {
           .on("mouseover", () => {
             return tooltip.style("visibility", "visible");
           })
-          .on("mousemove", (d) => {
+          .on("mousemove", (d: Cell) => {
             return tooltip
             // this works but doesn't handle scaling
             // @ts-expect-error
             .style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 475) + "px")
-            .text(d.x);
+            .text(d.from.name + " " + d.to.name);
           })
           .on("mouseout", () => {
             return tooltip.style("visibility", "hidden");
@@ -220,7 +222,8 @@ export class AdjacencyMatrix implements Visualization {
         .style("border", "solid")
         .style("border-width", "1px")
         .style("border-radius", "3px")
-        .style("padding", "5px")
+        .style("padding", "4px")
+        .style("font-size", "12px")
 
 
       function selectColor(d: Cell) {
