@@ -201,7 +201,8 @@ export class AdjacencyMatrix implements Visualization {
             return tooltip
             // this works but doesn't handle scaling
             // @ts-expect-error
-            .style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 400) + "px");	
+            .style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 475) + "px")
+            .text(d.x);
           })
           .on("mouseout", () => {
             return tooltip.style("visibility", "hidden");
@@ -214,7 +215,12 @@ export class AdjacencyMatrix implements Visualization {
         .append("div")
         .style("position", "absolute")
         .style("visibility", "hidden")
-        .text("I'm a tooltip!");
+        .attr("class", "tooltip")
+        .style("background-color", "white")
+        .style("border", "solid")
+        .style("border-width", "1px")
+        .style("border-radius", "3px")
+        .style("padding", "5px")
 
 
       function selectColor(d: Cell) {
