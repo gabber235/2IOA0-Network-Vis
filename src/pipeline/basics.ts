@@ -41,6 +41,19 @@ export function fileInputObservable(elm: HTMLElement): Observable<string> {
 }
 
 /**
+ * Returns an observable of the values of a slider
+ */
+export function sliderToObservable(elm: HTMLElement): Observable<number> {
+    return new Observable(sub => {
+        sub.next((elm as any).value)
+
+        elm.addEventListener("input", (e: any) => {
+            sub.next(e.target.value)    
+        })    
+    })
+}
+
+/**
  * Returns an observable of booleans representing whether the given checkbox is checked
  */
 export function checkBoxObserable(elm: HTMLElement): Observable<boolean> {

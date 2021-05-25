@@ -7,7 +7,7 @@ import { map, share } from "rxjs/operators";
 import { DataSet, MapDiff, diffDataSet, getDynamicCorrespondants, NumberSetDiff } from "./pipeline/dynamicDataSet";
 import { arrayToObject as arrayToObject, swap } from "./utils";
 import { prettifyFileInput } from "./looks";
-import { checkBoxObserable, diffMapFirst, fileInputObservable } from "./pipeline/basics";
+import { checkBoxObserable, diffMapFirst, fileInputObservable, sliderToObservable } from "./pipeline/basics";
 
 const logo = require('../resources/static/logo.png')
 
@@ -16,6 +16,11 @@ window.addEventListener("load", async () => {
     console.log('Image:', logo.default)
 
     const fileSelector = document.getElementById('file-selector');
+
+
+    const begin = sliderToObservable(document.getElementById("range1"))
+    const end = sliderToObservable(document.getElementById("range2"))
+
 
     prettifyFileInput(fileSelector)
 
