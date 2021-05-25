@@ -19,34 +19,13 @@ window.addEventListener("load", async () => {
     const fileSelector = document.getElementById('file-selector');
 
 
-
-    const begin = new Subject<number>()
-    const end = new Subject<number>()
-
-    let beginX = 0
-    let endX = 100
-
-    sliderToObservable(document.getElementById('range1')).subscribe(n => {
-
-        if (n > beginX) {
-            end.next(n + endX)
-            begin.next(n)
-        } else {
-            begin.next(n)
-            end.next(n + endX)
-        }
-
-        beginX = n
-    })
-    sliderToObservable(document.getElementById('range2')).subscribe(n => {
-
-        end.next(beginX + n)
-
-        endX = n    
-    })
-
-    // begin.subscribe(x => console.log(`begin: ${x}`))
-    // end.subscribe(x => console.log(`end: ${x}`))
+    const range = combineLatest([
+        sliderToObservable(document.getElementById('range1')),
+        sliderToObservable(document.getElementById('range2'))
+    ]).pipe(
+        map(([i, j]): [number, number] => [i, i + j]),
+        debounceTime(10)
+    )
 
 
     prettifyFileInput(fileSelector)
@@ -61,14 +40,9 @@ window.addEventListener("load", async () => {
 
     const changes = baseEmailObservable.pipe(
         map((emails): [ConstArray<[number, Email]>, DataSet<Person>] => [{getItem: i => [emails[i].id, emails[i]], length: emails.length}, getCorrespondants(emails)]),
-        dynamicSlice(0, begin, 0, end),
-        // ignoreDoubles,
+        dynamicSlice(0, 0, range),
         map(swap),
         diffMapFirst({} as DataSet<Person>, diffDataSet),
-        // ignoreDoubles,
-        // map(([emails, allPeople]): [DataSet<Email>, DataSet<Person>] => [arrayToObject(emails, email => email.id), allPeople]),
-        // diffMapFirst({} as DataSet<Email>, diffDataSet),
-        // map(swap),
         share()
     )
 

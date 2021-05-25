@@ -1,4 +1,4 @@
-import { of, Subject } from "rxjs"
+import { Observable, of, Subject } from "rxjs"
 import { map, share } from "rxjs/operators"
 import { foldDiffFirst, observableToArray } from "../../src/pipeline/basics"
 import { MapDiff } from "../../src/pipeline/dynamicDataSet"
@@ -8,12 +8,11 @@ import { ConstArray, dynamicSlice } from "../../src/pipeline/dynamicSlice"
 describe("pipeline.dynamicSlice.dynamicSlice", () => {
     test("0", () => {
         let array = of({getItem: (index: number): [number, number] => [index,index], length: 5})
-        let begin = of()
-        let end = of()
+        let range = of()
 
         let sliced = array.pipe(
             map((x): [ConstArray<[number, number]>, null] => [x, null]),
-            dynamicSlice(0, begin, 5, end),
+            dynamicSlice(0, 5, range),
             foldDiffFirst,
             map(([a, b]) => [Object.assign({}, a), b])
         )
@@ -31,12 +30,11 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
     })
     test("1", () => {
         let array = of({getItem: (index: number): [number, number] => [index,index], length: 100})
-        let begin = of()
-        let end = of()
+        let range = of()
 
         let sliced = array.pipe(
             map((x): [ConstArray<[number, number]>, null] => [x, null]),
-            dynamicSlice(0, begin, 5, end),
+            dynamicSlice(0, 5, range),
             foldDiffFirst,
             map(([a, b]) => [Object.assign({}, a), b])
         )
@@ -54,12 +52,11 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
     })
     test("2", () => {
         let array = of({getItem: (index: number): [number, number] => [index,index], length: 100})
-        let begin = of()
-        let end = of(10)
+        let range: Observable<[number, number]> = of([0, 10])
 
         let sliced = array.pipe(
             map((x): [ConstArray<[number, number]>, null] => [x, null]),
-            dynamicSlice(0, begin, 5, end),
+            dynamicSlice(0, 5, range),
             foldDiffFirst,
             map(([a, b]) => [Object.assign({}, a), b])
         )
@@ -89,21 +86,20 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
     })
     test("3", () => {
         let array = of({getItem: (index: number): [number, number] => [index,index], length: 100})
-        let begin = new Subject<number>()
-        let end = new Subject<number>()
+        let range = new Subject<[number, number]>()
 
 
         let sliced = array.pipe(
             map((x): [ConstArray<[number, number]>, null] => [x, null]),
-            dynamicSlice(0, begin, 5, end),
+            dynamicSlice(0, 5, range),
             foldDiffFirst,
             map(([a, b]) => [Object.assign({}, a), b])
         )
 
         let arr = observableToArray(sliced)
 
-        end.next(10)
-        begin.next(5)
+        range.next([0, 10])
+        range.next([5, 10])
 
         expect(arr)
         .toEqual([
@@ -137,23 +133,22 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
     })
     test("4", () => {
         let array = of({getItem: (index: number): [number, number] => [index,index], length: 100})
-        let begin = new Subject<number>()
-        let end = new Subject<number>()
+        let range = new Subject<[number, number]>()
 
 
         let sliced = array.pipe(
             map((x): [ConstArray<[number, number]>, null] => [x, null]),
-            dynamicSlice(0, begin, 5, end),
+            dynamicSlice(0, 5, range),
             foldDiffFirst,
             map(([a, b]) => [Object.assign({}, a), b])
         )
 
         let arr = observableToArray(sliced)
 
-        end.next(10)
-        begin.next(5)
-        begin.next(-10)
-        end.next(3)
+        range.next([0, 10])
+        range.next([5, 10])
+        range.next([-10, 10])
+        range.next([-10, 3])
 
 
         expect(arr)
@@ -205,27 +200,27 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
     })
     test("5", () => {
         let array = new Subject<ConstArray<[number, number]>>()
-        let begin = new Subject<number>()
-        let end = new Subject<number>()
+        let range = new Subject<[number, number]>()
 
 
         let sliced = array.pipe(
             map((x): [ConstArray<[number, number]>, null] => [x, null]),
-            dynamicSlice(0, begin, 5, end),
+            dynamicSlice(0, 5, range),
             foldDiffFirst,
             map(([a, b]) => [Object.assign({}, a), b])
         )
 
         let arr = observableToArray(sliced)
 
+        range.next([0, 5])
         array.next({getItem: i => [i, i], length: 100})
-        end.next(10)
-        begin.next(5)
-        begin.next(-10)
-        end.next(3)
+        range.next([0, 10])
+        range.next([5, 10])
+        range.next([-10, 10])
+        range.next([-10, 3])
         array.next({getItem: i => [i, i + 1], length: 100})
-        end.next(10)
-        begin.next(5)
+        range.next([-10, 10])
+        range.next([5, 10])
 
         expect(arr)
         .toEqual([
@@ -295,6 +290,41 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
                 7: 8,
                 8: 9,
                 9: 10,
+            }, null],
+        ])
+    })
+    test("5", () => {
+        let array = new Subject<ConstArray<[number, number]>>()
+        let range = new Subject<[number, number]>()
+
+
+        let sliced = array.pipe(
+            map((x): [ConstArray<[number, number]>, null] => [x, null]),
+            dynamicSlice(0, 5, range),
+            foldDiffFirst,
+            map(([a, b]) => [Object.assign({}, a), b])
+        )
+
+        let arr = observableToArray(sliced)
+
+        array.next({getItem: i => [i, i], length: 100})
+        range.next([10, 15])
+
+        expect(arr)
+        .toEqual([
+            [{
+                0: 0,
+                1: 1,
+                2: 2,
+                3: 3,
+                4: 4,
+            }, null],
+            [{
+                10: 10,
+                11: 11,
+                12: 12,
+                13: 13,
+                14: 14,
             }, null],
         ])
     })
