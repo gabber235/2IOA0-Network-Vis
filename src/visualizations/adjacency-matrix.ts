@@ -36,35 +36,13 @@ export class AdjacencyMatrix implements Visualization {
         emails.push(e.value);
       });
 
-      // const persons: Person[] = [];
-      // personDiff.forEach(p => {
-      //   // @ts-expect-error
-      //   persons.push(p.value)
-      // });
-
       // Creating array with person object
       const correspondants = getCorrespondants(emails); //dictionary with persons
       let persons = Object.values(correspondants);
 
-
-      // // Get data
-      // let file = await fetch(dataFile.default);
-      // let emails = parseData(await file.text());
-
-
-      // // Testing filtering
-      // let filteredCorrespondants = filterCorrespondants(
-      //   ["CEO", "Trader", "Employee"],
-      //   correspondantList
-      // );
-
-      // // get nodes from people list
-      // const nodes = peopleToNodes(filteredCorrespondants);
       const nodes = peopleToNodes(persons);
 
-      // // get edges
-      // const filteredEmail = filterEmail(filteredCorrespondants, emails);
-      // const links = edgeHash(filteredEmail, nodes);
+      // get edges
       const links = edgeHash(emails, nodes);
 
       // call adjacency matrix  
@@ -76,11 +54,12 @@ export class AdjacencyMatrix implements Visualization {
 
     function createAdjacencyMatrix(nodes: Node[], links: Edge[]) {
       let margin = {
-        top: 150,
-        right: 0,
+        top: 10,
+        right: 10,
         bottom: 10,
-        left: 0
-      };
+        left: 10
+      }
+
       let width = 750;
       let height = 750;
 
@@ -91,12 +70,18 @@ export class AdjacencyMatrix implements Visualization {
       // @ts-expect-error
       let c = d3.scale.category10().domain(d3.range(10));
 
-      let svg = d3.select("#adj-matrix").append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        // .style("margin-left", -margin.left + "px")
-        .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+      let existingSVG = document.getElementById("AM-SVG");
+      let svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>;
+      if (!existingSVG) {
+        // create new SVG
+        svg = d3.select("#adj-matrix").append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+          .attr("id", "AM-SVG")
+          // .style("margin-left", -margin.left + "px")
+          .append("g")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+      }
 
 
       type Cell = {
@@ -201,10 +186,10 @@ export class AdjacencyMatrix implements Visualization {
           })
           .on("mousemove", (d: Cell) => {
             return tooltip
-            // this works but doesn't handle scaling
-            // @ts-expect-error
-            .style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 525) + "px")
-            .html(tooltipHTML(d));
+              // this works but doesn't handle scaling
+              // @ts-expect-error
+              .style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 525) + "px")
+              .html(tooltipHTML(d));
           })
           .on("mouseout", () => {
             return tooltip.style("visibility", "hidden");
@@ -228,7 +213,7 @@ export class AdjacencyMatrix implements Visualization {
         .style("text-align", "left")
 
 
-      function tooltipHTML(c: Cell): string{
+      function tooltipHTML(c: Cell): string {
         let html = "";
         const sender = c.from;
         const receiver = c.to;
