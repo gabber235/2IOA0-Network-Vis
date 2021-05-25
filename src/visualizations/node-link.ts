@@ -100,13 +100,13 @@ export function getVisNodeSeletions(visualisation: vis.Network): Observable<[Num
         })    
         visualisation.on("deselectEdge", e => {
             sub.next([e.edges, e.nodes])
-        }),
-        share()
+        })
     }).pipe(
         map(([nodes, edges]): [DataSet<any>, DataSet<any>] => [arrayToObject(nodes, x => x), arrayToObject(edges, x => x)]),
         diffMapFirst({} as DataSet<any>, diffPureDataSet),
         map(swap),
         diffMapFirst({} as DataSet<any>, diffPureDataSet),
+        share()
     )
 }
 

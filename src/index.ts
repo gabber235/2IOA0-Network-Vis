@@ -2,9 +2,9 @@ import "vis/dist/vis.min.css"
 import { AdjacencyMatrix } from "./visualizations/adjacency-matrix";
 import { visualizeNodeLinkDiagram, NodeLinkOptions, getVisNodeSeletions } from "./visualizations/node-link";
 import { Email, getCorrespondants, parseData, Person } from "./data"
-import { combineLatest, merge, Observable, of, Subject, timer } from "rxjs";
-import { debounce, debounceTime, map, share, switchAll } from "rxjs/operators";
-import { DataSet, MapDiff, diffDataSet, getDynamicCorrespondants, NumberSetDiff, ignoreDoubles } from "./pipeline/dynamicDataSet";
+import { combineLatest, merge, Subject } from "rxjs";
+import { debounceTime, map, share, switchAll } from "rxjs/operators";
+import { DataSet, MapDiff, diffDataSet, getDynamicCorrespondants, NumberSetDiff } from "./pipeline/dynamicDataSet";
 import { ConstArray, swap } from "./utils";
 import { prettifyFileInput } from "./looks";
 import { checkBoxObserable, diffMapFirst, fileInputObservable, sliderToObservable } from "./pipeline/basics";

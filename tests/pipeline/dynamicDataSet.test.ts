@@ -28,7 +28,7 @@ function dummyPerson(id: number): Person {
 
 describe("pipeline.dynamicDataSet.ignoreDoubles", () => {
     test("0", () => {
-        let stream: Observable<[MapDiff<string>, number]> = of(
+        const stream: Observable<[MapDiff<string>, number]> = of(
             [new MapDiff([{id: 1, value: "a"}, {id: 2, value: "b"}, {id: 1, value: "a"}], [], []), 0],
             [new MapDiff([{id: 1, value: "a"}, {id: 2, value: "b"}], [], []), 1],
             [new MapDiff([{id: 3, value: "d"}], [{id: 1, value: "c"}], [{id: 2}, {id: 2}]), 2],
@@ -37,7 +37,7 @@ describe("pipeline.dynamicDataSet.ignoreDoubles", () => {
             [new MapDiff([{id: 2, value: "b"}], [], [{id: 3}]), 5],
         ) as any
 
-        let x = stream.pipe(ignoreDoubles)
+        const x = stream.pipe(ignoreDoubles)
 
         expect(observableToArray(x)).toEqual([
             [new MapDiff([{id: 1, value: "a"}, {id: 2, value: "b"}], [], []), 0],
@@ -54,7 +54,7 @@ describe("pipeline.dynamicDataSet.ignoreDoubles", () => {
 
 describe("pipeline.dynamicDataSet.getDynamicCorrespondants", () => {
     test("0", () => {
-        let stream: Observable<[DataSet<Email>, number]> = of(
+        const stream: Observable<[DataSet<Email>, number]> = of(
             [{
                 0: dummyEmail(0, 0, 1),
             }, 0],
@@ -76,7 +76,7 @@ describe("pipeline.dynamicDataSet.getDynamicCorrespondants", () => {
             }, 4],
         ) as any
 
-        let x = stream.pipe(
+        const x = stream.pipe(
             diffMapFirst({} as DataSet<Email>, diffDataSet),
             getDynamicCorrespondants,
             map(([a,b,c]): [MapDiff<Person>, [MapDiff<Email>, number]] => [a, [b,c]]),

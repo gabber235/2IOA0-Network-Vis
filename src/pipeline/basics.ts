@@ -70,7 +70,7 @@ export function checkBoxObserable(elm: HTMLElement): Observable<boolean> {
  * Collects the values send by an observable into an array
  */
 export function observableToArray<A>(stream: Observable<A>): A[] {
-    let arr: A[] = []
+    const arr: A[] = []
 
     stream.subscribe(a => arr.push(a))
 
@@ -82,7 +82,7 @@ export function observableToArray<A>(stream: Observable<A>): A[] {
  */
 export function foldDiffFirst<A,X>(stream: Observable<[MapDiff<A>, X]>): Observable<[DataSet<A>, X]> {
     
-    let dataset: DataSet<A> = {}
+    const dataset: DataSet<A> = {}
     
     return new Observable(sub => {
         stream.subscribe(([diff, x]) => {

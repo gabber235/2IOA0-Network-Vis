@@ -1,7 +1,7 @@
 import { Observable } from "rxjs"
 import { map } from "rxjs/operators"
 import { Email, getCorrespondantsFromSingleEmail, Person } from "../data"
-import { Maybe, None, Some } from "../maybe"
+
 
 export type DataSet<A> = { [id: number]: A }
 
@@ -65,18 +65,18 @@ export class MapDiff<A> {
      * Applies the changes to a map
      */
     apply(dataSet: DataSet<A>) {
-        for (let {id, value} of this.insertions) {
+        for (const {id, value} of this.insertions) {
             dataSet[id] = value
         }
-        for (let {id, value} of this.updates) {
+        for (const {id, value} of this.updates) {
             dataSet[id] = value
         }
-        for (let {id} of this.deletions) {
+        for (const {id} of this.deletions) {
             delete dataSet[id]
         }
     }
 
-    get isEmpty() { 
+    get isEmpty(): boolean { 
         return this.insertions.length === 0 && this.updates.length === 0 && this.deletions.length === 0 
     }
 }
@@ -92,7 +92,7 @@ export type NumberSetDiff = MapDiff<any>
  * Computes the difference between two datasets which may include pointers
  */
 export function diffDataSet<A>(prev: DataSet<A>, cur: DataSet<A>): MapDiff<A> {
-    let diff = new MapDiff<A>()
+    const diff = new MapDiff<A>()
 
     for (const id in cur) {
         if (id in prev) {
@@ -112,7 +112,7 @@ export function diffDataSet<A>(prev: DataSet<A>, cur: DataSet<A>): MapDiff<A> {
  * Computes the difference between two datasets that DON'T INCLUDE POINTERS
  */
  export function diffPureDataSet<A>(prev: DataSet<A>, cur: DataSet<A>): MapDiff<A> {
-    let diff = new MapDiff<A>()
+    const diff = new MapDiff<A>()
 
     for (const id in cur) {
         if (id in prev) {
@@ -135,26 +135,26 @@ export function diffDataSet<A>(prev: DataSet<A>, cur: DataSet<A>): MapDiff<A> {
  */
 export function ignoreDoubles<A, X>(data: Observable<[MapDiff<A>, X]>): Observable<[MapDiff<A>, X]> {
 
-    let idSet = new Set<number>()
+    const idSet = new Set<number>()
 
     return new Observable(sub => {
         data.subscribe({
             next([diff, x]) {
 
-                let newDiff = new MapDiff<A>()
+                const newDiff = new MapDiff<A>()
 
-                for (let change of diff.insertions) {
+                for (const change of diff.insertions) {
                     if (!idSet.has(change.id)) {
                         idSet.add(change.id)
                         newDiff.add(change.id, change.value)
                     }
                 }
-                for (let change of diff.updates) {
+                for (const change of diff.updates) {
                     if (idSet.has(change.id)) {
                         newDiff.update(change.id, change.value)
                     }
                 }
-                for (let change of diff.deletions) {
+                for (const change of diff.deletions) {
                     if (idSet.has(change.id)) {
                         newDiff.remove(change.id)
                         idSet.delete(change.id)
@@ -172,8 +172,8 @@ export function ignoreDoubles<A, X>(data: Observable<[MapDiff<A>, X]>): Observab
  */
 export function getDynamicCorrespondants<X>(emails: Observable<[MapDiff<Email>, X]>): Observable<[MapDiff<Person>, MapDiff<Email>, X]> {
 
-    let emailsSet: DataSet<Email> = {}
-    let personSet: DataSet<number> = {}
+    const emailsSet: DataSet<Email> = {}
+    const personSet: DataSet<number> = {}
 
     function incr(id: number, person: Person, diff: MapDiff<Person>) {
         if (!(id in personSet)) {
@@ -195,9 +195,9 @@ export function getDynamicCorrespondants<X>(emails: Observable<[MapDiff<Email>, 
     return emails.pipe(
         map(([emailDiff, x]): [MapDiff<Person>, [MapDiff<Email>, X]] => {
 
-            let diff = new MapDiff<Person>()
+            const diff = new MapDiff<Person>()
 
-            for (let change of emailDiff.insertions) {
+            for (const change of emailDiff.insertions) {
                 const [from, to] = getCorrespondantsFromSingleEmail(change.value)
 
                 incr(from.id, from, diff)
@@ -205,9 +205,9 @@ export function getDynamicCorrespondants<X>(emails: Observable<[MapDiff<Email>, 
 
                 emailsSet[change.id] = change.value
             }
-            for (let change of emailDiff.updates) {
-                let [prevFrom, prevTo] = getCorrespondantsFromSingleEmail(emailsSet[change.id])
-                let [curFrom, curTo] = getCorrespondantsFromSingleEmail(change.value)
+            for (const change of emailDiff.updates) {
+                const [prevFrom, prevTo] = getCorrespondantsFromSingleEmail(emailsSet[change.id])
+                const [curFrom, curTo] = getCorrespondantsFromSingleEmail(change.value)
 
                 if (prevFrom.id === curFrom.id) {
                     diff.update(curFrom.id, curFrom)
@@ -225,7 +225,7 @@ export function getDynamicCorrespondants<X>(emails: Observable<[MapDiff<Email>, 
 
                 emailsSet[change.id] = change.value
             }
-            for (let change of emailDiff.deletions) {
+            for (const change of emailDiff.deletions) {
                 const [from, to] = getCorrespondantsFromSingleEmail(emailsSet[change.id])
 
                 decr(from.id, diff)

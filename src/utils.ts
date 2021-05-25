@@ -1,7 +1,3 @@
-import { Observable } from "rxjs"
-import { Maybe } from "./maybe"
-
-
 
 /**
  * Checks if two things are equal, not by reference but by value
@@ -153,9 +149,9 @@ export function arrayToObject<A>(data: A[], getKey: (item: A) => number): {[key:
 
 
 export function objectMap<A, B>(f: (a:A) => B, obj: {[key:number]: A}): {[key:number]: B} {
-    let newObj: {[key:number]: B} = {}
+    const newObj: {[key:number]: B} = {}
 
-    for (let id in obj) {
+    for (const id in obj) {
         newObj[id] = f(obj[id])
     }
 
