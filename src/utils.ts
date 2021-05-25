@@ -144,58 +144,6 @@ export function swap<X, Y>([x, y]: [X, Y]): [Y, X] {
 }
 
 
-
-
-/**
- * Applies a given diff'ing function to the first item in a tuple in an observable of tuples
- */
-export function diffMapFirst<A, B, X>(initial: A, f: (prev: A, cur: A) => B): (stream: Observable<[A, X]>) => Observable<[B, X]> {
-    return stream => {
-        let prev: A = initial
-
-        return new Observable(sub => {
-            stream.subscribe({
-                next([cur, x]) {
-                    const diff = f(prev, cur)
-                    sub.next([diff, x])
-                    prev = cur
-                }
-            })
-        })
-    }
-}
-
-/**
- * Returns an observable of file contents for a given file input
- */
-export function fileInputObservable(elm: HTMLElement): Observable<string> {
-    return new Observable(sub => {
-        elm.addEventListener('change', async (event: any) => {
-            const fileList: FileList = event.target.files;
-
-            for (let i = 0; i < fileList.length; i++) {
-                const file = fileList.item(i);
-
-                const txt = await file.text()
-                sub.next(txt)
-            }
-        });
-    })
-}
-
-/**
- * Returns an observable of booleans representing whether the given checkbox is checked
- */
-export function checkBoxObserable(elm: HTMLElement): Observable<boolean> {
-    return new Observable(sub => {
-        sub.next((elm as any).checked)
-
-        elm.addEventListener("change", (e: any) => {
-            sub.next(e.target.checked)
-        })
-    })
-}
-
 /**
  * Turns an array into an object with keys defined by getKey
  */
@@ -213,3 +161,5 @@ export function objectMap<A, B>(f: (a:A) => B, obj: {[key:number]: A}): {[key:nu
 
     return newObj
 }
+
+

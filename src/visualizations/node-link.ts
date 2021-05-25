@@ -1,9 +1,10 @@
 import { Observable } from 'rxjs';
 import { map, share } from 'rxjs/operators';
 import * as vis from 'vis';
-import { Email, Correspondants, Person, Title } from '../data';
-import { DataSet, diffDataSet, diffPureDataSet, MapDiff, NumberSetDiff } from '../pipeline/dynamicDataSet';
-import { arrayToObject, diffMapFirst, objectMap, swap } from '../utils';
+import { Email, Person, } from '../data';
+import { diffMapFirst } from '../pipeline/basics';
+import { DataSet, diffPureDataSet, MapDiff, NumberSetDiff } from '../pipeline/dynamicDataSet';
+import { arrayToObject, swap } from '../utils';
 
 export type NodeLinkOptions = {
     hierarchical?: boolean,

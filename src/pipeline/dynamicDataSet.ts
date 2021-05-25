@@ -157,6 +157,7 @@ export function ignoreDoubles<A, X>(data: Observable<[MapDiff<A>, X]>): Observab
                 for (let change of diff.deletions) {
                     if (idSet.has(change.id)) {
                         newDiff.remove(change.id)
+                        idSet.delete(change.id)
                     }
                 }
 
@@ -172,20 +173,68 @@ export function ignoreDoubles<A, X>(data: Observable<[MapDiff<A>, X]>): Observab
 export function getDynamicCorrespondants<X>(emails: Observable<[MapDiff<Email>, X]>): Observable<[MapDiff<Person>, MapDiff<Email>, X]> {
 
     let emailsSet: DataSet<Email> = {}
+    let personSet: DataSet<number> = {}
+
+    function incr(id: number, person: Person, diff: MapDiff<Person>) {
+        if (!(id in personSet)) {
+            personSet[id] = 0
+            diff.add(id, person)
+        }
+        personSet[id]++
+    }
+    function decr(id: number, diff: MapDiff<Person>) {
+
+        personSet[id]--
+
+        if (personSet[id] === 0) {
+            diff.remove(id)
+            delete personSet[id]
+        }
+    }
 
     return emails.pipe(
         map(([emailDiff, x]): [MapDiff<Person>, [MapDiff<Email>, X]] => {
 
-            for (let {id, value} of emailDiff.insertions) {
-                emailsSet[id] = value
-            }
-            for (let {id, value} of emailDiff.updates) {
-                emailsSet[id] = value
-            }
-            let senderDiff = emailDiff.map(email => getCorrespondantsFromSingleEmail(email)[0], id => emailsSet[id].fromId)
-            let recieverDiff = emailDiff.map(email => getCorrespondantsFromSingleEmail(email)[1], id => emailsSet[id].toId)
+            let diff = new MapDiff<Person>()
 
-            return [senderDiff.andThen(recieverDiff), [emailDiff, x]]
+            for (let change of emailDiff.insertions) {
+                const [from, to] = getCorrespondantsFromSingleEmail(change.value)
+
+                incr(from.id, from, diff)
+                incr(to.id, to, diff)
+
+                emailsSet[change.id] = change.value
+            }
+            for (let change of emailDiff.updates) {
+                let [prevFrom, prevTo] = getCorrespondantsFromSingleEmail(emailsSet[change.id])
+                let [curFrom, curTo] = getCorrespondantsFromSingleEmail(change.value)
+
+                if (prevFrom.id === curFrom.id) {
+                    diff.update(curFrom.id, curFrom)
+                } else {
+                    decr(prevFrom.id, diff)
+                    incr(curFrom.id, curFrom, diff)
+                }
+
+                if (prevTo.id === curTo.id) {
+                    diff.update(curTo.id, curTo)
+                } else {
+                    decr(prevTo.id, diff)
+                    incr(curTo.id, curTo, diff)
+                }
+
+                emailsSet[change.id] = change.value
+            }
+            for (let change of emailDiff.deletions) {
+                const [from, to] = getCorrespondantsFromSingleEmail(emailsSet[change.id])
+
+                decr(from.id, diff)
+                decr(to.id, diff)
+
+                delete emailsSet[change.id]
+            }
+
+            return [diff, [emailDiff, x]]
         }),
         ignoreDoubles,
         map(([a, [b, c]]) => [a, b, c])

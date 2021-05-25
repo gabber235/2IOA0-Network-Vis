@@ -5,8 +5,9 @@ import { Email, getCorrespondants, parseData, Person } from "./data"
 import { merge, Observable, of, Subject } from "rxjs";
 import { map, share } from "rxjs/operators";
 import { DataSet, MapDiff, diffDataSet, getDynamicCorrespondants, NumberSetDiff } from "./pipeline/dynamicDataSet";
-import { arrayToObject as arrayToObject, checkBoxObserable, diffMapFirst, fileInputObservable, swap } from "./utils";
+import { arrayToObject as arrayToObject, swap } from "./utils";
 import { prettifyFileInput } from "./looks";
+import { checkBoxObserable, diffMapFirst, fileInputObservable } from "./pipeline/basics";
 
 const logo = require('../resources/static/logo.png')
 
