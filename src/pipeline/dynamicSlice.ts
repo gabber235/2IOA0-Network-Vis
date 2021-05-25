@@ -12,11 +12,10 @@ export type ConstArray<A> = {getItem: (index: number) => A, length: number}
  * THIS FUNCTION IS NOT ONE TO ONE WHEN IT COMES TO EVENTS
  */
 export function dynamicSlice<A, X>(
-    stream: Observable<[ConstArray<[number, A]>, X]>, 
     initialBegin: number,
     begin: Observable<number>, 
     initialEnd: number,
-    end: Observable<number>): Observable<[MapDiff<A>, X]> {
+    end: Observable<number>) {
 
     let prevDataSet: DataSet<A> = {}
     let prevArray: ConstArray<[number, A]>|undefined = undefined
@@ -24,7 +23,7 @@ export function dynamicSlice<A, X>(
     let prevEnd: number = initialEnd
     let prevX: X|undefined = undefined
 
-    return new Observable(sub => {
+    return (stream: Observable<[ConstArray<[number, A]>, X]>): Observable<[MapDiff<A>, X]> => new Observable(sub => {
         stream.subscribe(([curArray, x]) => {
             prevArray = curArray
 

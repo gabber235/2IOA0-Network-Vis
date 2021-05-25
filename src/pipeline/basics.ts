@@ -45,10 +45,10 @@ export function fileInputObservable(elm: HTMLElement): Observable<string> {
  */
 export function sliderToObservable(elm: HTMLElement): Observable<number> {
     return new Observable(sub => {
-        sub.next((elm as any).value)
+        sub.next(+(elm as any).value)
 
         elm.addEventListener("input", (e: any) => {
-            sub.next(e.target.value)    
+            sub.next(+e.target.value)    
         })    
     })
 }

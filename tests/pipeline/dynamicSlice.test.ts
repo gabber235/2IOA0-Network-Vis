@@ -11,11 +11,13 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
         let begin = of()
         let end = of()
 
-        let sliced = dynamicSlice(array.pipe(map((x): [ConstArray<[number, number]>, null] => [x, null])), 0, begin, 5, end).pipe(
+        let sliced = array.pipe(
+            map((x): [ConstArray<[number, number]>, null] => [x, null]),
+            dynamicSlice(0, begin, 5, end),
             foldDiffFirst,
             map(([a, b]) => [Object.assign({}, a), b])
         )
-
+        
         expect(observableToArray(sliced))
         .toEqual([
             [{
@@ -32,7 +34,9 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
         let begin = of()
         let end = of()
 
-        let sliced = dynamicSlice(array.pipe(map((x): [ConstArray<[number, number]>, null] => [x, null])), 0, begin, 5, end).pipe(
+        let sliced = array.pipe(
+            map((x): [ConstArray<[number, number]>, null] => [x, null]),
+            dynamicSlice(0, begin, 5, end),
             foldDiffFirst,
             map(([a, b]) => [Object.assign({}, a), b])
         )
@@ -53,7 +57,9 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
         let begin = of()
         let end = of(10)
 
-        let sliced = dynamicSlice(array.pipe(map((x): [ConstArray<[number, number]>, null] => [x, null])), 0, begin, 5, end).pipe(
+        let sliced = array.pipe(
+            map((x): [ConstArray<[number, number]>, null] => [x, null]),
+            dynamicSlice(0, begin, 5, end),
             foldDiffFirst,
             map(([a, b]) => [Object.assign({}, a), b])
         )
@@ -87,7 +93,9 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
         let end = new Subject<number>()
 
 
-        let sliced = dynamicSlice(array.pipe(map((x): [ConstArray<[number, number]>, null] => [x, null])), 0, begin, 5, end).pipe(
+        let sliced = array.pipe(
+            map((x): [ConstArray<[number, number]>, null] => [x, null]),
+            dynamicSlice(0, begin, 5, end),
             foldDiffFirst,
             map(([a, b]) => [Object.assign({}, a), b])
         )
@@ -133,7 +141,9 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
         let end = new Subject<number>()
 
 
-        let sliced = dynamicSlice(array.pipe(map((x): [ConstArray<[number, number]>, null] => [x, null])), 0, begin, 5, end).pipe(
+        let sliced = array.pipe(
+            map((x): [ConstArray<[number, number]>, null] => [x, null]),
+            dynamicSlice(0, begin, 5, end),
             foldDiffFirst,
             map(([a, b]) => [Object.assign({}, a), b])
         )
@@ -199,7 +209,9 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
         let end = new Subject<number>()
 
 
-        let sliced = dynamicSlice(array.pipe(map((x): [ConstArray<[number, number]>, null] => [x, null])), 0, begin, 5, end).pipe(
+        let sliced = array.pipe(
+            map((x): [ConstArray<[number, number]>, null] => [x, null]),
+            dynamicSlice(0, begin, 5, end),
             foldDiffFirst,
             map(([a, b]) => [Object.assign({}, a), b])
         )
