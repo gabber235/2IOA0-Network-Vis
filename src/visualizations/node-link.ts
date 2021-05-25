@@ -2,7 +2,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import * as vis from 'vis';
 import { Email, Correspondants, Person, Title } from '../data';
-import { DataSet, DataSetDiff } from '../pipeline/dynamicDataSet';
+import { DataSet, MapDiff } from '../pipeline/dynamicDataSet';
 
 export type NodeLinkOptions = {
     hierarchical?: boolean,
@@ -14,7 +14,7 @@ const nodeSize = 10
 /**
  * Create a new vis.Network instance and bind it to 'container'
  */
-export async function visualizeNodeLinkDiagram(container: HTMLElement, data: Observable<[DataSetDiff<Person>, DataSetDiff<Email>]>, options: Observable<NodeLinkOptions>, maxNodes: number): Promise<void> {
+export async function visualizeNodeLinkDiagram(container: HTMLElement, data: Observable<[MapDiff<Person>, MapDiff<Email>]>, options: Observable<NodeLinkOptions>, maxNodes: number): Promise<void> {
 
     const people: DataSet<Person> = {}
     const emails: DataSet<Email> = {}

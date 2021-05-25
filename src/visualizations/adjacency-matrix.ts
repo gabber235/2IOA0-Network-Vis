@@ -2,7 +2,7 @@ import { Visualization } from './visualization'
 import { Email, Person, Title, parseData, getCorrespondants } from "../data";
 import * as d3 from "d3";
 import { Observable } from 'rxjs';
-import { DataSetDiff } from '../pipeline/dynamicDataSet';
+import { MapDiff } from '../pipeline/dynamicDataSet';
 
 
 // get used data
@@ -23,7 +23,7 @@ type Edge = {
 }
 
 export class AdjacencyMatrix implements Visualization {
-  async visualize(data: Observable<[DataSetDiff<Person>, DataSetDiff<Email>]>): Promise<void> {
+  async visualize(data: Observable<[MapDiff<Person>, MapDiff<Email>]>): Promise<void> {
     // document.body.appendChild(div({}, [text("Adjacency-matrix")]));
 
     data.subscribe(event => {

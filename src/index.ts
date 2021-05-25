@@ -2,9 +2,9 @@ import "vis/dist/vis.min.css"
 import { AdjacencyMatrix } from "./visualizations/adjacency-matrix";
 import { visualizeNodeLinkDiagram, NodeLinkOptions } from "./visualizations/node-link";
 import { Email, getCorrespondants, parseData, Person } from "./data"
-import { merge, Observable, of } from "rxjs";
+import { merge, Observable, of, Subject } from "rxjs";
 import { map, share } from "rxjs/operators";
-import { DataSet, DataSetDiff, diffDataSet, getDynamicCorrespondants } from "./pipeline/dynamicDataSet";
+import { DataSet, MapDiff, diffDataSet, getDynamicCorrespondants, NumberSetDiff } from "./pipeline/dynamicDataSet";
 import { arrayToObject as arrayToObject, checkBoxObserable, diffMapFirst, fileInputObservable, swap } from "./utils";
 import { prettifyFileInput } from "./looks";
 
@@ -18,6 +18,9 @@ window.addEventListener("load", async () => {
 
     prettifyFileInput(fileSelector)
 
+    // This subject is used to represent selected correspondants and emails respectivly
+    // They are represented by their id's
+    const selectionSubject = new Subject<[NumberSetDiff, NumberSetDiff]>()
 
     const baseEmailObservable = fileInputObservable(fileSelector).pipe(map(parseData))
 
@@ -33,7 +36,7 @@ window.addEventListener("load", async () => {
     const changesWithFewerNodes = changes.pipe(
         map(swap),
         getDynamicCorrespondants,
-        map(([people, emails]): [DataSetDiff<Person>, DataSetDiff<Email>] => [people, emails])
+        map(([people, emails]): [MapDiff<Person>, MapDiff<Email>] => [people, emails])
     )
 
 

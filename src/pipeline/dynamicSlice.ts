@@ -2,7 +2,7 @@
 // import { DataSetDiff } from "./dynamicDataSet"
 
 import { Observable } from "rxjs";
-import { DataSetDiff } from "./dynamicDataSet";
+import { MapDiff } from "./dynamicDataSet";
 
 // export function dynamicSlice<A>(array: A[], range: Observable<[number, number]>): Observable<DataSetDiff<A>> {
 
