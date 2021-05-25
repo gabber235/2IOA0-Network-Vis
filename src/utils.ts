@@ -162,3 +162,41 @@ export function diffMapFirst<A, B, X>(initial: A, f: (prev: A, cur: A) => B): (s
         })
     }
 }
+
+/**
+ * Returns an observable of file contents for a given file input
+ */
+export function fileInputObservable(elm: HTMLElement): Observable<string> {
+    return new Observable(sub => {
+        elm.addEventListener('change', async (event: any) => {
+            const fileList: FileList = event.target.files;
+
+            for (let i = 0; i < fileList.length; i++) {
+                const file = fileList.item(i);
+
+                const txt = await file.text()
+                sub.next(txt)
+            }
+        });
+    })
+}
+
+/**
+ * Returns an observable of booleans representing whether the given checkbox is checked
+ */
+export function checkBoxObserable(elm: HTMLElement): Observable<boolean> {
+    return new Observable(sub => {
+        sub.next((elm as any).checked)
+
+        elm.addEventListener("change", (e: any) => {
+            sub.next(e.target.checked)
+        })
+    })
+}
+
+/**
+ * Turns an array into an object with keys defined by getKey
+ */
+export function arrayToObject<A>(data: A[], getKey: (item: A) => number): {[key: number]: A} {
+    return Object.assign({}, ...data.map(item => { return { [getKey(item)]: item } }))
+}

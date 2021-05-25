@@ -2,10 +2,11 @@ import "vis/dist/vis.min.css"
 import { AdjacencyMatrix } from "./visualizations/adjacency-matrix";
 import { visualizeNodeLinkDiagram, NodeLinkOptions } from "./visualizations/node-link";
 import { Email, getCorrespondants, parseData, Person } from "./data"
-import { Observable, of } from "rxjs";
+import { merge, Observable, of } from "rxjs";
 import { map, share } from "rxjs/operators";
 import { DataSet, DataSetDiff, diffDataSet, getDynamicCorrespondants } from "./pipeline/dynamicDataSet";
-import { diffMapFirst, swap } from "./utils";
+import { arrayToObject as arrayToObject, checkBoxObserable, diffMapFirst, fileInputObservable, swap } from "./utils";
+import { prettifyFileInput } from "./looks";
 
 const logo = require('../resources/static/logo.png')
 
@@ -13,46 +14,16 @@ window.addEventListener("load", async () => {
 
     console.log('Image:', logo.default)
 
-    const baseEmailObservable = new Observable<Email[]>(sub => {
-        const fileSelector = document.getElementById('file-selector');
-        fileSelector.addEventListener('change', async (event: any) => {
-            const fileList: FileList = event.target.files;
+    const fileSelector = document.getElementById('file-selector');
 
-            for (let i = 0; i < fileList.length; i++) {
-                const file = fileList.item(i);
-
-                const label = fileSelector.nextElementSibling;
-                label.innerHTML = file.name
-
-                const txt = await file.text()
-                const emails = parseData(txt)
-                const correspondants = getCorrespondants(emails)
-                sub.next(emails)
-            }
-        });
-    })
+    prettifyFileInput(fileSelector)
 
 
-    const nodeLinkOptions = new Observable<NodeLinkOptions>(sub => {
-        const physicsCheckBox: any = document.getElementById("physics")
-        sub.next({ physics: physicsCheckBox.checked })
-
-        physicsCheckBox.addEventListener("change", (e: any) => {
-            sub.next({ physics: e.target.checked })
-        })
-
-        const layoutCheckBox: any = document.getElementById("hierarchical")
-        sub.next({ hierarchical: layoutCheckBox.checked })
-
-        layoutCheckBox.addEventListener("change", (e: any) => {
-            sub.next({ hierarchical: e.target.checked })
-        })
-    })
-
+    const baseEmailObservable = fileInputObservable(fileSelector).pipe(map(parseData))
 
     const changes = baseEmailObservable.pipe(
         map((emails): [Email[], DataSet<Person>] => [emails.slice(0, 100), getCorrespondants(emails)]),
-        map(([emails, allPeople]): [DataSet<Email>, DataSet<Person>] => [arrayToDataSet(emails, email => email.id), allPeople]),
+        map(([emails, allPeople]): [DataSet<Email>, DataSet<Person>] => [arrayToObject(emails, email => email.id), allPeople]),
         diffMapFirst({} as DataSet<Email>, diffDataSet),
         map(swap),
         diffMapFirst({} as DataSet<Person>, diffDataSet),
@@ -67,12 +38,22 @@ window.addEventListener("load", async () => {
 
 
     new AdjacencyMatrix().visualize(changes)
+
+
+    const nodeLinkOptions = merge(
+        checkBoxObserable(document.getElementById('physics')).pipe(
+            map((b): NodeLinkOptions => {return {physics: b}})   
+        ),
+        checkBoxObserable(document.getElementById('hierarchical')).pipe(
+            map((b): NodeLinkOptions => {return {hierarchical: b}})   
+        )
+    )
+
     visualizeNodeLinkDiagram(document.getElementById("node-links"), changesWithFewerNodes, nodeLinkOptions, 150)
 })
 
-function arrayToDataSet<A>(data: A[], getId: (item: A) => number): DataSet<A> {
-    return Object.assign({}, ...data.map(item => { return { [getId(item)]: item } }))
-}
+
+
 
 // type DataSetDiff<A> = {type:'add', id: number, content: A[]}|{type:'remove', id: number, content: A[]}
 
