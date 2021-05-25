@@ -3,12 +3,12 @@ import { AdjacencyMatrix } from "./visualizations/adjacency-matrix";
 import { visualizeNodeLinkDiagram, NodeLinkOptions, getVisNodeSeletions } from "./visualizations/node-link";
 import { Email, getCorrespondants, parseData, Person } from "./data"
 import { combineLatest, merge, Observable, of, Subject, timer } from "rxjs";
-import { debounce, debounceTime, map, share } from "rxjs/operators";
+import { debounce, debounceTime, map, share, switchAll } from "rxjs/operators";
 import { DataSet, MapDiff, diffDataSet, getDynamicCorrespondants, NumberSetDiff, ignoreDoubles } from "./pipeline/dynamicDataSet";
-import { swap } from "./utils";
+import { ConstArray, swap } from "./utils";
 import { prettifyFileInput } from "./looks";
 import { checkBoxObserable, diffMapFirst, fileInputObservable, sliderToObservable } from "./pipeline/basics";
-import { ConstArray, dynamicSlice } from "./pipeline/dynamicSlice";
+import { dynamicSlice } from "./pipeline/dynamicSlice";
 
 const logo = require('../resources/static/logo.png')
 
@@ -39,8 +39,13 @@ window.addEventListener("load", async () => {
     const baseEmailObservable = fileInputObservable(fileSelector).pipe(map(parseData))
 
     const changes = baseEmailObservable.pipe(
-        map((emails): [ConstArray<[number, Email]>, DataSet<Person>] => [{getItem: i => [emails[i].id, emails[i]], length: emails.length}, getCorrespondants(emails)]),
-        dynamicSlice(0, 0, range),
+        map((emails): [ConstArray<[number, Email]>, DataSet<Person>] => [
+            {getItem: i => [emails[i].id, emails[i]], length: emails.length}, 
+            getCorrespondants(emails)
+        ]),
+        map(([emails, people]) =>
+            dynamicSlice(emails, range).pipe(map((diff): [MapDiff<Email>, DataSet<Person>] => [diff, people]))),
+        switchAll(),
         map(swap),
         diffMapFirst({} as DataSet<Person>, diffDataSet),
         share()

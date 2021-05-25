@@ -163,3 +163,6 @@ export function objectMap<A, B>(f: (a:A) => B, obj: {[key:number]: A}): {[key:nu
 }
 
 
+export type ConstArray<A> = {getItem: (index: number) => A, length: number}
+
+
