@@ -2,39 +2,84 @@
 // import { DataSetDiff } from "./dynamicDataSet"
 
 import { Observable } from "rxjs";
-import { MapDiff } from "./dynamicDataSet";
+import { DataSet, diffDataSet, MapDiff } from "./dynamicDataSet";
 
-// export function dynamicSlice<A>(array: A[], range: Observable<[number, number]>): Observable<DataSetDiff<A>> {
 
-//     function getDiff(oldIndex: number, newIndex: number): DataSetDiff<A> | undefined {
-//         if (oldIndex < newIndex) {
-//             return DataSetDiff.add(array.slice(oldIndex, newIndex))
-//         } else if (newIndex < oldIndex) {
-//             return DataSetDiff.remove(array.slice(newIndex, oldIndex))
-//         }
-//     }
+export type ConstArray<A> = {getItem: (index: number) => A, length: number}
 
-//     let previous: [number, number] | undefined = undefined
+/**
+ * Takes an array of key-value pairs and a range of integers, and returns a dynamic subset of all values with indices within that range.
+ * THIS FUNCTION IS NOT ONE TO ONE WHEN IT COMES TO EVENTS
+ */
+export function dynamicSlice<A, X>(
+    stream: Observable<[ConstArray<[number, A]>, X]>, 
+    initialBegin: number,
+    begin: Observable<number>, 
+    initialEnd: number,
+    end: Observable<number>): Observable<[MapDiff<A>, X]> {
 
-//     return new Observable(sub => {
-//         range.subscribe({
-//             next([begin_, end_]) {
+    let prevDataSet: DataSet<A> = {}
+    let prevArray: ConstArray<[number, A]>|undefined = undefined
+    let prevBegin: number = initialBegin
+    let prevEnd: number = initialEnd
+    let prevX: X|undefined = undefined
 
-//                 if (previous === undefined) {
-//                     previous = [begin_, end_]
-//                     sub.next(DataSetDiff.add(array.slice(begin_, end_)))
-//                 } else {
-//                     let [prevBegin, prevEnd] = previous
+    return new Observable(sub => {
+        stream.subscribe(([curArray, x]) => {
+            prevArray = curArray
 
-//                     let left = getDiff(begin_, prevBegin)
-//                     let right = getDiff(prevEnd, end_)
+            let nextDataSet: DataSet<A> = {}
 
-//                     if (left !== undefined) sub.next(left)
-//                     if (right !== undefined) sub.next(right)
+            for (let i = Math.max(prevBegin, 0); i < Math.min(prevEnd, curArray.length); i++) {
+                let [key, value] = curArray.getItem(i)
+                nextDataSet[key] = value
+            }
 
-//                     previous = [begin_, end_]
-//                 }
-//             }
-//         })
-//     })
-// }
+            sub.next([diffDataSet(prevDataSet, nextDataSet), x])
+
+            prevX = x
+            prevDataSet = nextDataSet
+        })
+        begin.subscribe(curBegin => {
+            if (prevArray !== undefined) {
+                let diff = new MapDiff<A>()
+
+                if (curBegin < prevBegin)
+                    for (let i = Math.max(curBegin, 0); i < Math.min(prevBegin, prevArray.length); i++) {
+                        let [key, value] = prevArray.getItem(i)
+                        diff.add(key, value)
+                    }
+                else if (prevBegin < curBegin)
+                    for (let i = Math.max(prevBegin, 0); i < Math.min(curBegin, prevArray.length); i++) {
+                        let [key, _] = prevArray.getItem(i)
+                        diff.remove(key)
+                    }
+                
+                sub.next([diff, prevX])
+
+                diff.apply(prevDataSet)
+            }
+            prevBegin = curBegin
+        })
+        end.subscribe(curEnd => {
+            if (prevArray !== undefined) {
+                let diff = new MapDiff<A>()
+
+                if (curEnd < prevEnd)
+                    for (let i = Math.max(curEnd, 0); i < Math.min(prevEnd, prevArray.length); i++) {
+                        let [key, _] = prevArray.getItem(i)
+                        diff.remove(key)
+                    }
+                else if (prevEnd < curEnd) 
+                    for (let i = Math.max(prevEnd, 0); i < Math.min(curEnd, prevArray.length); i++) {
+                        let [key, value] = prevArray.getItem(i)
+                        diff.add(key, value)
+                    }
+                sub.next([diff, prevX])
+                
+                diff.apply(prevDataSet)
+            }
+            prevEnd = curEnd
+        })    
+    })
+}
