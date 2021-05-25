@@ -1,6 +1,6 @@
 import "vis/dist/vis.min.css"
 import { AdjacencyMatrix } from "./visualizations/adjacency-matrix";
-import { visualizeNodeLinkDiagram, NodeLinkOptions } from "./visualizations/node-link";
+import { visualizeNodeLinkDiagram, NodeLinkOptions, getVisNodeSeletions } from "./visualizations/node-link";
 import { Email, getCorrespondants, parseData, Person } from "./data"
 import { merge, Observable, of, Subject } from "rxjs";
 import { map, share } from "rxjs/operators";
@@ -52,7 +52,8 @@ window.addEventListener("load", async () => {
         )
     )
 
-    visualizeNodeLinkDiagram(document.getElementById("node-links"), changesWithFewerNodes, nodeLinkOptions, 150)
+    const nodeLinkDiagram = await visualizeNodeLinkDiagram(document.getElementById("node-links"), changesWithFewerNodes, nodeLinkOptions, 150)
+    getVisNodeSeletions(nodeLinkDiagram).subscribe(selectionSubject)
 })
 
 

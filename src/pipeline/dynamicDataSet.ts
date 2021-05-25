@@ -80,7 +80,7 @@ export class MapDiff<A> {
  * Represents changes to a set of numbers
  */
 // NOTE: This is a lazy and dumb way to do this
-export type NumberSetDiff = MapDiff<null>
+export type NumberSetDiff = MapDiff<any>
 
 
 /**
@@ -102,8 +102,6 @@ export function diffDataSet<A>(prev: DataSet<A>, cur: DataSet<A>): MapDiff<A> {
 
     return diff
 }
-
-
 
 /**
  * Ignore double insertions and deletions.

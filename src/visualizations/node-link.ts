@@ -2,7 +2,8 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import * as vis from 'vis';
 import { Email, Correspondants, Person, Title } from '../data';
-import { DataSet, MapDiff } from '../pipeline/dynamicDataSet';
+import { DataSet, diffDataSet, MapDiff, NumberSetDiff } from '../pipeline/dynamicDataSet';
+import { arrayToObject, diffMapFirst, objectMap, swap } from '../utils';
 
 export type NodeLinkOptions = {
     hierarchical?: boolean,
@@ -14,7 +15,12 @@ const nodeSize = 10
 /**
  * Create a new vis.Network instance and bind it to 'container'
  */
-export async function visualizeNodeLinkDiagram(container: HTMLElement, data: Observable<[MapDiff<Person>, MapDiff<Email>]>, options: Observable<NodeLinkOptions>, maxNodes: number): Promise<void> {
+export async function visualizeNodeLinkDiagram(
+    container: HTMLElement, 
+    data: Observable<[MapDiff<Person>, MapDiff<Email>]>, 
+    options: Observable<NodeLinkOptions>, 
+    maxNodes: number
+): Promise<vis.Network> {
 
     const people: DataSet<Person> = {}
     const emails: DataSet<Email> = {}
@@ -73,6 +79,33 @@ export async function visualizeNodeLinkDiagram(container: HTMLElement, data: Obs
             y: circleLayoutRadius * Math.sin(2 * Math.PI * person.id / maxNodes),
         }
     }
+
+    return visualisation
+}
+
+/**
+ * Takes a vis Network and returns an observable of node and edge selections respectively
+ */
+export function getVisNodeSeletions(visualisation: vis.Network): Observable<[NumberSetDiff, NumberSetDiff]> {
+    return new Observable<[number[], number[]]>(sub => {
+        visualisation.on("selectNode", e => {
+            sub.next([e.edges, e.nodes])
+        })
+        visualisation.on("deselectNode", e => {
+            sub.next([e.edges, e.nodes])
+        })
+        visualisation.on("selectEdge", e => {
+            sub.next([e.edges, e.nodes])
+        })    
+        visualisation.on("deselectEdge", e => {
+            sub.next([e.edges, e.nodes])
+        })    
+    }).pipe(
+        map(([nodes, edges]): [DataSet<any>, DataSet<any>] => [arrayToObject(nodes, x => x), arrayToObject(edges, x => x)]),
+        diffMapFirst({} as DataSet<any>, diffDataSet),
+        map(swap),
+        diffMapFirst({} as DataSet<any>, diffDataSet),
+    )
 }
 
 
@@ -105,7 +138,8 @@ export function nodeLinkOptionsToVisOptions(config: NodeLinkOptions): vis.Option
             barnesHut: {
                 centralGravity: 1
             }
-        }
+        },
+        interaction: { multiselect: true}
     }
 }
 

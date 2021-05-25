@@ -200,3 +200,14 @@ export function checkBoxObserable(elm: HTMLElement): Observable<boolean> {
 export function arrayToObject<A>(data: A[], getKey: (item: A) => number): {[key: number]: A} {
     return Object.assign({}, ...data.map(item => { return { [getKey(item)]: item } }))
 }
+
+
+export function objectMap<A, B>(f: (a:A) => B, obj: {[key:number]: A}): {[key:number]: B} {
+    let newObj: {[key:number]: B} = {}
+
+    for (let id in obj) {
+        newObj[id] = f(obj[id])
+    }
+
+    return newObj
+}
