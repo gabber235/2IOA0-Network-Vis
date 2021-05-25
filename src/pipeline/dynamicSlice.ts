@@ -8,8 +8,7 @@ import { DataSet, MapDiff } from "./dynamicDataSet";
 
 
 /**
- * Takes an array of key-value pairs and a range of integers, and returns a dynamic subset of all values with indices within that range.
- * THIS FUNCTION IS NOT ONE TO ONE WHEN IT COMES TO EVENTS
+ * Takes an array of key-value pairs and an observable of ranges of integers, and returns a dynamic subset of all values with indices within that range.
  */
 export function dynamicSlice<A>(
     array: ConstArray<[number, A]>,
@@ -61,6 +60,7 @@ export function dynamicSlice<A>(
                     }
                 }
             } else {
+                // Add initial slice
                 for (let i = Math.max(curBegin, 0); i < Math.min(curEnd, array.length); i++) {
                     const [key, value] = array.getItem(i)
                     diff.add(key, value)
