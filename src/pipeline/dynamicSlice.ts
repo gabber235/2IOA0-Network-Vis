@@ -40,45 +40,49 @@ export function dynamicSlice<A, X>(
             prevDataSet = nextDataSet
         })
         begin.subscribe(curBegin => {
-            if (prevArray !== undefined) {
-                let diff = new MapDiff<A>()
+            if (curBegin <= prevEnd) {
+                if (prevArray !== undefined) {
+                    let diff = new MapDiff<A>()
 
-                if (curBegin < prevBegin)
-                    for (let i = Math.max(curBegin, 0); i < Math.min(prevBegin, prevArray.length); i++) {
-                        let [key, value] = prevArray.getItem(i)
-                        diff.add(key, value)
-                    }
-                else if (prevBegin < curBegin)
-                    for (let i = Math.max(prevBegin, 0); i < Math.min(curBegin, prevArray.length); i++) {
-                        let [key, _] = prevArray.getItem(i)
-                        diff.remove(key)
-                    }
-                
-                sub.next([diff, prevX])
+                    if (curBegin < prevBegin)
+                        for (let i = Math.max(curBegin, 0); i < Math.min(prevBegin, prevArray.length); i++) {
+                            let [key, value] = prevArray.getItem(i)
+                            diff.add(key, value)
+                        }
+                    else if (prevBegin < curBegin)
+                        for (let i = Math.max(prevBegin, 0); i < Math.min(curBegin, prevArray.length); i++) {
+                            let [key, _] = prevArray.getItem(i)
+                            diff.remove(key)
+                        }
+                    
+                    sub.next([diff, prevX])
 
-                diff.apply(prevDataSet)
+                    diff.apply(prevDataSet)
+                }
+                prevBegin = curBegin
             }
-            prevBegin = curBegin
         })
         end.subscribe(curEnd => {
-            if (prevArray !== undefined) {
-                let diff = new MapDiff<A>()
+            if (prevBegin <= curEnd) {
+                if (prevArray !== undefined) {
+                    let diff = new MapDiff<A>()
 
-                if (curEnd < prevEnd)
-                    for (let i = Math.max(curEnd, 0); i < Math.min(prevEnd, prevArray.length); i++) {
-                        let [key, _] = prevArray.getItem(i)
-                        diff.remove(key)
-                    }
-                else if (prevEnd < curEnd) 
-                    for (let i = Math.max(prevEnd, 0); i < Math.min(curEnd, prevArray.length); i++) {
-                        let [key, value] = prevArray.getItem(i)
-                        diff.add(key, value)
-                    }
-                sub.next([diff, prevX])
-                
-                diff.apply(prevDataSet)
+                    if (curEnd < prevEnd)
+                        for (let i = Math.max(curEnd, 0); i < Math.min(prevEnd, prevArray.length); i++) {
+                            let [key, _] = prevArray.getItem(i)
+                            diff.remove(key)
+                        }
+                    else if (prevEnd < curEnd) 
+                        for (let i = Math.max(prevEnd, 0); i < Math.min(curEnd, prevArray.length); i++) {
+                            let [key, value] = prevArray.getItem(i)
+                            diff.add(key, value)
+                        }
+                    sub.next([diff, prevX])
+                    
+                    diff.apply(prevDataSet)
+                }
+                prevEnd = curEnd
             }
-            prevEnd = curEnd
         })    
     })
 }
