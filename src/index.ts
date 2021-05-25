@@ -22,6 +22,8 @@ window.addEventListener("load", async () => {
     // They are represented by their id's
     const selectionSubject = new Subject<[NumberSetDiff, NumberSetDiff]>()
 
+    selectionSubject.subscribe(console.log)
+
     const baseEmailObservable = fileInputObservable(fileSelector).pipe(map(parseData))
 
     const changes = baseEmailObservable.pipe(

@@ -1,4 +1,5 @@
 import { Observable } from "rxjs"
+import { Maybe } from "./maybe"
 
 
 
@@ -155,7 +156,8 @@ export function diffMapFirst<A, B, X>(initial: A, f: (prev: A, cur: A) => B): (s
         return new Observable(sub => {
             stream.subscribe({
                 next([cur, x]) {
-                    sub.next([f(prev, cur), x])
+                    const diff = f(prev, cur)
+                    sub.next([diff, x])
                     prev = cur
                 }
             })

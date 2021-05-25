@@ -1,6 +1,7 @@
 import { Observable } from "rxjs"
 import { map } from "rxjs/operators"
 import { Email, getCorrespondantsFromSingleEmail, Person } from "../data"
+import { Maybe, None, Some } from "../maybe"
 
 export type DataSet<A> = { [id: number]: A }
 
@@ -74,6 +75,10 @@ export class MapDiff<A> {
             delete dataSet[id]
         }
     }
+
+    get isEmpty() { 
+        return this.insertions.length === 0 && this.updates.length === 0 && this.deletions.length === 0 
+    }
 }
 
 /**
@@ -84,7 +89,7 @@ export type NumberSetDiff = MapDiff<any>
 
 
 /**
- * Computes the difference between two datasets
+ * Computes the difference between two datasets which may include pointers
  */
 export function diffDataSet<A>(prev: DataSet<A>, cur: DataSet<A>): MapDiff<A> {
     let diff = new MapDiff<A>()
@@ -102,6 +107,28 @@ export function diffDataSet<A>(prev: DataSet<A>, cur: DataSet<A>): MapDiff<A> {
 
     return diff
 }
+
+/**
+ * Computes the difference between two datasets that DON'T INCLUDE POINTERS
+ */
+ export function diffPureDataSet<A>(prev: DataSet<A>, cur: DataSet<A>): MapDiff<A> {
+    let diff = new MapDiff<A>()
+
+    for (const id in cur) {
+        if (id in prev) {
+            if (prev[id] !== cur[id])
+                diff.update(+id, cur[id])
+        } else {
+            diff.add(+id, cur[id])
+        }
+    }
+    for (const id in prev) {
+        if (!(id in cur)) diff.remove(+id)
+    }
+
+    return diff
+}
+
 
 /**
  * Ignore double insertions and deletions.

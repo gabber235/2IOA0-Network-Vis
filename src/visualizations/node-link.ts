@@ -1,8 +1,8 @@
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, share } from 'rxjs/operators';
 import * as vis from 'vis';
 import { Email, Correspondants, Person, Title } from '../data';
-import { DataSet, diffDataSet, MapDiff, NumberSetDiff } from '../pipeline/dynamicDataSet';
+import { DataSet, diffDataSet, diffPureDataSet, MapDiff, NumberSetDiff } from '../pipeline/dynamicDataSet';
 import { arrayToObject, diffMapFirst, objectMap, swap } from '../utils';
 
 export type NodeLinkOptions = {
@@ -99,12 +99,13 @@ export function getVisNodeSeletions(visualisation: vis.Network): Observable<[Num
         })    
         visualisation.on("deselectEdge", e => {
             sub.next([e.edges, e.nodes])
-        })    
+        }),
+        share()
     }).pipe(
         map(([nodes, edges]): [DataSet<any>, DataSet<any>] => [arrayToObject(nodes, x => x), arrayToObject(edges, x => x)]),
-        diffMapFirst({} as DataSet<any>, diffDataSet),
+        diffMapFirst({} as DataSet<any>, diffPureDataSet),
         map(swap),
-        diffMapFirst({} as DataSet<any>, diffDataSet),
+        diffMapFirst({} as DataSet<any>, diffPureDataSet),
     )
 }
 
