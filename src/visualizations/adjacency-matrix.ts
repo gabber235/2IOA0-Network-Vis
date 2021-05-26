@@ -104,7 +104,14 @@ export class AdjacencyMatrix implements Visualization {
       nodes.forEach(function (node: Node, i) {
         node.index = i;
         node.count = 0;
-        matrix[i] = d3.range(n).map(function (j) { return { x: j, y: i, z: 0, selected: false, from: node, to: nodes[j] }; });
+        matrix[i] = d3.range(n).map(function (j) { 
+          return { 
+            x: j, 
+            y: i, 
+            z: 0, 
+            selected: false, 
+            from: node, 
+            to: nodes[j] }; });
       });
 
 
