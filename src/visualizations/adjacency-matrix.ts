@@ -2,7 +2,7 @@ import { Visualization } from './visualization'
 import { Email, Person, Title, parseData, getCorrespondants } from "../data";
 import * as d3 from "d3";
 import { Observable } from 'rxjs';
-import { DataSetDiff } from '../pipeline/dynamicDataSet';
+import { DataSetDiff, DataSet } from '../pipeline/dynamicDataSet';
 
 
 type Node = {
@@ -23,27 +23,30 @@ export class AdjacencyMatrix implements Visualization {
   async visualize(data: Observable<[DataSetDiff<Person>, DataSetDiff<Email>]>): Promise<void> {
     // document.body.appendChild(div({}, [text("Adjacency-matrix")]));
 
+    // let persons: DataSet<Person> = {};
+    let emails: DataSet<Email> = {};
+
     data.subscribe(event => {
-      console.log(event)
+      // console.log(event)
 
-      let personDiff = event[0].insertions;
-      let emailsDiff = event[1].insertions;
+      // implement the changes given by the diffs
+      // const personDiff = event[0];
+      // personDiff.apply(persons)
+      const emailsDiff = event[1];
+      emailsDiff.update
+      emailsDiff.apply(emails)
 
-      // this is an extremely hacky temporary solution
-      const emails: Email[] = [];
-      emailsDiff.forEach(e => {
-        emails.push(e.value);
-      });
+      // const personList = Object.values(persons);
+      const emailList = Object.values(emails)
 
       // Creating array with person object
-      const correspondants = getCorrespondants(emails); //dictionary with persons
-      let persons = Object.values(correspondants);
+      const correspondants = Object.values(getCorrespondants(emailList)); //dictionary with persons
 
       // turn personlist into nodes for adjacency matrix
-      const nodes = peopleToNodes(persons);
+      const nodes = peopleToNodes(correspondants);
 
       // get edges
-      const links = edgeHash(emails, nodes);
+      const links = edgeHash(emailList, nodes);
 
       // call adjacency matrix  
       // createAdjacencyMatrix(filteredCorrespondants, emailsToEdges(emails), svg);
