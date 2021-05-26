@@ -2,12 +2,13 @@ import "vis/dist/vis.min.css"
 import { AdjacencyMatrix } from "./visualizations/adjacency-matrix";
 import { visualizeNodeLinkDiagram, NodeLinkOptions, getVisNodeSeletions } from "./visualizations/node-link";
 import { Email, getCorrespondants, parseData, Person } from "./data"
-import { combineLatest, merge, Subject } from "rxjs";
+import { combineLatest, identity, merge, Subject } from "rxjs";
 import { debounceTime, map, share, switchAll } from "rxjs/operators";
-import { DataSet, DataSetDiff, diffDataSet, getDynamicCorrespondants, NumberSetDiff } from "./pipeline/dynamicDataSet";
-import { ConstArray, swap } from "./utils";
+import { DataSet, DataSetDiff, diffDataSet, NumberSetDiff } from "./pipeline/dynamicDataSet";
+import { getDynamicCorrespondants } from "./pipeline/getDynamicCorrespondants";
+import { ConstArray, pair, pairMap2, swap } from "./utils";
 import { prettifyFileInput } from "./looks";
-import { checkBoxObserable, diffMapFirst, fileInputObservable, sliderToObservable } from "./pipeline/basics";
+import { checkBoxObserable, diffStream, fileInputObservable, sliderToObservable } from "./pipeline/basics";
 import { dynamicSlice } from "./pipeline/dynamicSlice";
 
 const logo = require('../resources/static/logo.png')
@@ -44,16 +45,15 @@ window.addEventListener("load", async () => {
             getCorrespondants(emails)
         ]),
         map(([emails, people]) =>
-            dynamicSlice(emails, range).pipe(map((diff): [DataSetDiff<Email>, DataSet<Person>] => [diff, people]))),
+            dynamicSlice(emails, range).pipe(map((emailDiff) => pair(people, emailDiff)))),
         switchAll(),
-        map(swap),
-        diffMapFirst({} as DataSet<Person>, diffDataSet),
-        share()
+        diffStream(pair({} as DataSet<Person>, new DataSetDiff()), pairMap2(diffDataSet, (_, x) => x)),
+        share(),
     )
 
     const changesWithFewerNodes = changes.pipe(
-        map(swap),
-        getDynamicCorrespondants,
+        map(([_, emails]) => emails),
+        getDynamicCorrespondants(identity),
         map(([people, emails]): [DataSetDiff<Person>, DataSetDiff<Email>] => [people, emails])
     )
 

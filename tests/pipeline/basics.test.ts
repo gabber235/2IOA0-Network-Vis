@@ -1,8 +1,8 @@
-import { Observable, of } from "rxjs"
-import { map } from "rxjs/operators"
-import { diffMapFirst, foldDiffFirst, observableToArray } from "../../src/pipeline/basics"
-import { DataSet, diffDataSet, diffPureDataSet, DataSetDiff } from "../../src/pipeline/dynamicDataSet"
-import * as utils from "../../src/utils"
+import { identity, Observable, of } from "rxjs"
+import { map, scan } from "rxjs/operators"
+import { diffStream, observableToArray } from "../../src/pipeline/basics"
+import { DataSet, diffDataSet, diffPureDataSet, DataSetDiff, foldDataSet } from "../../src/pipeline/dynamicDataSet"
+import { pairMap2, pair, pairMap } from "../../src/utils"
 
 describe("pipeline.basics.observableToArray", () => {
     test("0", () => {
@@ -15,7 +15,7 @@ describe("pipeline.basics.observableToArray", () => {
 describe("pipeline.basics.diffMapFirst", () => {
     test("0", () => {
         const stream: Observable<[DataSet<string>, number]> = of([{1:"a", 2: "b"}, 0], [{1: "c", 3: "d"}, 1], [{1: "c", 2: "b"}, 2]) as any
-        const diffed = stream.pipe(diffMapFirst({} as DataSet<string>, diffDataSet))
+        const diffed = stream.pipe(diffStream(pair({}, 0), pairMap2(diffDataSet, (_, x) => x)))
 
         expect(observableToArray(diffed)).toEqual([
             [new DataSetDiff([{id: 1, value: "a"}, {id: 2, value: "b"}], [], []), 0],
@@ -25,7 +25,7 @@ describe("pipeline.basics.diffMapFirst", () => {
     })
     test("1", () => {
         const stream: Observable<[DataSet<string>, number]> = of([{1:"a", 2: "b"}, 0], [{1: "c", 3: "d"}, 1], [{1: "c", 2: "b"}, 2]) as any
-        const diffed = stream.pipe(diffMapFirst({} as DataSet<string>, diffPureDataSet))
+        const diffed = stream.pipe(diffStream(pair({}, 0), pairMap2(diffPureDataSet, (_, x) => x)))
 
         expect(observableToArray(diffed)).toEqual([
             [new DataSetDiff([{id: 1, value: "a"}, {id: 2, value: "b"}], [], []), 0],
@@ -44,7 +44,10 @@ describe("pipeline.basics.foldDiffFirst", () => {
             [new DataSetDiff([{id: 2, value: "b"}], [], [{id: 3}]), 2]
         ) as any
 
-        const folded = stream.pipe(foldDiffFirst, map(([i, j]): [DataSet<string>, number] => [Object.assign({}, i), j]))
+        const folded = stream.pipe(
+            scan(pairMap2(foldDataSet, (_, x) => x), [{}, 0]), 
+            map(([i, j]) => pair(Object.assign({}, i), j)),
+        )
 
         expect(observableToArray(folded)).toEqual([
             [{1:"a", 2: "b"}, 0],

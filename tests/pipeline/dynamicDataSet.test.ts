@@ -1,8 +1,10 @@
-import { Observable, of } from "rxjs"
-import { map } from "rxjs/operators"
+import { identity, Observable, of } from "rxjs"
+import { map, scan } from "rxjs/operators"
 import { Email, Person } from "../../src/data"
-import { diffMapFirst, foldDiffFirst, observableToArray } from "../../src/pipeline/basics"
-import { DataSet, diffDataSet, getDynamicCorrespondants, ignoreDoubles, DataSetDiff } from "../../src/pipeline/dynamicDataSet"
+import { diffStream, observableToArray } from "../../src/pipeline/basics"
+import { DataSet, diffDataSet, DataSetDiff, foldDataSet } from "../../src/pipeline/dynamicDataSet"
+import { getDynamicCorrespondants } from "../../src/pipeline/getDynamicCorrespondants"
+import { copyObject, pair, pairMap, pairMap2, tripple, trippleMap, trippleMap2 } from "../../src/utils"
 
 function dummyEmail(id: number, from: number, to: number): Email {
     return {
@@ -26,29 +28,29 @@ function dummyPerson(id: number): Person {
     }
 }
 
-describe("pipeline.dynamicDataSet.ignoreDoubles", () => {
-    test("0", () => {
-        const stream: Observable<[DataSetDiff<string>, number]> = of(
-            [new DataSetDiff([{id: 1, value: "a"}, {id: 2, value: "b"}, {id: 1, value: "a"}], [], []), 0],
-            [new DataSetDiff([{id: 1, value: "a"}, {id: 2, value: "b"}], [], []), 1],
-            [new DataSetDiff([{id: 3, value: "d"}], [{id: 1, value: "c"}], [{id: 2}, {id: 2}]), 2],
-            [new DataSetDiff([{id: 3, value: "d"}], [{id: 1, value: "c"}], [{id: 2}]), 3],
-            [new DataSetDiff([{id: 2, value: "b"}], [], [{id: 3}]), 4],
-            [new DataSetDiff([{id: 2, value: "b"}], [], [{id: 3}]), 5],
-        ) as any
+// describe("pipeline.dynamicDataSet.ignoreDoubles", () => {
+//     test("0", () => {
+//         const stream: Observable<[DataSetDiff<string>, number]> = of(
+//             [new DataSetDiff([{id: 1, value: "a"}, {id: 2, value: "b"}, {id: 1, value: "a"}], [], []), 0],
+//             [new DataSetDiff([{id: 1, value: "a"}, {id: 2, value: "b"}], [], []), 1],
+//             [new DataSetDiff([{id: 3, value: "d"}], [{id: 1, value: "c"}], [{id: 2}, {id: 2}]), 2],
+//             [new DataSetDiff([{id: 3, value: "d"}], [{id: 1, value: "c"}], [{id: 2}]), 3],
+//             [new DataSetDiff([{id: 2, value: "b"}], [], [{id: 3}]), 4],
+//             [new DataSetDiff([{id: 2, value: "b"}], [], [{id: 3}]), 5],
+//         ) as any
 
-        const x = stream.pipe(ignoreDoubles)
+//         const x = stream.pipe(ignoreDoubles)
 
-        expect(observableToArray(x)).toEqual([
-            [new DataSetDiff([{id: 1, value: "a"}, {id: 2, value: "b"}], [], []), 0],
-            [new DataSetDiff(), 1],
-            [new DataSetDiff([{id: 3, value: "d"}], [{id: 1, value: "c"}], [{id: 2}]), 2],
-            [new DataSetDiff([], [{id: 1, value: "c"}], []), 3],
-            [new DataSetDiff([{id: 2, value: "b"}], [], [{id: 3}]), 4],
-            [new DataSetDiff(), 5],
-        ])
-    })
-})
+//         expect(observableToArray(x)).toEqual([
+//             [new DataSetDiff([{id: 1, value: "a"}, {id: 2, value: "b"}], [], []), 0],
+//             [new DataSetDiff(), 1],
+//             [new DataSetDiff([{id: 3, value: "d"}], [{id: 1, value: "c"}], [{id: 2}]), 2],
+//             [new DataSetDiff([], [{id: 1, value: "c"}], []), 3],
+//             [new DataSetDiff([{id: 2, value: "b"}], [], [{id: 3}]), 4],
+//             [new DataSetDiff(), 5],
+//         ])
+//     })
+// })
 
 
 
@@ -77,16 +79,11 @@ describe("pipeline.dynamicDataSet.getDynamicCorrespondants", () => {
         ) as any
 
         const x = stream.pipe(
-            diffMapFirst({} as DataSet<Email>, diffDataSet),
-            getDynamicCorrespondants,
-            map(([a,b,c]): [DataSetDiff<Person>, [DataSetDiff<Email>, number]] => [a, [b,c]]),
-            foldDiffFirst,
-            map(([a,[b,c]]): [DataSetDiff<Email>, [DataSet<Person>, number]] => [b, [a,c]]),
-            foldDiffFirst,
-            map(([a,[b,c]]): [DataSet<Person>, DataSet<Email>, number] => [b, a, c]),
-            map(([a, b, c]): [DataSet<Person>, DataSet<Email>, number] => [
-                Object.assign({}, a), Object.assign({}, b), c
-            ])
+            diffStream(pair({} as DataSet<Email>, 0), pairMap2(diffDataSet, (_, x) => x)),
+            getDynamicCorrespondants(([email, _]) => email),
+            map(([a,[b,c]]) => tripple(a,b,c)),
+            scan(trippleMap2(foldDataSet, foldDataSet, (_, x) => x), tripple({}, {}, 0)),
+            map(trippleMap(copyObject, copyObject, identity))
         )
 
         expect(observableToArray(x)).toEqual([

@@ -158,7 +158,53 @@ export function objectMap<A, B>(f: (a:A) => B, obj: {[key:number]: A}): {[key:nu
     return newObj
 }
 
-
+/**
+ * Represents an immutable array
+ */
 export type ConstArray<A> = {getItem: (index: number) => A, length: number}
 
 
+export function pair<A,B>(a: A, b: B): [A, B] {
+    return [a, b]
+}
+export function tripple<A,B,C>(a: A, b: B, c: C): [A, B, C] {
+    return [a, b, c]
+}
+export function tuple4<A,B,C,D>(a: A, b: B, c: C, d: D): [A, B, C, D] {
+    return [a, b, c, d]
+}
+export function tuple5<A,B,C,D,E>(a: A, b: B, c: C, d: D, e: E): [A, B, C, D, E] {
+    return [a, b, c, d, e]
+}
+
+
+export function pairMap<A,B,C,D>(f1: (a: A) => B, f2: (a: C) => D) {
+    return (tuple: [A, C]): [B, D] => [f1(tuple[0]), f2(tuple[1])]
+}
+
+
+export function pairMap2<A,B,C,D,E,F>(f1: (a: A, b: B) => C, f2: (d: D, e: E) => F) {
+    return (tuple1: [A, D], tuple2: [B, E]): [C, F] => 
+        [f1(tuple1[0], tuple2[0]), f2(tuple1[1], tuple2[1])]
+}
+
+export function trippleMap<A,B,C,D,E,F>(f1: (a: A) => B, f2: (a: C) => D, f3: (a: E) => F) {
+    return (tuple: [A, C, E]): [B, D, F] => [f1(tuple[0]), f2(tuple[1]), f3(tuple[2])]
+}
+
+
+export function trippleMap2<A,B,C,D,E,F,G,H,I>(
+    f1: (a: A, b: B) => C, 
+    f2: (d: D, e: E) => F, 
+    f3: (d: G, e: H) => I
+) {
+    return (tuple1: [A, D, G], tuple2: [B, E, H]): [C, F, I] => 
+        [f1(tuple1[0], tuple2[0]), f2(tuple1[1], tuple2[1]), f3(tuple1[2], tuple2[2])]
+}
+
+
+
+
+export function copyObject<A>(x: A): A {
+    return Object.assign({}, x)
+}

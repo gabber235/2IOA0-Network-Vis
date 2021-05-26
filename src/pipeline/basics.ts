@@ -1,23 +1,18 @@
 import { Observable } from "rxjs"
-import { DataSet, DataSetDiff } from "./dynamicDataSet"
-
 
 
 /**
- * Applies a given diff'ing function to the first item in a tuple in an observable of tuples
+ * Creates a an observable of diff's using the given diff'ing function
  */
- export function diffMapFirst<A, B, X>(initial: A, f: (prev: A, cur: A) => B): (stream: Observable<[A, X]>) => Observable<[B, X]> {
-    return stream => {
+export function diffStream<A,B>(initial: A, diff: (x: A, y: A) => B) {
+    return (stream: Observable<A>): Observable<B> => {
         let prev: A = initial
 
         return new Observable(sub => {
-            stream.subscribe({
-                next([cur, x]) {
-                    const diff = f(prev, cur)
-                    sub.next([diff, x])
-                    prev = cur
-                }
-            })
+            stream.subscribe(cur => {
+                sub.next(diff(prev, cur))
+                prev = cur
+            })    
         })
     }
 }
@@ -77,18 +72,4 @@ export function observableToArray<A>(stream: Observable<A>): A[] {
     return arr
 }
 
-/**
- * Converts a stream of diff's to a stream of dataset's, IT DOESN'T COPY THE DATASETS
- */
-export function foldDiffFirst<A,X>(stream: Observable<[DataSetDiff<A>, X]>): Observable<[DataSet<A>, X]> {
-    
-    const dataset: DataSet<A> = {}
-    
-    return new Observable(sub => {
-        stream.subscribe(([diff, x]) => {
-            diff.apply(dataset)
-            
-            sub.next([dataset, x])
-        })
-    })
-}
+

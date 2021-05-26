@@ -1,7 +1,7 @@
 import { Observable, of, Subject } from "rxjs"
-import { map, share } from "rxjs/operators"
-import { foldDiffFirst, observableToArray } from "../../src/pipeline/basics"
-import { DataSet, DataSetDiff } from "../../src/pipeline/dynamicDataSet"
+import { map, scan, share } from "rxjs/operators"
+import { observableToArray } from "../../src/pipeline/basics"
+import { DataSet, DataSetDiff, foldDataSet } from "../../src/pipeline/dynamicDataSet"
 import { dynamicSlice } from "../../src/pipeline/dynamicSlice"
 
 
@@ -11,20 +11,19 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
         const range: Observable<[number, number]> = of([0, 5])
 
         const sliced = dynamicSlice(array, range).pipe(
-            map((x): [DataSetDiff<number>, null] => [x, null]),
-            foldDiffFirst,
-            map(([a, b]): [DataSet<number>, null] => [Object.assign({}, a), b])
+            scan(foldDataSet, {} as DataSet<number>),
+            map(a => Object.assign({}, a)),
         )
         
         expect(observableToArray(sliced))
         .toEqual([
-            [{
+            {
                 0: 0,
                 1: 1,
                 2: 2,
                 3: 3,
                 4: 4,
-            }, null]
+            }
         ])
     })
     test("1", () => {
@@ -32,20 +31,19 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
         const range: Observable<[number, number]> = of([0, 5])
 
         const sliced = dynamicSlice(array, range).pipe(
-            map((x): [DataSetDiff<number>, null] => [x, null]),
-            foldDiffFirst,
-            map(([a, b]): [DataSet<number>, null] => [Object.assign({}, a), b])
+            scan(foldDataSet, {} as DataSet<number>),
+            map(a => Object.assign({}, a)),
         )
 
         expect(observableToArray(sliced))
         .toEqual([
-            [{
+            {
                 0: 0,
                 1: 1,
                 2: 2,
                 3: 3,
                 4: 4,
-            }, null]
+            }
         ])
     })
     test("2", () => {
@@ -53,21 +51,20 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
         const range: Observable<[number, number]> = of([0, 5], [0, 10]) as any
 
         const sliced = dynamicSlice(array, range).pipe(
-            map((x): [DataSetDiff<number>, null] => [x, null]),
-            foldDiffFirst,
-            map(([a, b]) => [Object.assign({}, a), b])
+            scan(foldDataSet, {} as DataSet<number>),
+            map(a => Object.assign({}, a)),
         )
 
         expect(observableToArray(sliced))
         .toEqual([
-            [{
+            {
                 0: 0,
                 1: 1,
                 2: 2,
                 3: 3,
                 4: 4,
-            }, null],
-            [{
+            },
+            {
                 0: 0,
                 1: 1,
                 2: 2,
@@ -78,7 +75,7 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
                 7: 7,
                 8: 8,
                 9: 9,
-            }, null],
+            },
         ])
     })
     test("3", () => {
@@ -87,9 +84,8 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
 
 
         const sliced = dynamicSlice(array, range).pipe(
-            map((x): [DataSetDiff<number>, null] => [x, null]),
-            foldDiffFirst,
-            map(([a, b]): [DataSet<number>, null] => [Object.assign({}, a), b])
+            scan(foldDataSet, {} as DataSet<number>),
+            map(a => Object.assign({}, a)),
         )
 
         const arr = observableToArray(sliced)
@@ -100,14 +96,14 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
 
         expect(arr)
         .toEqual([
-            [{
+            {
                 0: 0,
                 1: 1,
                 2: 2,
                 3: 3,
                 4: 4,
-            }, null],
-            [{
+            },
+            {
                 0: 0,
                 1: 1,
                 2: 2,
@@ -118,14 +114,14 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
                 7: 7,
                 8: 8,
                 9: 9,
-            }, null],
-            [{
+            },
+            {
                 5: 5,
                 6: 6,
                 7: 7,
                 8: 8,
                 9: 9,
-            }, null],
+            },
         ])
     })
     test("4", () => {
@@ -134,9 +130,8 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
 
 
         const sliced = dynamicSlice(array, range).pipe(
-            map((x): [DataSetDiff<number>, null] => [x, null]),
-            foldDiffFirst,
-            map(([a, b]): [DataSet<number>, null] => [Object.assign({}, a), b])
+            scan(foldDataSet, {} as DataSet<number>),
+            map(a => Object.assign({}, a)),
         )
 
         const arr = observableToArray(sliced)
@@ -150,33 +145,14 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
 
         expect(arr)
         .toEqual([
-            [{
+            {
                 0: 0,
                 1: 1,
                 2: 2,
                 3: 3,
                 4: 4,
-            }, null],
-            [{
-                0: 0,
-                1: 1,
-                2: 2,
-                3: 3,
-                4: 4,
-                5: 5,
-                6: 6,
-                7: 7,
-                8: 8,
-                9: 9,
-            }, null],
-            [{
-                5: 5,
-                6: 6,
-                7: 7,
-                8: 8,
-                9: 9,
-            }, null],
-            [{
+            },
+            {
                 0: 0,
                 1: 1,
                 2: 2,
@@ -187,12 +163,31 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
                 7: 7,
                 8: 8,
                 9: 9,
-            }, null],
-            [{
+            },
+            {
+                5: 5,
+                6: 6,
+                7: 7,
+                8: 8,
+                9: 9,
+            },
+            {
                 0: 0,
                 1: 1,
                 2: 2,
-            }, null],
+                3: 3,
+                4: 4,
+                5: 5,
+                6: 6,
+                7: 7,
+                8: 8,
+                9: 9,
+            },
+            {
+                0: 0,
+                1: 1,
+                2: 2,
+            },
         ])
     })
     test("5", () => {
@@ -202,9 +197,8 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
 
         
         const sliced = dynamicSlice(array, range).pipe(
-            map((x): [DataSetDiff<number>, null] => [x, null]),
-            foldDiffFirst,
-            map(([a, b]): [DataSet<number>, null] => [Object.assign({}, a), b])
+            scan(foldDataSet, {} as DataSet<number>),
+            map(a => Object.assign({}, a)),
         )
 
         const arr = observableToArray(sliced)
@@ -214,20 +208,20 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
 
         expect(arr)
         .toEqual([
-            [{
+            {
                 0: 0,
                 1: 1,
                 2: 2,
                 3: 3,
                 4: 4,
-            }, null],
-            [{
+            },
+            {
                 10: 10,
                 11: 11,
                 12: 12,
                 13: 13,
                 14: 14,
-            }, null],
+            },
         ])
     })
 })
