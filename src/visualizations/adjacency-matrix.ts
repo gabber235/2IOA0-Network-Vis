@@ -80,18 +80,7 @@ export class AdjacencyMatrix implements Visualization {
         // .style("margin-left", -margin.left + "px")
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-      } else {
-        // SVG already exists; clear it 
-        d3.select("#AM-SVG").remove();
-        d3.select("#adj-matrix").append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .attr("id", "AM-SVG")
-        // .style("margin-left", -margin.left + "px")
-        .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
       }
-
       let svg = d3.select("#AM-SVG");
 
 
@@ -208,12 +197,15 @@ export class AdjacencyMatrix implements Visualization {
           .on("click", clickCell);
       }
 
-      // create tooltip 
-      const tooltip = d3.select("#adj-matrix")
+      // create tooltip
+      let tooltip: d3.Selection<HTMLDivElement, unknown, any, any>;
+      if (document.getElementsByClassName("tooltip").length === 0){
+        tooltip = d3.select("#adj-matrix")
         .append("div")
         .style("position", "absolute")
         .style("visibility", "hidden")
         .attr("class", "tooltip")
+        .attr("id", "AM-tooltip")
         .style("background-color", "white")
         .style("border", "solid")
         .style("border-width", "1px")
@@ -222,6 +214,8 @@ export class AdjacencyMatrix implements Visualization {
         .style("font-size", "12px")
         .style("left", "10px").style("top", "10px")
         .style("text-align", "left")
+      }
+      tooltip = d3.select("#AM-tooltip");
 
 
       function tooltipHTML(c: Cell): string {
