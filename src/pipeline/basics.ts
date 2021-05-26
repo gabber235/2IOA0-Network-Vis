@@ -1,5 +1,5 @@
 import { Observable } from "rxjs"
-import { DataSet, MapDiff } from "./dynamicDataSet"
+import { DataSet, DataSetDiff } from "./dynamicDataSet"
 
 
 
@@ -80,7 +80,7 @@ export function observableToArray<A>(stream: Observable<A>): A[] {
 /**
  * Converts a stream of diff's to a stream of dataset's, IT DOESN'T COPY THE DATASETS
  */
-export function foldDiffFirst<A,X>(stream: Observable<[MapDiff<A>, X]>): Observable<[DataSet<A>, X]> {
+export function foldDiffFirst<A,X>(stream: Observable<[DataSetDiff<A>, X]>): Observable<[DataSet<A>, X]> {
     
     const dataset: DataSet<A> = {}
     

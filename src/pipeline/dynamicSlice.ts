@@ -3,7 +3,7 @@
 
 import { Observable } from "rxjs";
 import { ConstArray } from "../utils";
-import { DataSet, MapDiff } from "./dynamicDataSet";
+import { DataSet, DataSetDiff } from "./dynamicDataSet";
 
 
 
@@ -13,7 +13,7 @@ import { DataSet, MapDiff } from "./dynamicDataSet";
 export function dynamicSlice<A>(
     array: ConstArray<[number, A]>,
     range: Observable<[number, number]>
-): Observable<MapDiff<A>> {
+): Observable<DataSetDiff<A>> {
 
     let prevDataSet: DataSet<A> = {}
     let prevBegin: number|undefined = undefined
@@ -24,7 +24,7 @@ export function dynamicSlice<A>(
     return new Observable(sub => {
 
         range.subscribe(([curBegin, curEnd]) => {
-            const diff = new MapDiff<A>()
+            const diff = new DataSetDiff<A>()
 
             if (prevBegin !== undefined && prevEnd !== undefined) {
                 if (curBegin <= prevEnd && prevBegin <= curEnd) {

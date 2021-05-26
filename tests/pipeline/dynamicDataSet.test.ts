@@ -2,7 +2,7 @@ import { Observable, of } from "rxjs"
 import { map } from "rxjs/operators"
 import { Email, Person } from "../../src/data"
 import { diffMapFirst, foldDiffFirst, observableToArray } from "../../src/pipeline/basics"
-import { DataSet, diffDataSet, getDynamicCorrespondants, ignoreDoubles, MapDiff } from "../../src/pipeline/dynamicDataSet"
+import { DataSet, diffDataSet, getDynamicCorrespondants, ignoreDoubles, DataSetDiff } from "../../src/pipeline/dynamicDataSet"
 
 function dummyEmail(id: number, from: number, to: number): Email {
     return {
@@ -28,24 +28,24 @@ function dummyPerson(id: number): Person {
 
 describe("pipeline.dynamicDataSet.ignoreDoubles", () => {
     test("0", () => {
-        const stream: Observable<[MapDiff<string>, number]> = of(
-            [new MapDiff([{id: 1, value: "a"}, {id: 2, value: "b"}, {id: 1, value: "a"}], [], []), 0],
-            [new MapDiff([{id: 1, value: "a"}, {id: 2, value: "b"}], [], []), 1],
-            [new MapDiff([{id: 3, value: "d"}], [{id: 1, value: "c"}], [{id: 2}, {id: 2}]), 2],
-            [new MapDiff([{id: 3, value: "d"}], [{id: 1, value: "c"}], [{id: 2}]), 3],
-            [new MapDiff([{id: 2, value: "b"}], [], [{id: 3}]), 4],
-            [new MapDiff([{id: 2, value: "b"}], [], [{id: 3}]), 5],
+        const stream: Observable<[DataSetDiff<string>, number]> = of(
+            [new DataSetDiff([{id: 1, value: "a"}, {id: 2, value: "b"}, {id: 1, value: "a"}], [], []), 0],
+            [new DataSetDiff([{id: 1, value: "a"}, {id: 2, value: "b"}], [], []), 1],
+            [new DataSetDiff([{id: 3, value: "d"}], [{id: 1, value: "c"}], [{id: 2}, {id: 2}]), 2],
+            [new DataSetDiff([{id: 3, value: "d"}], [{id: 1, value: "c"}], [{id: 2}]), 3],
+            [new DataSetDiff([{id: 2, value: "b"}], [], [{id: 3}]), 4],
+            [new DataSetDiff([{id: 2, value: "b"}], [], [{id: 3}]), 5],
         ) as any
 
         const x = stream.pipe(ignoreDoubles)
 
         expect(observableToArray(x)).toEqual([
-            [new MapDiff([{id: 1, value: "a"}, {id: 2, value: "b"}], [], []), 0],
-            [new MapDiff(), 1],
-            [new MapDiff([{id: 3, value: "d"}], [{id: 1, value: "c"}], [{id: 2}]), 2],
-            [new MapDiff([], [{id: 1, value: "c"}], []), 3],
-            [new MapDiff([{id: 2, value: "b"}], [], [{id: 3}]), 4],
-            [new MapDiff(), 5],
+            [new DataSetDiff([{id: 1, value: "a"}, {id: 2, value: "b"}], [], []), 0],
+            [new DataSetDiff(), 1],
+            [new DataSetDiff([{id: 3, value: "d"}], [{id: 1, value: "c"}], [{id: 2}]), 2],
+            [new DataSetDiff([], [{id: 1, value: "c"}], []), 3],
+            [new DataSetDiff([{id: 2, value: "b"}], [], [{id: 3}]), 4],
+            [new DataSetDiff(), 5],
         ])
     })
 })
@@ -79,9 +79,9 @@ describe("pipeline.dynamicDataSet.getDynamicCorrespondants", () => {
         const x = stream.pipe(
             diffMapFirst({} as DataSet<Email>, diffDataSet),
             getDynamicCorrespondants,
-            map(([a,b,c]): [MapDiff<Person>, [MapDiff<Email>, number]] => [a, [b,c]]),
+            map(([a,b,c]): [DataSetDiff<Person>, [DataSetDiff<Email>, number]] => [a, [b,c]]),
             foldDiffFirst,
-            map(([a,[b,c]]): [MapDiff<Email>, [DataSet<Person>, number]] => [b, [a,c]]),
+            map(([a,[b,c]]): [DataSetDiff<Email>, [DataSet<Person>, number]] => [b, [a,c]]),
             foldDiffFirst,
             map(([a,[b,c]]): [DataSet<Person>, DataSet<Email>, number] => [b, a, c]),
             map(([a, b, c]): [DataSet<Person>, DataSet<Email>, number] => [

@@ -3,7 +3,7 @@ import { map, share } from 'rxjs/operators';
 import * as vis from 'vis';
 import { Email, Person, } from '../data';
 import { diffMapFirst } from '../pipeline/basics';
-import { DataSet, diffPureDataSet, MapDiff, NumberSetDiff } from '../pipeline/dynamicDataSet';
+import { DataSet, diffPureDataSet, DataSetDiff, NumberSetDiff } from '../pipeline/dynamicDataSet';
 import { arrayToObject, swap } from '../utils';
 
 export type NodeLinkOptions = {
@@ -18,7 +18,7 @@ const nodeSize = 10
  */
 export async function visualizeNodeLinkDiagram(
     container: HTMLElement, 
-    data: Observable<[MapDiff<Person>, MapDiff<Email>]>, 
+    data: Observable<[DataSetDiff<Person>, DataSetDiff<Email>]>, 
     options: Observable<NodeLinkOptions>, 
     maxNodes: number
 ): Promise<vis.Network> {

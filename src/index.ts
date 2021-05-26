@@ -4,7 +4,7 @@ import { visualizeNodeLinkDiagram, NodeLinkOptions, getVisNodeSeletions } from "
 import { Email, getCorrespondants, parseData, Person } from "./data"
 import { combineLatest, merge, Subject } from "rxjs";
 import { debounceTime, map, share, switchAll } from "rxjs/operators";
-import { DataSet, MapDiff, diffDataSet, getDynamicCorrespondants, NumberSetDiff } from "./pipeline/dynamicDataSet";
+import { DataSet, DataSetDiff, diffDataSet, getDynamicCorrespondants, NumberSetDiff } from "./pipeline/dynamicDataSet";
 import { ConstArray, swap } from "./utils";
 import { prettifyFileInput } from "./looks";
 import { checkBoxObserable, diffMapFirst, fileInputObservable, sliderToObservable } from "./pipeline/basics";
@@ -44,7 +44,7 @@ window.addEventListener("load", async () => {
             getCorrespondants(emails)
         ]),
         map(([emails, people]) =>
-            dynamicSlice(emails, range).pipe(map((diff): [MapDiff<Email>, DataSet<Person>] => [diff, people]))),
+            dynamicSlice(emails, range).pipe(map((diff): [DataSetDiff<Email>, DataSet<Person>] => [diff, people]))),
         switchAll(),
         map(swap),
         diffMapFirst({} as DataSet<Person>, diffDataSet),
@@ -54,7 +54,7 @@ window.addEventListener("load", async () => {
     const changesWithFewerNodes = changes.pipe(
         map(swap),
         getDynamicCorrespondants,
-        map(([people, emails]): [MapDiff<Person>, MapDiff<Email>] => [people, emails])
+        map(([people, emails]): [DataSetDiff<Person>, DataSetDiff<Email>] => [people, emails])
     )
 
 

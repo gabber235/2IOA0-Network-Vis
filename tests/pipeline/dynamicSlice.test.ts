@@ -1,7 +1,7 @@
 import { Observable, of, Subject } from "rxjs"
 import { map, share } from "rxjs/operators"
 import { foldDiffFirst, observableToArray } from "../../src/pipeline/basics"
-import { DataSet, MapDiff } from "../../src/pipeline/dynamicDataSet"
+import { DataSet, DataSetDiff } from "../../src/pipeline/dynamicDataSet"
 import { dynamicSlice } from "../../src/pipeline/dynamicSlice"
 
 
@@ -11,7 +11,7 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
         const range: Observable<[number, number]> = of([0, 5])
 
         const sliced = dynamicSlice(array, range).pipe(
-            map((x): [MapDiff<number>, null] => [x, null]),
+            map((x): [DataSetDiff<number>, null] => [x, null]),
             foldDiffFirst,
             map(([a, b]): [DataSet<number>, null] => [Object.assign({}, a), b])
         )
@@ -32,7 +32,7 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
         const range: Observable<[number, number]> = of([0, 5])
 
         const sliced = dynamicSlice(array, range).pipe(
-            map((x): [MapDiff<number>, null] => [x, null]),
+            map((x): [DataSetDiff<number>, null] => [x, null]),
             foldDiffFirst,
             map(([a, b]): [DataSet<number>, null] => [Object.assign({}, a), b])
         )
@@ -53,7 +53,7 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
         const range: Observable<[number, number]> = of([0, 5], [0, 10]) as any
 
         const sliced = dynamicSlice(array, range).pipe(
-            map((x): [MapDiff<number>, null] => [x, null]),
+            map((x): [DataSetDiff<number>, null] => [x, null]),
             foldDiffFirst,
             map(([a, b]) => [Object.assign({}, a), b])
         )
@@ -87,7 +87,7 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
 
 
         const sliced = dynamicSlice(array, range).pipe(
-            map((x): [MapDiff<number>, null] => [x, null]),
+            map((x): [DataSetDiff<number>, null] => [x, null]),
             foldDiffFirst,
             map(([a, b]): [DataSet<number>, null] => [Object.assign({}, a), b])
         )
@@ -134,7 +134,7 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
 
 
         const sliced = dynamicSlice(array, range).pipe(
-            map((x): [MapDiff<number>, null] => [x, null]),
+            map((x): [DataSetDiff<number>, null] => [x, null]),
             foldDiffFirst,
             map(([a, b]): [DataSet<number>, null] => [Object.assign({}, a), b])
         )
@@ -202,7 +202,7 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
 
         
         const sliced = dynamicSlice(array, range).pipe(
-            map((x): [MapDiff<number>, null] => [x, null]),
+            map((x): [DataSetDiff<number>, null] => [x, null]),
             foldDiffFirst,
             map(([a, b]): [DataSet<number>, null] => [Object.assign({}, a), b])
         )
