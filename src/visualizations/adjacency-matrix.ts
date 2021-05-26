@@ -83,6 +83,15 @@ export class AdjacencyMatrix implements Visualization {
         // .style("margin-left", -margin.left + "px")
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+      } else {
+        d3.select("#AM-SVG").remove();
+        d3.select("#adj-matrix").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .attr("id", "AM-SVG")
+        // .style("margin-left", -margin.left + "px")
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
       }
       let svg = d3.select("#AM-SVG");
 
