@@ -147,10 +147,15 @@ export class AdjacencyMatrix implements Visualization {
         group: d3.range(n).sort(function (a, b) { return nodes[a].group.localeCompare(nodes[b].group); }),
       };
 
-      //   console.log(nodes)
+
+      
+      // get sort order from page
+      const dropDown: any = document.getElementById("order")
+      const sorter: "name" | "count" | "group" = dropDown.value;
+      
 
       // The default sort order.
-      x.domain(orders.name);
+      x.domain(orders[sorter]);
 
       svg.append("rect")
         .attr("class", "background")
