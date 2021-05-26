@@ -1,6 +1,3 @@
-import { Observable } from "rxjs"
-
-
 
 /**
  * Checks if two things are equal, not by reference but by value
@@ -143,22 +140,25 @@ export function swap<X, Y>([x, y]: [X, Y]): [Y, X] {
 }
 
 
-
-
 /**
- * Applies a given diff'ing function to the first item in a tuple in an observable of tuples
+ * Turns an array into an object with keys defined by getKey
  */
-export function diffMapFirst<A, B, X>(initial: A, f: (prev: A, cur: A) => B): (stream: Observable<[A, X]>) => Observable<[B, X]> {
-    return stream => {
-        let prev: A = initial
-
-        return new Observable(sub => {
-            stream.subscribe({
-                next([cur, x]) {
-                    sub.next([f(prev, cur), x])
-                    prev = cur
-                }
-            })
-        })
-    }
+export function arrayToObject<A>(data: A[], getKey: (item: A) => number): {[key: number]: A} {
+    return Object.assign({}, ...data.map(item => { return { [getKey(item)]: item } }))
 }
+
+
+export function objectMap<A, B>(f: (a:A) => B, obj: {[key:number]: A}): {[key:number]: B} {
+    const newObj: {[key:number]: B} = {}
+
+    for (const id in obj) {
+        newObj[id] = f(obj[id])
+    }
+
+    return newObj
+}
+
+
+export type ConstArray<A> = {getItem: (index: number) => A, length: number}
+
+

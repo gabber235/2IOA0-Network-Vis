@@ -1,11 +1,14 @@
 import "vis/dist/vis.min.css"
 import { AdjacencyMatrix } from "./visualizations/adjacency-matrix";
-import { visualizeNodeLinkDiagram, NodeLinkOptions } from "./visualizations/node-link";
+import { visualizeNodeLinkDiagram, NodeLinkOptions, getVisNodeSeletions } from "./visualizations/node-link";
 import { Email, getCorrespondants, parseData, Person } from "./data"
-import { Observable, of } from "rxjs";
-import { map, share } from "rxjs/operators";
-import { DataSet, DataSetDiff, diffDataSet, getDynamicCorrespondants } from "./pipeline/dynamicDataSet";
-import { diffMapFirst, swap } from "./utils";
+import { combineLatest, merge, Subject } from "rxjs";
+import { debounceTime, map, share, switchAll } from "rxjs/operators";
+import { DataSet, DataSetDiff, diffDataSet, getDynamicCorrespondants, NumberSetDiff } from "./pipeline/dynamicDataSet";
+import { ConstArray, swap } from "./utils";
+import { prettifyFileInput } from "./looks";
+import { checkBoxObserable, diffMapFirst, fileInputObservable, sliderToObservable } from "./pipeline/basics";
+import { dynamicSlice } from "./pipeline/dynamicSlice";
 
 const logo = require('../resources/static/logo.png')
 
@@ -13,47 +16,36 @@ window.addEventListener("load", async () => {
 
     console.log('Image:', logo.default)
 
-    const baseEmailObservable = new Observable<Email[]>(sub => {
-        const fileSelector = document.getElementById('file-selector');
-        fileSelector.addEventListener('change', async (event: any) => {
-            const fileList: FileList = event.target.files;
-
-            for (let i = 0; i < fileList.length; i++) {
-                const file = fileList.item(i);
-
-                const label = fileSelector.nextElementSibling;
-                label.innerHTML = file.name
-
-                const txt = await file.text()
-                const emails = parseData(txt)
-                const correspondants = getCorrespondants(emails)
-                sub.next(emails)
-            }
-        });
-    })
+    const fileSelector = document.getElementById('file-selector');
 
 
-    const nodeLinkOptions = new Observable<NodeLinkOptions>(sub => {
-        const physicsCheckBox: any = document.getElementById("physics")
-        sub.next({ physics: physicsCheckBox.checked })
+    const range = combineLatest([
+        sliderToObservable(document.getElementById('range1')),
+        sliderToObservable(document.getElementById('range2'))
+    ]).pipe(
+        map(([i, j]): [number, number] => [i, i + j]),
+        debounceTime(10)
+    )
 
-        physicsCheckBox.addEventListener("change", (e: any) => {
-            sub.next({ physics: e.target.checked })
-        })
 
-        const layoutCheckBox: any = document.getElementById("hierarchical")
-        sub.next({ hierarchical: layoutCheckBox.checked })
+    prettifyFileInput(fileSelector)
 
-        layoutCheckBox.addEventListener("change", (e: any) => {
-            sub.next({ hierarchical: e.target.checked })
-        })
-    })
+    // This subject is used to represent selected correspondants and emails respectivly
+    // They are represented by their id's
+    const selectionSubject = new Subject<[NumberSetDiff, NumberSetDiff]>()
 
+    selectionSubject.subscribe(console.log)
+
+    const baseEmailObservable = fileInputObservable(fileSelector).pipe(map(parseData))
 
     const changes = baseEmailObservable.pipe(
-        map((emails): [Email[], DataSet<Person>] => [emails.slice(0, 100), getCorrespondants(emails)]),
-        map(([emails, allPeople]): [DataSet<Email>, DataSet<Person>] => [arrayToDataSet(emails, email => email.id), allPeople]),
-        diffMapFirst({} as DataSet<Email>, diffDataSet),
+        map((emails): [ConstArray<[number, Email]>, DataSet<Person>] => [
+            {getItem: i => [emails[i].id, emails[i]], length: emails.length}, 
+            getCorrespondants(emails)
+        ]),
+        map(([emails, people]) =>
+            dynamicSlice(emails, range).pipe(map((diff): [DataSetDiff<Email>, DataSet<Person>] => [diff, people]))),
+        switchAll(),
         map(swap),
         diffMapFirst({} as DataSet<Person>, diffDataSet),
         share()
@@ -67,12 +59,23 @@ window.addEventListener("load", async () => {
 
 
     new AdjacencyMatrix().visualize(changes)
-    visualizeNodeLinkDiagram(document.getElementById("node-links"), changesWithFewerNodes, nodeLinkOptions, 150)
+
+
+    const nodeLinkOptions = merge(
+        checkBoxObserable(document.getElementById('physics')).pipe(
+            map((b): NodeLinkOptions => {return {physics: b}})   
+        ),
+        checkBoxObserable(document.getElementById('hierarchical')).pipe(
+            map((b): NodeLinkOptions => {return {hierarchical: b}})   
+        )
+    )
+
+    const nodeLinkDiagram = await visualizeNodeLinkDiagram(document.getElementById("node-links"), changesWithFewerNodes, nodeLinkOptions, 150)
+    getVisNodeSeletions(nodeLinkDiagram).subscribe(selectionSubject)
 })
 
-function arrayToDataSet<A>(data: A[], getId: (item: A) => number): DataSet<A> {
-    return Object.assign({}, ...data.map(item => { return { [getId(item)]: item } }))
-}
+
+
 
 // type DataSetDiff<A> = {type:'add', id: number, content: A[]}|{type:'remove', id: number, content: A[]}
 
