@@ -202,6 +202,21 @@ export function trippleMap2<A,B,C,D,E,F,G,H,I>(
         [f1(tuple1[0], tuple2[0]), f2(tuple1[1], tuple2[1]), f3(tuple1[2], tuple2[2])]
 }
 
+export function tuple4Map<A,B,C,D,E,F,G,H>(f1: (a: A) => B, f2: (a: C) => D, f3: (a: E) => F, f4: (a: G) => H) {
+    return (tuple: [A, C, E, G]): [B, D, F, H] => [f1(tuple[0]), f2(tuple[1]), f3(tuple[2]), f4(tuple[3])]
+}
+
+
+export function tuple4Map2<A,B,C,D,E,F,G,H,I,J,K,L>(
+    f1: (a: A, b: B) => C, 
+    f2: (d: D, e: E) => F, 
+    f3: (d: G, e: H) => I,
+    f4: (d: J, e: K) => L,
+) {
+    return (tuple1: [A, D, G, J], tuple2: [B, E, H, K]): [C, F, I, L] => 
+        [f1(tuple1[0], tuple2[0]), f2(tuple1[1], tuple2[1]), f3(tuple1[2], tuple2[2]), f4(tuple1[3], tuple2[3])]
+}
+
 
 
 

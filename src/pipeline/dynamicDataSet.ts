@@ -1,7 +1,3 @@
-import { Observable } from "rxjs"
-import { first } from "rxjs/operators"
-
-
 export type DataSet<A> = { [id: number]: A }
 
 /**

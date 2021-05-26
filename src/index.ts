@@ -2,11 +2,11 @@ import "vis/dist/vis.min.css"
 import { AdjacencyMatrix } from "./visualizations/adjacency-matrix";
 import { visualizeNodeLinkDiagram, NodeLinkOptions, getVisNodeSeletions } from "./visualizations/node-link";
 import { Email, getCorrespondants, parseData, Person } from "./data"
-import { combineLatest, identity, merge, Observable, ReplaySubject, Subject } from "rxjs";
-import { debounceTime, map, multicast, scan, share, shareReplay, subscribeOn, switchAll } from "rxjs/operators";
+import { combineLatest, merge, Subject } from "rxjs";
+import { debounceTime, map, scan, share, shareReplay, subscribeOn, switchAll } from "rxjs/operators";
 import { DataSet, DataSetDiff, diffDataSet, foldDataSet, NumberSetDiff } from "./pipeline/dynamicDataSet";
 import { getDynamicCorrespondants } from "./pipeline/getDynamicCorrespondants";
-import { ConstArray, copyObject, pair, pairMap2, swap, tripple, tuple4 } from "./utils";
+import { ConstArray, pair, pairMap2, tripple } from "./utils";
 import { prettifyFileInput } from "./looks";
 import { checkBoxObserable, diffStream, fileInputObservable, sliderToObservable } from "./pipeline/basics";
 import { dynamicSlice } from "./pipeline/dynamicSlice";
@@ -40,7 +40,7 @@ window.addEventListener("load", async () => {
 
     const baseEmailObservable = fileInputObservable(fileSelector).pipe(map(parseData))
 
-    const changes = baseEmailObservable.pipe(
+    const dataWithAllNodes = baseEmailObservable.pipe(
         map(emails => {
             const constEmails: ConstArray<[number, Email]> = {getItem: i => [emails[i].id, emails[i]], length: emails.length}
             const people = getCorrespondants(emails)
@@ -58,20 +58,27 @@ window.addEventListener("load", async () => {
             ([_, emails, __]) => emails,
             ([_, __, emailDiff]) => emailDiff,
         ),
-        map(([maybeStuff, emailDiff]) => pair(maybeStuff.map(([people, _, __]) => people).withDefault({}), emailDiff)), // forget unneeded data
-        diffStream(pair({} as DataSet<Person>, new DataSetDiff()), pairMap2(diffDataSet, (_, x) => x)), // diff person dataset
+        map(([[people, emails, __], emailDiff]) => pair(pair(people, emails), pair(people, emailDiff))), // rearange data
+        diffStream( // diff person dataset
+            pair(pair({} as DataSet<Person>, {} as DataSet<Email>), pair({} as DataSet<Person>, new DataSetDiff())), 
+            pairMap2((_, x) => x, pairMap2(diffDataSet, (_, x) => x))
+        ), 
         share(),
     )
 
-    const changesWithFewerNodes = changes.pipe(
-        map(([_, emails]) => emails), // forget about people
-        getDynamicCorrespondants(identity),
-        map(([people, emails]): [DataSetDiff<Person>, DataSetDiff<Email>] => [people, emails]),
+    const dataWithFewerNodes = dataWithAllNodes.pipe(
+        map(([[_, emails], [__, emailDiff]]) => pair(emails, emailDiff)), // forget about people
+        getDynamicCorrespondants(([_, diff]) => diff),
+        scan( // get full people dataset
+            ([[people, _], __], [personDiff, [emails, emailDiff]]) => 
+                pair(pair(foldDataSet(people, personDiff), emails), pair(personDiff, emailDiff)),
+            pair(pair({} as DataSet<Person>, {} as DataSet<Email>), pair(new DataSetDiff<Person>(), new DataSetDiff<Email>()))
+        ),
         share()
     )
 
 
-    new AdjacencyMatrix().visualize(changes)
+    new AdjacencyMatrix().visualize(dataWithAllNodes.pipe(map(([_, diffs]) => diffs)))
 
 
     const nodeLinkOptions = merge(
@@ -83,45 +90,20 @@ window.addEventListener("load", async () => {
         )
     )
 
-    const a = new ReplaySubject(1)
-    const b = new ReplaySubject(1)
+    const allNodes = dataWithAllNodes.pipe(shareReplay(1))
+    allNodes.subscribe()
 
-    const x = changes.pipe(
-        scan(
-            ([people, _, emails, __], [peopleDiff, emailDiff]) => tuple4(
-                (foldDataSet(people, peopleDiff)),
-                peopleDiff,
-                (foldDataSet((emails), emailDiff)),
-                emailDiff
-            ), 
-            tuple4({} as DataSet<Person>, new DataSetDiff<Person>(), {} as DataSet<Email>, new DataSetDiff<Email>())
-        ),
-        shareReplay(1)
-    )
+    const fewerNodes = dataWithFewerNodes.pipe(shareReplay(1))
+    fewerNodes.subscribe()
 
-    const y = changesWithFewerNodes.pipe(
-        scan(
-            ([people, _, emails, __], [peopleDiff, emailDiff]) => tuple4(
-                (foldDataSet((people), peopleDiff)),
-                peopleDiff,
-                (foldDataSet((emails), emailDiff)),
-                emailDiff
-            ), 
-            tuple4({} as DataSet<Person>, new DataSetDiff<Person>(), {} as DataSet<Email>, new DataSetDiff<Email>())
-        ),
-        shareReplay(1)
-    )
-
-    x.subscribe()
-    y.subscribe()
 
     const maybeShowAllNodes = checkBoxObserable(document.getElementById('show-all-nodes')).pipe(
-        map(bool => bool ? x : y),
+        map(bool => bool ? allNodes : fewerNodes),
         diffSwitchAll(
             () => pair({} as DataSet<Person>, {} as DataSet<Email>),
             pairMap2(diffDataSet, diffDataSet),
-            ([people, _, emails, __]) => pair(people, emails),
-            ([_, peopleDiff, __, emailDiff]) => pair(peopleDiff, emailDiff)
+            ([data, _]) => data,
+            ([_, diffs]) => diffs
         ),
         map(([_, [peopleDiff, emailDiff]]) => pair(peopleDiff, emailDiff)),
         share()

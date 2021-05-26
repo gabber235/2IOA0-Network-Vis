@@ -1,8 +1,5 @@
 import { Observable, Subscription } from "rxjs";
-import { Maybe, None, Some } from "../maybe";
-import { copyObject, pair } from "../utils";
-
-
+import { pair } from "../utils";
 
 
 // WARNING: This function is currently untested.
@@ -12,7 +9,7 @@ export function diffSwitchAll<A, Data, Diff>(
     getData: (a: A)=> Data,
     getDiff: (a: A) => Diff,
 ) {
-    return (outerStream: Observable<Observable<A>>): Observable<[Maybe<A>, Diff]> => {
+    return (outerStream: Observable<Observable<A>>): Observable<[A, Diff]> => {
         return new Observable(sub => {
 
             let prevData: Data = getInitial()
@@ -27,13 +24,13 @@ export function diffSwitchAll<A, Data, Diff>(
                         const curData = getData(a)
                         const dataDiff = diff(prevData, curData)
 
-                        sub.next(pair(new Some(a), dataDiff))
+                        sub.next(pair(a, dataDiff))
 
                         prevData = curData
                         streamIsNew = false
                     } else {
                         const dataDiff = getDiff(a)
-                        sub.next(pair(new Some(a), dataDiff))
+                        sub.next(pair(a, dataDiff))
                         prevData = getData(a)
                     }
                 })
