@@ -2,11 +2,11 @@ import "vis/dist/vis.min.css"
 import { AdjacencyMatrix } from "./visualizations/adjacency-matrix";
 import { visualizeNodeLinkDiagram, NodeLinkOptions, getVisNodeSeletions } from "./visualizations/node-link";
 import { Email, getCorrespondants, parseData, Person } from "./data"
-import { combineLatest, identity, merge, Subject } from "rxjs";
-import { debounceTime, map, scan, share, switchAll } from "rxjs/operators";
+import { combineLatest, identity, merge, Observable, ReplaySubject, Subject } from "rxjs";
+import { debounceTime, map, multicast, scan, share, shareReplay, subscribeOn, switchAll } from "rxjs/operators";
 import { DataSet, DataSetDiff, diffDataSet, foldDataSet, NumberSetDiff } from "./pipeline/dynamicDataSet";
 import { getDynamicCorrespondants } from "./pipeline/getDynamicCorrespondants";
-import { ConstArray, pair, pairMap2, swap, tripple } from "./utils";
+import { ConstArray, copyObject, pair, pairMap2, swap, tripple, tuple4 } from "./utils";
 import { prettifyFileInput } from "./looks";
 import { checkBoxObserable, diffStream, fileInputObservable, sliderToObservable } from "./pipeline/basics";
 import { dynamicSlice } from "./pipeline/dynamicSlice";
@@ -49,16 +49,16 @@ window.addEventListener("load", async () => {
                 scan( // Get full email dataset and people
                     ([_, emails, __], emailDiff) => tripple(people, foldDataSet(emails, emailDiff), emailDiff),
                     tripple({} as DataSet<Person>, {} as DataSet<Email>, new DataSetDiff<Email>())
-                )
+                ),
             )
         }),
         diffSwitchAll( // merge the stream of streams
-            {} as DataSet<Email>,
+            () => ({} as DataSet<Email>),
             diffDataSet,
             ([_, emails, __]) => emails,
             ([_, __, emailDiff]) => emailDiff,
         ),
-        map(([[people, _, __], emailDiff]) => pair(people, emailDiff)), // forget unneeded data
+        map(([maybeStuff, emailDiff]) => pair(maybeStuff.map(([people, _, __]) => people).withDefault({}), emailDiff)), // forget unneeded data
         diffStream(pair({} as DataSet<Person>, new DataSetDiff()), pairMap2(diffDataSet, (_, x) => x)), // diff person dataset
         share(),
     )
@@ -66,7 +66,8 @@ window.addEventListener("load", async () => {
     const changesWithFewerNodes = changes.pipe(
         map(([_, emails]) => emails), // forget about people
         getDynamicCorrespondants(identity),
-        map(([people, emails]): [DataSetDiff<Person>, DataSetDiff<Email>] => [people, emails])
+        map(([people, emails]): [DataSetDiff<Person>, DataSetDiff<Email>] => [people, emails]),
+        share()
     )
 
 
@@ -82,11 +83,53 @@ window.addEventListener("load", async () => {
         )
     )
 
-    const nodeLinkDiagram = await visualizeNodeLinkDiagram(document.getElementById("node-links"), changesWithFewerNodes, nodeLinkOptions, 150)
+    const a = new ReplaySubject(1)
+    const b = new ReplaySubject(1)
+
+    const x = changes.pipe(
+        scan(
+            ([people, _, emails, __], [peopleDiff, emailDiff]) => tuple4(
+                (foldDataSet(people, peopleDiff)),
+                peopleDiff,
+                (foldDataSet((emails), emailDiff)),
+                emailDiff
+            ), 
+            tuple4({} as DataSet<Person>, new DataSetDiff<Person>(), {} as DataSet<Email>, new DataSetDiff<Email>())
+        ),
+        shareReplay(1)
+    )
+
+    const y = changesWithFewerNodes.pipe(
+        scan(
+            ([people, _, emails, __], [peopleDiff, emailDiff]) => tuple4(
+                (foldDataSet((people), peopleDiff)),
+                peopleDiff,
+                (foldDataSet((emails), emailDiff)),
+                emailDiff
+            ), 
+            tuple4({} as DataSet<Person>, new DataSetDiff<Person>(), {} as DataSet<Email>, new DataSetDiff<Email>())
+        ),
+        shareReplay(1)
+    )
+
+    x.subscribe()
+    y.subscribe()
+
+    const maybeShowAllNodes = checkBoxObserable(document.getElementById('show-all-nodes')).pipe(
+        map(bool => bool ? x : y),
+        diffSwitchAll(
+            () => pair({} as DataSet<Person>, {} as DataSet<Email>),
+            pairMap2(diffDataSet, diffDataSet),
+            ([people, _, emails, __]) => pair(people, emails),
+            ([_, peopleDiff, __, emailDiff]) => pair(peopleDiff, emailDiff)
+        ),
+        map(([_, [peopleDiff, emailDiff]]) => pair(peopleDiff, emailDiff)),
+        share()
+    )
+
+    const nodeLinkDiagram = await visualizeNodeLinkDiagram(document.getElementById("node-links"), maybeShowAllNodes, nodeLinkOptions, 150)
     getVisNodeSeletions(nodeLinkDiagram).subscribe(selectionSubject)
 })
-
-
 
 
 // type DataSetDiff<A> = {type:'add', id: number, content: A[]}|{type:'remove', id: number, content: A[]}
