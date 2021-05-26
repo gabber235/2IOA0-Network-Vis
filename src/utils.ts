@@ -224,3 +224,7 @@ export function tuple4Map2<A,B,C,D,E,F,G,H,I,J,K,L>(
 export function copyObject<A>(x: A): A {
     return Object.assign({}, x)
 }
+
+
+
+export const millisInDay = 24 * 60 * 60 * 1000 
