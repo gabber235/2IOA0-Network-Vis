@@ -3,13 +3,14 @@ import { AdjacencyMatrix } from "./visualizations/adjacency-matrix";
 import { visualizeNodeLinkDiagram, NodeLinkOptions, getVisNodeSeletions } from "./visualizations/node-link";
 import { Email, getCorrespondants, parseData, Person } from "./data"
 import { combineLatest, identity, merge, Subject } from "rxjs";
-import { debounceTime, map, share, switchAll } from "rxjs/operators";
-import { DataSet, DataSetDiff, diffDataSet, NumberSetDiff } from "./pipeline/dynamicDataSet";
+import { debounceTime, map, scan, share, switchAll } from "rxjs/operators";
+import { DataSet, DataSetDiff, diffDataSet, foldDataSet, NumberSetDiff } from "./pipeline/dynamicDataSet";
 import { getDynamicCorrespondants } from "./pipeline/getDynamicCorrespondants";
-import { ConstArray, pair, pairMap2, swap } from "./utils";
+import { ConstArray, pair, pairMap2, swap, tripple } from "./utils";
 import { prettifyFileInput } from "./looks";
 import { checkBoxObserable, diffStream, fileInputObservable, sliderToObservable } from "./pipeline/basics";
 import { dynamicSlice } from "./pipeline/dynamicSlice";
+import { diffSwitchAll } from "./pipeline/diffSwitchAll";
 
 const logo = require('../resources/static/logo.png')
 
@@ -40,19 +41,30 @@ window.addEventListener("load", async () => {
     const baseEmailObservable = fileInputObservable(fileSelector).pipe(map(parseData))
 
     const changes = baseEmailObservable.pipe(
-        map((emails): [ConstArray<[number, Email]>, DataSet<Person>] => [
-            {getItem: i => [emails[i].id, emails[i]], length: emails.length}, 
-            getCorrespondants(emails)
-        ]),
-        map(([emails, people]) =>
-            dynamicSlice(emails, range).pipe(map((emailDiff) => pair(people, emailDiff)))),
-        switchAll(),
-        diffStream(pair({} as DataSet<Person>, new DataSetDiff()), pairMap2(diffDataSet, (_, x) => x)),
+        map(emails => {
+            const constEmails: ConstArray<[number, Email]> = {getItem: i => [emails[i].id, emails[i]], length: emails.length}
+            const people = getCorrespondants(emails)
+
+            return dynamicSlice(constEmails, range).pipe(
+                scan( // Get full email dataset and people
+                    ([_, emails, __], emailDiff) => tripple(people, foldDataSet(emails, emailDiff), emailDiff),
+                    tripple({} as DataSet<Person>, {} as DataSet<Email>, new DataSetDiff<Email>())
+                )
+            )
+        }),
+        diffSwitchAll( // merge the stream of streams
+            {} as DataSet<Email>,
+            diffDataSet,
+            ([_, emails, __]) => emails,
+            ([_, __, emailDiff]) => emailDiff,
+        ),
+        map(([[people, _, __], emailDiff]) => pair(people, emailDiff)), // forget unneeded data
+        diffStream(pair({} as DataSet<Person>, new DataSetDiff()), pairMap2(diffDataSet, (_, x) => x)), // diff person dataset
         share(),
     )
 
     const changesWithFewerNodes = changes.pipe(
-        map(([_, emails]) => emails),
+        map(([_, emails]) => emails), // forget about people
         getDynamicCorrespondants(identity),
         map(([people, emails]): [DataSetDiff<Person>, DataSetDiff<Email>] => [people, emails])
     )
