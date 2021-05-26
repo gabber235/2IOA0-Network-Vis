@@ -5,9 +5,6 @@ import { Observable } from 'rxjs';
 import { DataSetDiff } from '../pipeline/dynamicDataSet';
 
 
-// get used data
-const dataFile = require("../../resources/static/enron-v1.csv");
-
 type Node = {
   name: string,
   id: number,
