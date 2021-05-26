@@ -24,6 +24,8 @@ export class AdjacencyMatrix implements Visualization {
     // document.body.appendChild(div({}, [text("Adjacency-matrix")]));
 
     data.subscribe(event => {
+      console.log(event)
+
       let personDiff = event[0].insertions;
       let emailsDiff = event[1].insertions;
 
@@ -37,6 +39,7 @@ export class AdjacencyMatrix implements Visualization {
       const correspondants = getCorrespondants(emails); //dictionary with persons
       let persons = Object.values(correspondants);
 
+      // turn personlist into nodes for adjacency matrix
       const nodes = peopleToNodes(persons);
 
       // get edges
@@ -68,17 +71,28 @@ export class AdjacencyMatrix implements Visualization {
       let c = d3.scale.category10().domain(d3.range(10));
 
       let existingSVG = document.getElementById("AM-SVG");
-      let svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>;
       if (!existingSVG) {
-        // create new SVG
-        svg = d3.select("#adj-matrix").append("svg")
-          .attr("width", width + margin.left + margin.right)
-          .attr("height", height + margin.top + margin.bottom)
-          .attr("id", "AM-SVG")
-          // .style("margin-left", -margin.left + "px")
-          .append("g")
-          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        // SVG does not exist already, create it
+        d3.select("#adj-matrix").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .attr("id", "AM-SVG")
+        // .style("margin-left", -margin.left + "px")
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+      } else {
+        // SVG already exists; clear it 
+        d3.select("#AM-SVG").remove();
+        d3.select("#adj-matrix").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .attr("id", "AM-SVG")
+        // .style("margin-left", -margin.left + "px")
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
       }
+
+      let svg = d3.select("#AM-SVG");
 
 
       type Cell = {
@@ -194,7 +208,7 @@ export class AdjacencyMatrix implements Visualization {
           .on("click", clickCell);
       }
 
-      // create tooltip
+      // create tooltip 
       const tooltip = d3.select("#adj-matrix")
         .append("div")
         .style("position", "absolute")
