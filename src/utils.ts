@@ -124,6 +124,7 @@ function swapRemove<T>(list: T[], index: number): T {
 export function binarySearch<A>(items: (index: number) => A, target: A, begin: number, end: number, cmp: (a: A, b: A) => number): number {
     if (begin === end) return begin
 
+
     const index = begin + Math.floor((end - begin) / 2)
     const item = items(index)
 

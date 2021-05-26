@@ -156,7 +156,7 @@ function emailToEdge(e: Email): vis.Edge {
         id: e.id,
         from: e.fromId,
         to: e.toId,
-        title: "" + e.sentiment
+        title: `${e.sentiment}, ${e.messageType}, ${e.date}`
     }
 }
 

@@ -2,17 +2,18 @@ import "vis/dist/vis.min.css"
 import { AdjacencyMatrix } from "./visualizations/adjacency-matrix";
 import { visualizeNodeLinkDiagram, NodeLinkOptions, getVisNodeSeletions } from "./visualizations/node-link";
 import { Email, getCorrespondants, parseData, Person } from "./data"
-import { combineLatest, merge, Subject } from "rxjs";
+import { combineLatest, merge, Subject, Subscription } from "rxjs";
 import { debounceTime, map, scan, share, shareReplay, subscribeOn, switchAll } from "rxjs/operators";
 import { DataSet, DataSetDiff, diffDataSet, foldDataSet, NumberSetDiff } from "./pipeline/dynamicDataSet";
 import { getDynamicCorrespondants } from "./pipeline/getDynamicCorrespondants";
-import { ConstArray, pair, pairMap2, tripple } from "./utils";
+import { binarySearch, ConstArray, pair, pairMap2, tripple } from "./utils";
 import { prettifyFileInput } from "./looks";
 import { checkBoxObserable, diffStream, fileInputObservable, sliderToObservable } from "./pipeline/basics";
 import { dynamicSlice } from "./pipeline/dynamicSlice";
 import { diffSwitchAll } from "./pipeline/diffSwitchAll";
 
 const logo = require('../resources/static/logo.png')
+const millisInDay = 24 * 60 * 60 * 1000
 
 window.addEventListener("load", async () => {
 
@@ -20,17 +21,21 @@ window.addEventListener("load", async () => {
 
     const fileSelector = document.getElementById('file-selector');
 
-
+    const timeSlider = document.getElementById('range1')
     const range = combineLatest([
-        sliderToObservable(document.getElementById('range1')),
+        sliderToObservable(timeSlider),
         sliderToObservable(document.getElementById('range2'))
     ]).pipe(
         map(([i, j]): [number, number] => [i, i + j]),
-        debounceTime(10)
+        debounceTime(10),
     )
 
 
     prettifyFileInput(fileSelector)
+
+    const firstDayElm = document.getElementById('first-day')
+    const lastDayElm = document.getElementById('last-day')
+    const durationElm = document.getElementById('duration')
 
     // This subject is used to represent selected correspondants and emails respectivly
     // They are represented by their id's
@@ -40,12 +45,34 @@ window.addEventListener("load", async () => {
 
     const baseEmailObservable = fileInputObservable(fileSelector).pipe(map(parseData))
 
+    let lastSub: Subscription|undefined = undefined
+
     const dataWithAllNodes = baseEmailObservable.pipe(
         map(emails => {
+            emails.sort((i, j) => new Date(i.date).getTime() - new Date(j.date).getTime())
+
+            const firstDate = new Date(emails[0].date)
+            const lastDate = new Date(emails[emails.length - 1].date)
+
+            timeSlider.setAttribute('max', "" + (lastDate.getTime() - firstDate.getTime()) / millisInDay)
+
+            if (lastSub !== undefined) lastSub.unsubscribe()
+
+            lastSub = range.subscribe(([begin, end]) => {
+                firstDayElm.textContent = new Date(firstDate.getTime() + begin * millisInDay).toDateString()
+                lastDayElm.textContent = new Date(firstDate.getTime() + end * millisInDay).toDateString()
+                durationElm.textContent = `${end - begin} days`
+            })
+
+            function dayToIndex(day: number): number {
+                return binarySearch(i => new Date(emails[i].date).getTime(), firstDate.getTime() + millisInDay * day, 0, emails.length, (i, j) => i - j)
+            }
+
             const constEmails: ConstArray<[number, Email]> = {getItem: i => [emails[i].id, emails[i]], length: emails.length}
             const people = getCorrespondants(emails)
 
-            return dynamicSlice(constEmails, range).pipe(
+
+            return dynamicSlice(constEmails, range.pipe(map(([begin, end]) => pair(dayToIndex(begin), dayToIndex(end))))).pipe(
                 scan( // Get full email dataset and people
                     ([_, emails, __], emailDiff) => tripple(people, foldDataSet(emails, emailDiff), emailDiff),
                     tripple({} as DataSet<Person>, {} as DataSet<Email>, new DataSetDiff<Email>())
