@@ -11,12 +11,12 @@
 
 <body>
 
-  <div id="heading">
-    <div id="header">
-      <img src="./resources/static/logo.png" alt="CoVis 19 Logo">
-      <h1>CoVis 19</h1>
-    </div>
-    <p>Visualizing data is a challenging task due to multiple reasons:  One reason is selecting the most fitting visualizationtechnique. 
+    <div id="heading">
+        <header id="header">
+            <img src="./resources/static/logo.png" alt="CoVis 19 Logo">
+            <h1>CoVis 19</h1>
+        </header>
+        <p>Visualizing data is a challenging task due to multiple reasons:  One reason is selecting the most fitting visualizationtechnique. 
         Data can be presented in different ways and choosing the right visualization technique is vital for understanding whichinformation the data is representing. 
         As technology is on the rise these challenges become more important to be tackled. 
         Using thewrong visualization techniques can result to people misunderstanding the data and as as result come to a wrong conclusion. 
@@ -26,44 +26,53 @@
         Furthermore, this report describes different ways of interacting with the visualization to make it fit to theusers needs. 
         The methods include making use of a time slider, dragging nodes around, selecting certain data points to focus on orselecting clusters of data to be presented in the visualization</p>
 
-    <input type="file" name="file-selector" id="file-selector" accept=".csv">
-    <label for="file-selector">Choose a dataset</label>
+        <input type="file" name="file-selector" id="file-selector" accept=".csv">
+        <label for="file-selector">Choose a dataset</label>
 
-    <div id="selectors">
-      <p>Order:
-        <select id="order">
-          <option value="name">by Name</option>
-          <option value="count">by Frequency</option>
-          <option value="group">by Title</option>
-        </select>
-      </p>
-      <input type="range" min="0" max="10" value="0" class="slider" id="first-day-slider">
-      <input type="range" min="0" max="7" value="7" class="slider" id="duration-slider">
-      <span id="first-day"></span>
-      <span id="last-day"></span>
-      <span id="duration"></span>
-      <p>
-        <label for="hierarchical">Hierarchical layout</label>
-        <input type="checkbox" id="hierarchical" name="hierarchical">
-      </p>
-      <p>
-        <label for="physics">Physics</label>
-        <input type="checkbox" id="physics" name="physics">
-      </p>
-      <p>
-        <label for="show-all-nodes">Show all nodes</label>
-        <input type="checkbox" id="show-all-nodes" name="show-all-nodes">
-      </p>
+        <div id="selectors">
+            <div id="split-options">
+                <div id="matrix-options">
+                    <label for="order">Order:</label>
+                    <select id="order" name="order">
+                    <option value="name">by Name</option>
+                    <option value="count">by Frequency</option>
+                    <option value="group">by Title</option>
+                    </select>
+                </div>
+                <div id="node-link-options">
+                    <label for="hierarchical">Hierarchical layout</label>
+                    <input type="checkbox" id="hierarchical" name="hierarchical">
+                    <label for="physics">Physics</label>
+                    <input type="checkbox" id="physics" name="physics">
+                    <label for="show-all-nodes">Show all nodes</label>
+                    <input type="checkbox" id="show-all-nodes" name="show-all-nodes">
+                </div>
+            </div>
+            <div id="universal-options">
+                
+                <span id="duration">---</span>
+
+                <input type="range" min="1" max="7" value="7" class="slider" id="duration-slider">
+
+                From
+                <span id="first-day">---</span>
+                til
+                <span id="last-day">---</span>
+            </div>
+            <div id="big-slider-container">
+                <input type="range" min="0" max="10" value="0" class="slider" id="first-day-slider">
+            </div>
+                
+        </div>
     </div>
-  </div>
 
-  <div id="visualizations">
+    <div id="visualizations">
     <div id="adj-matrix" class="visual"></div>
     <div class="visual">
-      <div id="node-links"
-        style="position: absolute; top: 0px; right: 0px; bottom: 0px; left: 0px; width: 1000px; height: 1000px"></div>
+        <div id="node-links"
+            style="position: absolute; top: 0px; right: 0px; bottom: 0px; left: 0px; width: 1000px; height: 1000px"></div>
+        </div>
     </div>
-  </div>
 </body>
 
 </html>
