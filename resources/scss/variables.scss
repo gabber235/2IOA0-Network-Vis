@@ -1,0 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
+$primary         : #5fffa7;
+$primary-text    : darken($primary, 25%);
+$background      : adjust-color($primary, $lightness: -10%, $saturation: -30%);
+$background-hover: darken($background, 20%);
+$background-focus: lighten($background, 20%);
+$shadow          : adjust-color($primary, $lightness: -20%, $saturation: -40%, $alpha: -0.8);
+
+body {
+    // width: 100vw;
+    // height: 100vh;
+    margin     : 0;
+    font-family: 'Roboto', sans-serif;
+    text-align : center;
+}

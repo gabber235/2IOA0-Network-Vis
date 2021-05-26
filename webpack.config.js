@@ -4,9 +4,14 @@ const EncodingPlugin = require('webpack-encoding-plugin');
 const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
 
 module.exports = {
-    entry: ['./src/index.ts', './resources/scss/stylesheet.scss'],
+    entry: {
+        landing: './src/landing.ts',
+        landingScss: './resources/scss/landing.scss',
+        vis: './src/index.ts',
+        visScss: './resources/scss/vis.scss',
+    },
     output: {
-        filename: 'bundle.js',
+        // filename: 'bundle.js',
         path: path.resolve(__dirname, 'dist'),
     },
     module: {
@@ -47,7 +52,7 @@ module.exports = {
                 use: 'file-loader?name=resources/static/[name].[ext]',
             },
             {
-                test: /\.(csv)$/,
+                test: /\.(csv|riv)$/,
                 loader: 'file-loader',
             },
         ],
@@ -61,6 +66,13 @@ module.exports = {
     plugins: [
         new HtmlWebpackPlugin({
             template: "./index.html",
+
+            chunks: ['vis']
+        }),
+        new HtmlWebpackPlugin({
+            template: "./index1.html",
+            filename: "index1.html",
+            chunks: ['landing']
         }),
         new EncodingPlugin({
             encoding: 'utf-16'
