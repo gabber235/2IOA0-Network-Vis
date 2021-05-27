@@ -39,7 +39,6 @@ export async function visualizeNodeLinkDiagram(
     let visualisation = new vis.Network(container, { nodes: nodes, edges: edges }, {})
 
 
-
     options.subscribe({next (options) {
 
         const fullReset = 'hierarchical' in options && prevOptions.hierarchical !== options.hierarchical
@@ -56,28 +55,42 @@ export async function visualizeNodeLinkDiagram(
             edges.add(Object.values(emails).map(emailToEdge))
         }
     }})
-    // data.pipe(
-    //     groupDiffBy(([people, emails]) => emails, email => email.fromId + "," + email.toId, ([people, emails], emailGroups) => tripple(people, emails, emailGroups))
-    // )
-    data.subscribe({next ([personDiff, emailDiff]) {
+    data.pipe(
+        groupDiffBy(([people, emails]) => emails, email => email.fromId + "," + email.toId, ([people, _], emailGroups) => pair(people, emailGroups))
+    ).subscribe(([people, emailGroups]) => {
 
-        // console.log(emailDiff)
+        nodes.add(people.insertions.map(({value}) => Object.assign({}, personToNode(value), nodeLocation(value))))
+        edges.add(emailGroups.insertions.map(({id, value}) => ({id: id, from: +id.split(',')[0], to: +id.split(',')[1]})))
 
-        nodes.add(personDiff.insertions.map(({value}) => Object.assign({}, personToNode(value), nodeLocation(value))))
-        edges.add(emailDiff.insertions.map(({value}) => emailToEdge(value)))
+        nodes.update(people.updates.map(({value}) => personToNode(value)))
+        edges.update(emailGroups.updates.map(({id, value}) => ({id: id, from: +id.split(',')[0], to: +id.split(',')[1]})))
 
-        nodes.update(personDiff.updates.map(({value}) => personToNode(value)))
-        edges.update(emailDiff.updates.map(({value}) => emailToEdge(value)))
+        edges.remove(emailGroups.deletions.map(({id}) => id))
+        nodes.remove(people.deletions.map(({id}) => id))
 
-        edges.remove(emailDiff.deletions.map(({id}) => id))
-        nodes.remove(personDiff.deletions.map(({id}) => id))
+        console.log(edges.length)
+    })
 
-        personDiff.apply(people)
-        emailDiff.apply(emails)
+    
+    // data.subscribe({next ([personDiff, emailDiff]) {
 
-        nodeCount += personDiff.insertions.length
-        nodeCount -= personDiff.deletions.length
-    }})
+    //     // console.log(emailDiff)
+
+    //     nodes.add(personDiff.insertions.map(({value}) => Object.assign({}, personToNode(value), nodeLocation(value))))
+    //     edges.add(emailDiff.insertions.map(({value}) => emailToEdge(value)))
+
+    //     nodes.update(personDiff.updates.map(({value}) => personToNode(value)))
+    //     edges.update(emailDiff.updates.map(({value}) => emailToEdge(value)))
+
+    //     edges.remove(emailDiff.deletions.map(({id}) => id))
+    //     nodes.remove(personDiff.deletions.map(({id}) => id))
+
+    //     personDiff.apply(people)
+    //     emailDiff.apply(emails)
+
+    //     nodeCount += personDiff.insertions.length
+    //     nodeCount -= personDiff.deletions.length
+    // }})
 
     function nodeLocation(person: Person): {x:number,y:number} {
         return {
