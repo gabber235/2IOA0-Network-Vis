@@ -60,7 +60,7 @@ export async function visualizeNodeLinkDiagram(
 
         visualisation.setOptions(nodeLinkOptionsToVisOptions(Object.assign(prevOptions, options)))
 
-        edgeGrouping = options.groupEdges
+        edgeGrouping = options.groupEdges ?? edgeGrouping
 
         if (fullReset) {
             nodes.add(Object.values(people).map(person => Object.assign({}, personToNode(person), nodeLocation(person))))

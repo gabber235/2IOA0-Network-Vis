@@ -7,7 +7,6 @@ import { DataSetDiff, DataSet, ID } from "./dynamicDataSet";
 /**
  * Takes a dynamic dataset of emails and adds to it a dynamic dataset of the relevant correspondants
  */
-
 export function getDynamicCorrespondants<A, B>(
     asEmails: (a: A) => DataSetDiff<Email>,
     finalize: (a: A, diff: DataSetDiff<Person>) => B

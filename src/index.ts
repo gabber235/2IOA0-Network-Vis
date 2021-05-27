@@ -18,8 +18,12 @@ window.addEventListener("load", async () => {
 
     console.log('Image:', logo.default)
 
+    
     for (let title in titleColors) {
-        span({}, [span({style: `background-color: ${titleColors[title].color.background};`, class: 'color-dot'}), text(title)], document.getElementById("node-link-legend"))
+        span({}, [
+            span({style: `background-color: ${titleColors[title].color.background};`, class: 'color-dot'}), 
+            text(title)
+        ], document.getElementById("node-link-legend"))
     }
 
     const fileSelector = document.getElementById('file-selector');
