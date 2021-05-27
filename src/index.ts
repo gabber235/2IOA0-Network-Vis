@@ -36,7 +36,7 @@ window.addEventListener("load", async () => {
         sliderToObservable(durationSliderElm)
     ]).pipe(
         map(([i, j]): [number, number] => [i, i + j]),
-        auditTime(200)
+        auditTime(100)
     )
 
     const timeSliders = new TimeSliders(

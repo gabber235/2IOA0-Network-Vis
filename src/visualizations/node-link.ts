@@ -41,7 +41,7 @@ export async function visualizeNodeLinkDiagram(
 
     const prevOptions = defaultNodeLinkOptions
 
-    let visualisation = new vis.Network(container, { nodes: nodes, edges: edges }, {})
+    let visualisation = new vis.Network(container, { nodes: nodes, edges: edges }, initialVisOptions)
 
     let edgeGrouping = true
 
@@ -57,8 +57,8 @@ export async function visualizeNodeLinkDiagram(
             nodes.clear()
             edges.clear()
         }
-
         visualisation.setOptions(nodeLinkOptionsToVisOptions(Object.assign(prevOptions, options)))
+
 
         edgeGrouping = options.groupEdges ?? edgeGrouping
 
@@ -113,7 +113,7 @@ export async function visualizeNodeLinkDiagram(
         }
     })
 
-    function nodeLocation(person: Person): {x:number,y:number} {
+    function nodeLocation(person: Person) {
         return {
             x: circleLayoutRadius * Math.cos(2 * Math.PI * person.id / maxNodes),
             y: circleLayoutRadius * Math.sin(2 * Math.PI * person.id / maxNodes),
@@ -192,38 +192,48 @@ const defaultNodeLinkOptions: NodeLinkOptions = {
     hierarchical: false
 }
 
+const initialVisOptions = {
+    nodes: {
+        shape: 'dot',
+        size: nodeSize,
+    },
+    edges: {
+        arrows: "to"
+    },
+    layout: {
+        hierarchical: {
+            enabled: defaultNodeLinkOptions.hierarchical,
+            nodeSpacing: 20,
+            treeSpacing: 10,
+        },
+        // improvedLayout: false
+    },
+    physics: {
+        enabled: defaultNodeLinkOptions.physics,
+        barnesHut: {
+            centralGravity: 1
+        },
+        // stabilizations:false
+    },
+    interaction: { multiselect: true},
+    groups: titleColors
+}
+
 export function nodeLinkOptionsToVisOptions(config: NodeLinkOptions): vis.Options {
 
-    const options = Object.assign({}, defaultNodeLinkOptions, config)
-
-    
+    let visOptions = {}
 
     return {
-        nodes: {
-            shape: 'dot',
-            size: nodeSize,
-            
-        },
-        edges: {
-            arrows: "to"
-        },
         layout: {
             hierarchical: {
-                enabled: options.hierarchical,
-                nodeSpacing: 20,
-                treeSpacing: 20,
-            },
-            // improvedLayout: false
+                enabled: config.hierarchical,
+
+            }
+
         },
         physics: {
-            enabled: options.physics,
-            barnesHut: {
-                centralGravity: 1
-            },
-            // stabilizations:false
+            enabled: config.physics,
         },
-        interaction: { multiselect: true},
-        groups: titleColors
     }
 }
 
