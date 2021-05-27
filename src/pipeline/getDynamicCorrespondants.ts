@@ -8,9 +8,12 @@ import { DataSetDiff, DataSet } from "./dynamicDataSet";
  * Takes a dynamic dataset of emails and adds to it a dynamic dataset of the relevant correspondants
  */
 
-export function getDynamicCorrespondants<A>(asEmails: (a: A) => DataSetDiff<Email>) {
+export function getDynamicCorrespondants<A, B>(
+    asEmails: (a: A) => DataSetDiff<Email>,
+    finalize: (a: A, diff: DataSetDiff<Person>) => B
+) {
 
-    return (emails: Observable<A>): Observable<[DataSetDiff<Person>, A]> => {
+    return (emails: Observable<A>): Observable<B> => {
 
         const emailsSet: DataSet<Email> = {};
         const personSet: DataSet<number> = {};
@@ -74,7 +77,7 @@ export function getDynamicCorrespondants<A>(asEmails: (a: A) => DataSetDiff<Emai
                     delete emailsSet[change.id];
                 }
 
-                return pair(diff, a);
+                return finalize(a, diff);
             })
         );
     };

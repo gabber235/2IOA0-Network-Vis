@@ -80,7 +80,7 @@ describe("pipeline.dynamicDataSet.getDynamicCorrespondants", () => {
 
         const x = stream.pipe(
             diffStream(pair({} as DataSet<Email>, 0), pairMap2(diffDataSet, (_, x) => x)),
-            getDynamicCorrespondants(([email, _]) => email),
+            getDynamicCorrespondants(([email, _]) => email, (x, y) => pair(y, x)),
             map(([a,[b,c]]) => tripple(a,b,c)),
             scan(trippleMap2(foldDataSet, foldDataSet, (_, x) => x), tripple({}, {}, 0)),
             map(trippleMap(copyObject, copyObject, identity))

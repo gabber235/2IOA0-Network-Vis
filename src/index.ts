@@ -90,9 +90,9 @@ window.addEventListener("load", async () => {
 
     const dataWithFewerNodes = dataWithAllNodes.pipe(
         map(([[_, emails], [__, emailDiff]]) => pair(emails, emailDiff)), // forget about people
-        getDynamicCorrespondants(([_, diff]) => diff),
+        getDynamicCorrespondants(([_, diff]) => diff, ([emails, emailDiff], personDiff) => pair(emails, pair(personDiff, emailDiff))),
         scan( // get full people dataset
-            ([[people, _], __], [personDiff, [emails, emailDiff]]) => 
+            ([[people, _], __], [emails, [personDiff, emailDiff]]) => 
                 pair(pair(foldDataSet(people, personDiff), emails), pair(personDiff, emailDiff)),
             pair(pair({} as DataSet<Person>, {} as DataSet<Email>), pair(new DataSetDiff<Person>(), new DataSetDiff<Email>()))
         ),
