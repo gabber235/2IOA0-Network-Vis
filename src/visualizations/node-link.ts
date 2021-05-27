@@ -231,8 +231,6 @@ function hueGradient(v: number) {
 
     const angle = lerpMod(min, max, 360, v)
 
-    console.log(angle, v)
-
     return `hsl(${angle},80%,50%)`
 }
 
