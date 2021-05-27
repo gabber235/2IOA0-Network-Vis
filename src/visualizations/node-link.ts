@@ -9,10 +9,15 @@ import { arrayToObject, pair, pairMap2, tripple } from '../utils';
 
 export type NodeLinkOptions = {
     hierarchical?: boolean,
-    physics?: boolean
+    physics?: boolean,
+    groupEdges?: boolean,
 }
 
 const nodeSize = 10
+
+
+type EmailGroup = DataSet<Email>
+
 
 /**
  * Create a new vis.Network instance and bind it to 'container'
@@ -26,8 +31,7 @@ export async function visualizeNodeLinkDiagram(
 
     const people: DataSet<Person> = {}
     const emails: DataSet<Email> = {}
-
-    let nodeCount = 0
+    const emailGroups: DataSet<EmailGroup> = {}
 
     const circleLayoutRadius = maxNodes * (nodeSize * 2 + 2) / Math.PI / 2
 
@@ -38,10 +42,15 @@ export async function visualizeNodeLinkDiagram(
 
     let visualisation = new vis.Network(container, { nodes: nodes, edges: edges }, {})
 
+    let edgeGrouping = true
+
 
     options.subscribe({next (options) {
 
-        const fullReset = 'hierarchical' in options && prevOptions.hierarchical !== options.hierarchical
+        const fullReset = 
+            ('hierarchical' in options && prevOptions.hierarchical !== options.hierarchical)
+            || ('groupEdges' in options)
+
 
         if (fullReset) {
             nodes.clear()
@@ -50,47 +59,58 @@ export async function visualizeNodeLinkDiagram(
 
         visualisation.setOptions(nodeLinkOptionsToVisOptions(Object.assign(prevOptions, options)))
 
+        edgeGrouping = options.groupEdges
+
         if (fullReset) {
             nodes.add(Object.values(people).map(person => Object.assign({}, personToNode(person), nodeLocation(person))))
-            edges.add(Object.values(emails).map(emailToEdge))
+
+            if (edgeGrouping) 
+                edges.add(Object.entries(emailGroups).map(([id, val]) => emailGroupToEdge(id, val)))
+            else
+                edges.add(Object.values(emails).map(emailToEdge))
         }
     }})
     data.pipe(
-        groupDiffBy(([people, emails]) => emails, email => email.fromId + "," + email.toId, ([people, _], emailGroups) => pair(people, emailGroups))
-    ).subscribe(([people, emailGroups]) => {
+        groupDiffBy(([_, emailDiff]) => emailDiff, email => email.fromId + "," + email.toId, ([peopleDiff, emailDiff], emailGroupDiff) => tripple(peopleDiff, emailDiff, emailGroupDiff))
+    ).subscribe(([peopleDiff, emailDiff, emailGroupDiff]) => {
 
-        nodes.add(people.insertions.map(({value}) => Object.assign({}, personToNode(value), nodeLocation(value))))
-        edges.add(emailGroups.insertions.map(({id, value}) => ({id: id, from: +id.split(',')[0], to: +id.split(',')[1]})))
+        peopleDiff.apply(people)
+        emailDiff.apply(emails)
+        
 
-        nodes.update(people.updates.map(({value}) => personToNode(value)))
-        edges.update(emailGroups.updates.map(({id, value}) => ({id: id, from: +id.split(',')[0], to: +id.split(',')[1]})))
+        for (const change of emailGroupDiff.insertions) {
+            emailGroups[change.id] = {}
 
-        edges.remove(emailGroups.deletions.map(({id}) => id))
-        nodes.remove(people.deletions.map(({id}) => id))
+            change.value.apply(emailGroups[change.id])
+        }
+        for (const change of emailGroupDiff.updates) {
+            change.value.apply(emailGroups[change.id])
+        }
 
-        console.log(edges.length)
+        if (edgeGrouping) {
+            nodes.add(peopleDiff.insertions.map(({value}) => Object.assign({}, personToNode(value), nodeLocation(value))))
+            edges.add(emailGroupDiff.insertions.map(({id}) => emailGroupToEdge(id, emailGroups[id])))
+
+            nodes.update(peopleDiff.updates.map(({value}) => personToNode(value)))
+            edges.update(emailGroupDiff.updates.map(({id}) => emailGroupToEdge(id, emailGroups[id])))
+
+            edges.remove(emailGroupDiff.deletions.map(({id}) => id))
+            nodes.remove(peopleDiff.deletions.map(({id}) => id))
+        } else {
+            nodes.add(peopleDiff.insertions.map(({value}) => Object.assign({}, personToNode(value), nodeLocation(value))))
+            edges.add(emailDiff.insertions.map(({value}) => emailToEdge(value)))
+
+            nodes.update(peopleDiff.updates.map(({value}) => personToNode(value)))
+            edges.update(emailDiff.updates.map(({value}) => emailToEdge(value)))
+
+            edges.remove(emailDiff.deletions.map(({id}) => id))
+            nodes.remove(peopleDiff.deletions.map(({id}) => id))
+        }
+
+        for (const change of emailGroupDiff.deletions) {
+            delete emailGroups[change.id]
+        }
     })
-
-    
-    // data.subscribe({next ([personDiff, emailDiff]) {
-
-    //     // console.log(emailDiff)
-
-    //     nodes.add(personDiff.insertions.map(({value}) => Object.assign({}, personToNode(value), nodeLocation(value))))
-    //     edges.add(emailDiff.insertions.map(({value}) => emailToEdge(value)))
-
-    //     nodes.update(personDiff.updates.map(({value}) => personToNode(value)))
-    //     edges.update(emailDiff.updates.map(({value}) => emailToEdge(value)))
-
-    //     edges.remove(emailDiff.deletions.map(({id}) => id))
-    //     nodes.remove(personDiff.deletions.map(({id}) => id))
-
-    //     personDiff.apply(people)
-    //     emailDiff.apply(emails)
-
-    //     nodeCount += personDiff.insertions.length
-    //     nodeCount -= personDiff.deletions.length
-    // }})
 
     function nodeLocation(person: Person): {x:number,y:number} {
         return {
@@ -177,10 +197,28 @@ function emailToEdge(e: Email): vis.Edge {
         id: e.id,
         from: e.fromId,
         to: e.toId,
-        title: `${e.sentiment}, ${e.messageType}, ${e.date}`
+        title: `${e.messageType}, ${e.date}, Sentiment: ${Math.round(e.sentiment * 1000)/10}%`
+    }
+}
+function emailGroupToEdge(id: string, g: EmailGroup): vis.Edge {
+    const emailList = Object.values(g)
+    const someEmail = emailList[0]
+    const ccCount = emailList.filter(e => e.messageType === 'CC').length
+    const toCount = emailList.filter(e => e.messageType === 'TO').length
+    const avSent = emailList.map(e => e.sentiment).reduce((i,j) => i + j) / emailList.length
+
+    return {
+        id: id,
+        from: someEmail.fromId,
+        to: someEmail.toId,
+        width: Object.values(g).length / 2,
+        title: `${multipleString(toCount, 'Direct')}, ${multipleString(ccCount, 'CC', true)}, Av Sentiment: ${Math.round(avSent * 1000)/10}%`,
     }
 }
 
+function multipleString(amount: number, thing: string, apostrophe: boolean = false): string {
+    return amount + " " + thing + ((apostrophe && amount > 1) ? "'" : "") + (amount > 1 ? "s" : "")
+}
 
 const titleRanks = {
     "CEO": 0,

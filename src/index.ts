@@ -2,8 +2,8 @@ import "vis/dist/vis.min.css"
 import { AdjacencyMatrix } from "./visualizations/adjacency-matrix";
 import { visualizeNodeLinkDiagram, NodeLinkOptions, getVisNodeSeletions } from "./visualizations/node-link";
 import { Email, getCorrespondants, parseData, Person } from "./data"
-import { combineLatest, merge, Subject, Subscription } from "rxjs";
-import { debounceTime, map, scan, share, shareReplay, subscribeOn, switchAll } from "rxjs/operators";
+import { combineLatest, merge, Subject } from "rxjs";
+import { auditTime, map, scan, share, shareReplay } from "rxjs/operators";
 import { DataSet, DataSetDiff, diffDataSet, foldDataSet, NumberSetDiff } from "./pipeline/dynamicDataSet";
 import { getDynamicCorrespondants } from "./pipeline/getDynamicCorrespondants";
 import { binarySearch, ConstArray, millisInDay, pair, pairMap2, tripple } from "./utils";
@@ -28,7 +28,7 @@ window.addEventListener("load", async () => {
         sliderToObservable(durationSliderElm)
     ]).pipe(
         map(([i, j]): [number, number] => [i, i + j]),
-        // debounceTime(10),
+        auditTime(200)
     )
 
     const timeSliders = new TimeSliders(
@@ -109,7 +109,10 @@ window.addEventListener("load", async () => {
         ),
         checkBoxObserable(document.getElementById('hierarchical')).pipe(
             map((b): NodeLinkOptions => {return {hierarchical: b}})   
-        )
+        ),
+        checkBoxObserable(document.getElementById('group-edges')).pipe(
+            map((b): NodeLinkOptions => {return {groupEdges: b}})   
+        ),
     )
 
     const allNodes = dataWithAllNodes.pipe(shareReplay(1))
