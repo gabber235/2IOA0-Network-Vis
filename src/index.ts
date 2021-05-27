@@ -1,12 +1,12 @@
 import "vis/dist/vis.min.css"
 import { AdjacencyMatrix } from "./visualizations/adjacency-matrix";
-import { visualizeNodeLinkDiagram, NodeLinkOptions, getVisNodeSeletions } from "./visualizations/node-link";
+import { visualizeNodeLinkDiagram, NodeLinkOptions, getVisNodeSeletions, titleColors } from "./visualizations/node-link";
 import { Email, getCorrespondants, parseData, Person } from "./data"
 import { combineLatest, merge, Subject } from "rxjs";
 import { auditTime, map, scan, share, shareReplay } from "rxjs/operators";
 import { DataSet, DataSetDiff, diffDataSet, foldDataSet, NumberSetDiff } from "./pipeline/dynamicDataSet";
 import { getDynamicCorrespondants } from "./pipeline/getDynamicCorrespondants";
-import { binarySearch, ConstArray, millisInDay, pair, pairMap2, tripple } from "./utils";
+import { binarySearch, ConstArray, div, millisInDay, pair, pairMap2, span, text, tripple } from "./utils";
 import { prettifyFileInput, TimeSliders } from "./looks";
 import { checkBoxObserable, diffStream, fileInputObservable, sliderToObservable } from "./pipeline/basics";
 import { dynamicSlice } from "./pipeline/dynamicSlice";
@@ -17,6 +17,10 @@ const logo = require('../resources/static/logo.png')
 window.addEventListener("load", async () => {
 
     console.log('Image:', logo.default)
+
+    for (let title in titleColors) {
+        span({}, [span({style: `background-color: ${titleColors[title].color.background};`, class: 'color-dot'}), text(title)], document.getElementById("node-link-legend"))
+    }
 
     const fileSelector = document.getElementById('file-selector');
 

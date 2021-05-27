@@ -164,3 +164,16 @@ line {
 
     #node-link {}
 }
+
+#node-link-legend {
+    font-size: 10px;
+
+    .color-dot {    
+        display: inline-block;
+        width: 0.8em;
+        height: 0.8em;
+        border-radius: 0.8em;
+        margin-right: 0.5em;
+        margin-left: 1em;
+    }
+}
