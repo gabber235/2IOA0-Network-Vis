@@ -1,14 +1,14 @@
 import { Observable } from "rxjs";
-import { DataSet, DataSetDiff } from "./dynamicDataSet";
+import { DataSet, DataSetDiff, ID } from "./dynamicDataSet";
 
 
 
 
-export function groupDiffBy<A, Item, B>(getDiff: (a:A) => DataSetDiff<Item>, selector: (a: Item) => number, finalize: (a:A, diff: DataSetDiff<DataSetDiff<Item>>) => B) {
+export function groupDiffBy<A, Item, B>(getDiff: (a:A) => DataSetDiff<Item>, selector: (a: Item) => string, finalize: (a:A, diff: DataSetDiff<DataSetDiff<Item>>) => B) {
     return (stream: Observable<A>): Observable<B> => {
 
-        const groups: DataSet<Set<number>> = {}
-        const itemIdToGroupId: DataSet<number> = {}
+        const groups: DataSet<Set<ID>> = {}
+        const itemIdToGroupId: DataSet<ID> = {}
 
         return new Observable(sub => {
             stream.subscribe(a => {
@@ -18,23 +18,23 @@ export function groupDiffBy<A, Item, B>(getDiff: (a:A) => DataSetDiff<Item>, sel
 
                 let updates: DataSet<DataSetDiff<Item>> = {}
 
-                function addUpdate(groupId: number, itemId: number, item: Item) {
+                function addUpdate(groupId: ID, itemId: ID, item: Item) {
                     if (!(groupId in updates)) updates[groupId] = new DataSetDiff()
 
                     updates[groupId].add(itemId, item)
                 }
-                function updateUpdate(groupId: number, itemId: number, item: Item) {
+                function updateUpdate(groupId: ID, itemId: ID, item: Item) {
                     if (!(groupId in updates)) updates[groupId] = new DataSetDiff()
 
                     updates[groupId].update(itemId, item)
                 }
-                function removeUpdate(groupId: number, itemId: number) {
+                function removeUpdate(groupId: ID, itemId: ID) {
                     if (!(groupId in updates)) updates[groupId] = new DataSetDiff()
 
                     updates[groupId].remove(itemId)
                 }
 
-                function addItem(id: number, item: Item) {
+                function addItem(id: ID, item: Item) {
                     const groupId = selector(item)
 
                     itemIdToGroupId[id] = groupId
@@ -49,7 +49,7 @@ export function groupDiffBy<A, Item, B>(getDiff: (a:A) => DataSetDiff<Item>, sel
                         groups[groupId].add(id)
                     }
                 }
-                function removeItem(id: number) {
+                function removeItem(id: ID) {
                     const groupId = itemIdToGroupId[id]
                     
                     delete itemIdToGroupId[id]
@@ -86,7 +86,7 @@ export function groupDiffBy<A, Item, B>(getDiff: (a:A) => DataSetDiff<Item>, sel
                 }
 
                 for (let groupId in updates) {
-                    groupDiff.update(+groupId, updates[groupId])
+                    groupDiff.update(groupId, updates[groupId])
                 }
 
                 sub.next(finalize(a, groupDiff))

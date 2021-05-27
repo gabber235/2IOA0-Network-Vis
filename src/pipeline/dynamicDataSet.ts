@@ -1,15 +1,17 @@
-export type DataSet<A> = { [id: number]: A }
+export type ID = string
+
+export type DataSet<A> = { [_ in ID]: A }
 
 /**
  * Represents a set of changes to a dataset
  */
 export class DataSetDiff<A> {
 
-    public readonly insertions: {id: number, value: A}[]
-    public readonly updates: {id: number, value: A}[]
-    public readonly deletions: {id: number}[]
+    public readonly insertions: {id: ID, value: A}[]
+    public readonly updates: {id: ID, value: A}[]
+    public readonly deletions: {id: ID}[]
 
-    constructor(insertions: {id: number, value: A}[] = [], updates: {id: number, value: A}[] = [], deletions: {id: number}[] = []) {
+    constructor(insertions: {id: ID, value: A}[] = [], updates: {id: ID, value: A}[] = [], deletions: {id: ID}[] = []) {
         this.insertions = insertions
         this.updates = updates
         this.deletions = deletions
@@ -18,26 +20,26 @@ export class DataSetDiff<A> {
     /**
      * Adds an insertion to the diff
      */
-    add(id: number, value: A) {
+    add(id: ID, value: A) {
         this.insertions.push({id: id, value: value})
     }
     /**
      * Adds an update to the diff
      */
-    update(id: number, value: A) {
+    update(id: ID, value: A) {
         this.updates.push({id: id, value: value})
     }
     /**
      * Adds a deletion to the diff
      */
-    remove(id: number) {
+    remove(id: ID) {
         this.deletions.push({id: id})
     }
 
     /**
      * Changes every value and id using the given functions
      */
-    map<B>(valueMap: (a: A) => B, idMap: (id: number) => number): DataSetDiff<B> {
+    map<B>(valueMap: (a: A) => B, idMap: (id: ID) => ID): DataSetDiff<B> {
         return new DataSetDiff(
             this.insertions.map(({id, value}) => {return {id: idMap(id), value: valueMap(value)}}),
             this.updates.map(({id, value}) => {return {id: idMap(id), value: valueMap(value)}}),
@@ -91,13 +93,13 @@ export function diffDataSet<A>(prev: DataSet<A>, cur: DataSet<A>): DataSetDiff<A
 
     for (const id in cur) {
         if (id in prev) {
-            diff.update(+id, cur[id])
+            diff.update(id, cur[id])
         } else {
-            diff.add(+id, cur[id])
+            diff.add(id, cur[id])
         }
     }
     for (const id in prev) {
-        if (!(id in cur)) diff.remove(+id)
+        if (!(id in cur)) diff.remove(id)
     }
 
     return diff
@@ -112,13 +114,13 @@ export function diffDataSet<A>(prev: DataSet<A>, cur: DataSet<A>): DataSetDiff<A
     for (const id in cur) {
         if (id in prev) {
             if (prev[id] !== cur[id])
-                diff.update(+id, cur[id])
+                diff.update(id, cur[id])
         } else {
-            diff.add(+id, cur[id])
+            diff.add(id, cur[id])
         }
     }
     for (const id in prev) {
-        if (!(id in cur)) diff.remove(+id)
+        if (!(id in cur)) diff.remove(id)
     }
 
     return diff

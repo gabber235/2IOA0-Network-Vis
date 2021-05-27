@@ -4,7 +4,8 @@ import * as vis from 'vis';
 import { Email, Person, } from '../data';
 import { diffStream } from '../pipeline/basics';
 import { DataSet, diffPureDataSet, DataSetDiff, NumberSetDiff } from '../pipeline/dynamicDataSet';
-import { arrayToObject, pair, pairMap2 } from '../utils';
+import { groupDiffBy } from '../pipeline/groupDiffBy';
+import { arrayToObject, pair, pairMap2, tripple } from '../utils';
 
 export type NodeLinkOptions = {
     hierarchical?: boolean,
@@ -55,6 +56,9 @@ export async function visualizeNodeLinkDiagram(
             edges.add(Object.values(emails).map(emailToEdge))
         }
     }})
+    // data.pipe(
+    //     groupDiffBy(([people, emails]) => emails, email => email.fromId + "," + email.toId, ([people, emails], emailGroups) => tripple(people, emails, emailGroups))
+    // )
     data.subscribe({next ([personDiff, emailDiff]) {
 
         // console.log(emailDiff)
@@ -67,8 +71,6 @@ export async function visualizeNodeLinkDiagram(
 
         edges.remove(emailDiff.deletions.map(({id}) => id))
         nodes.remove(personDiff.deletions.map(({id}) => id))
-
-        console.log(edges.length)
 
         personDiff.apply(people)
         emailDiff.apply(emails)
@@ -125,6 +127,7 @@ export function nodeLinkOptionsToVisOptions(config: NodeLinkOptions): vis.Option
         nodes: {
             shape: 'dot',
             size: nodeSize,
+            
         },
         edges: {
             arrows: "to"
@@ -135,14 +138,16 @@ export function nodeLinkOptionsToVisOptions(config: NodeLinkOptions): vis.Option
                 nodeSpacing: 20,
                 treeSpacing: 20,
             },
+            // improvedLayout: false
         },
         physics: {
             enabled: options.physics,
             barnesHut: {
                 centralGravity: 1
-            }
+            },
+            // stabilizations:false
         },
-        interaction: { multiselect: true}
+        interaction: { multiselect: true},
     }
 }
 

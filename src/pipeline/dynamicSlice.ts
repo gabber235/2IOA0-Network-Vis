@@ -1,6 +1,6 @@
 import { Observable } from "rxjs";
 import { ConstArray } from "../utils";
-import { DataSet, DataSetDiff } from "./dynamicDataSet";
+import { DataSet, DataSetDiff, ID } from "./dynamicDataSet";
 
 
 
@@ -8,7 +8,7 @@ import { DataSet, DataSetDiff } from "./dynamicDataSet";
  * Takes an array of key-value pairs and an observable of ranges of integers, and returns a dynamic subset of all values with indices within that range.
  */
 export function dynamicSlice<A>(
-    array: ConstArray<[number, A]>,
+    array: ConstArray<[ID, A]>,
     range: Observable<[number, number]>
 ): Observable<DataSetDiff<A>> {
 

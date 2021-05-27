@@ -1,13 +1,14 @@
 import { Observable, of, Subject } from "rxjs"
-import { map, scan, share } from "rxjs/operators"
+import { map, scan } from "rxjs/operators"
 import { observableToArray } from "../../src/pipeline/basics"
-import { DataSet, DataSetDiff, foldDataSet } from "../../src/pipeline/dynamicDataSet"
+import { DataSet, foldDataSet } from "../../src/pipeline/dynamicDataSet"
 import { dynamicSlice } from "../../src/pipeline/dynamicSlice"
+import { ConstArray, pair } from "../../src/utils"
 
 
 describe("pipeline.dynamicSlice.dynamicSlice", () => {
     test("0", () => {
-        const array = {getItem: (index: number): [number, number] => [index,index], length: 5}
+        const array = {getItem: (index: number) => pair(index + "", index), length: 5}
         const range: Observable<[number, number]> = of([0, 5])
 
         const sliced = dynamicSlice(array, range).pipe(
@@ -27,7 +28,7 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
         ])
     })
     test("1", () => {
-        const array = {getItem: (index: number): [number, number] => [index,index], length: 100}
+        const array = {getItem: (index: number) => pair(index + "", index), length: 100}
         const range: Observable<[number, number]> = of([0, 5])
 
         const sliced = dynamicSlice(array, range).pipe(
@@ -47,7 +48,7 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
         ])
     })
     test("2", () => {
-        const array = {getItem: (index: number): [number, number] => [index,index], length: 100}
+        const array = {getItem: (index: number) => pair(index + "", index), length: 100}
         const range: Observable<[number, number]> = of([0, 5], [0, 10]) as any
 
         const sliced = dynamicSlice(array, range).pipe(
@@ -79,7 +80,7 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
         ])
     })
     test("3", () => {
-        const array = {getItem: (index: number): [number, number] => [index,index], length: 100}
+        const array = {getItem: (index: number) => pair(index + "", index), length: 100}
         const range = new Subject<[number, number]>()
 
 
@@ -125,7 +126,7 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
         ])
     })
     test("4", () => {
-        const array = {getItem: (index: number): [number, number] => [index,index], length: 100}
+        const array = {getItem: (index: number) => pair(index + "", index), length: 100}
         const range = new Subject<[number, number]>()
 
 
@@ -191,7 +192,7 @@ describe("pipeline.dynamicSlice.dynamicSlice", () => {
         ])
     })
     test("5", () => {
-        const array = {getItem: (index: number): [number, number] => [index,index], length: 100}
+        const array = {getItem: (index: number) => pair(index + "", index), length: 100}
         const range = new Subject<[number, number]>()
 
 

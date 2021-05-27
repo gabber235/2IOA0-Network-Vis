@@ -59,7 +59,7 @@ window.addEventListener("load", async () => {
 
             timeSliders.setFirstAndLastDate(firstDate, lastDate)
 
-            const constEmails: ConstArray<[number, Email]> = {getItem: i => [emails[i].id, emails[i]], length: emails.length}
+            const constEmails: ConstArray<[string, Email]> = {getItem: i => pair(emails[i].id + "", emails[i]), length: emails.length}
             const people = getCorrespondants(emails)
 
             function dayToIndex(day: number): number {
