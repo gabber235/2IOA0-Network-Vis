@@ -18,6 +18,7 @@ const nodeSize = 10
 
 type EmailGroup = DataSet<Email>
 
+const edgeColorContrast = 20
 
 /**
  * Create a new vis.Network instance and bind it to 'container'
@@ -197,7 +198,8 @@ function emailToEdge(e: Email): vis.Edge {
         id: e.id,
         from: e.fromId,
         to: e.toId,
-        title: `${e.messageType}, ${e.date}, Sentiment: ${Math.round(e.sentiment * 1000)/10}%`
+        title: `${e.messageType}, ${e.date}, Sentiment: ${Math.round(e.sentiment * 1000)/10}%`,
+        color: {color: hueGradient(Math.tanh(e.sentiment * edgeColorContrast) / 2 + 0.5), inherit: false}
     }
 }
 function emailGroupToEdge(id: string, g: EmailGroup): vis.Edge {
@@ -213,8 +215,27 @@ function emailGroupToEdge(id: string, g: EmailGroup): vis.Edge {
         to: someEmail.toId,
         width: Object.values(g).length / 2,
         title: `${multipleString(toCount, 'Direct')}, ${multipleString(ccCount, 'CC', true)}, Av Sentiment: ${Math.round(avSent * 1000)/10}%`,
+        color: {color: hueGradient(Math.tanh(avSent * edgeColorContrast) / 2 + 0.5), inherit: false}
     }
 }
+
+
+function lerpMod(min: number, max: number, mod: number, val: number) {
+    if (min < max) return (max - min) * val + min
+    else return ((mod - min + max) * val + min) % mod
+}
+
+function hueGradient(v: number) {
+    const min = 226
+    const max = 33
+
+    const angle = lerpMod(min, max, 360, v)
+
+    console.log(angle, v)
+
+    return `hsl(${angle},80%,50%)`
+}
+
 
 function multipleString(amount: number, thing: string, apostrophe: boolean = false): string {
     return amount + " " + thing + ((apostrophe && amount > 1) ? "'" : "") + (amount > 1 ? "s" : "")
