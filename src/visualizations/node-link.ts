@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { map, share } from 'rxjs/operators';
+import { groupBy, map, share } from 'rxjs/operators';
 import * as vis from 'vis';
 import { Email, Person, } from '../data';
 import { diffStream } from '../pipeline/basics';
@@ -38,6 +38,7 @@ export async function visualizeNodeLinkDiagram(
     let visualisation = new vis.Network(container, { nodes: nodes, edges: edges }, {})
 
 
+
     options.subscribe({next (options) {
 
         const fullReset = 'hierarchical' in options && prevOptions.hierarchical !== options.hierarchical
@@ -66,6 +67,8 @@ export async function visualizeNodeLinkDiagram(
 
         edges.remove(emailDiff.deletions.map(({id}) => id))
         nodes.remove(personDiff.deletions.map(({id}) => id))
+
+        console.log(edges.length)
 
         personDiff.apply(people)
         emailDiff.apply(emails)

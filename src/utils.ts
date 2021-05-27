@@ -228,3 +228,14 @@ export function copyObject<A>(x: A): A {
 
 
 export const millisInDay = 24 * 60 * 60 * 1000 
+
+
+
+export function zipArrays<A, B>(a: A[], b: B[]): [A, B][] {
+    let ret: [A, B][] = []
+
+    for (let i = 0; i < Math.min(a.length, b.length); i++) {
+        ret.push(pair(a[i], b[i]))
+    }
+    return ret
+}
