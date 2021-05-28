@@ -3,6 +3,7 @@ import { Email, Person, Title, getCorrespondants } from "../data";
 import * as d3 from "d3";
 import { Observable } from 'rxjs';
 import { DataSetDiff, DataSet } from '../pipeline/dynamicDataSet';
+import { titleRanks } from './node-link';
 
 
 type Node = {

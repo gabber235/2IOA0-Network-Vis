@@ -161,7 +161,7 @@ function emailToEdge(e: Email): vis.Edge {
 }
 
 
-const titleRanks = {
+export const titleRanks = {
     "CEO": 0,
     "President": 1,
     "Vice President": 2,
