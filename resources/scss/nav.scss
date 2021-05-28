@@ -1,0 +1,56 @@
+nav {
+    background: $nav-background;
+    height    : 12vh;
+    width     : 100%;
+    box-sizing: border-box;
+}
+
+.logo-text {
+    float       : left;
+    justify-self: center;
+    color       : $primary;
+    font-size   : 2.5rem;
+    line-height : 100%;
+    padding     : 1.6% 2%;
+    font-weight : bold;
+    font-family: 'Oswald', sans-serif;
+}
+
+.logo-image {
+    float      : left;
+    height     : 55%;
+    width      : auto;
+    margin-top : 1.5%;
+    margin-left: 1.5%;
+}
+
+nav ul {
+    float       : right;
+    margin-right: 1.5%;
+}
+
+nav ul li {
+    display    : inline-block;
+    line-height: 100%;
+    margin     : 6% auto;
+}
+
+nav ul li a {
+    color          : $nav-text;
+    font-size      : 1.4rem;
+    text-transform : uppercase;
+    padding        : 7px 13px;
+    border-radius  : 3px;
+    text-decoration: none;
+    font-family: 'Raleway', sans-serif;
+}
+
+.active:hover {
+    background-color: $primary;
+    transition      : .5s;
+    color           : $nav-hover;
+}
+
+.cur {
+    text-decoration: underline;
+}

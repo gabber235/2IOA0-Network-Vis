@@ -9,6 +9,8 @@ module.exports = {
         landingScss: './resources/scss/landing.scss',
         vis: './src/index.ts',
         visScss: './resources/scss/vis.scss',
+        about: './src/about.ts',
+        aboutScss: './resources/scss/about.scss',
     },
     output: {
         // filename: 'bundle.js',
@@ -73,6 +75,11 @@ module.exports = {
             template: "./index1.html",
             filename: "index1.html",
             chunks: ['landing']
+        }),
+        new HtmlWebpackPlugin({
+            template: "./about.html",
+            filename: "about.html",
+            chunks: ['about']
         }),
         new EncodingPlugin({
             encoding: 'utf-16'

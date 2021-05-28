@@ -6,6 +6,9 @@ $background      : adjust-color($primary, $lightness: -10%, $saturation: -30%);
 $background-hover: darken($background, 20%);
 $background-focus: lighten($background, 20%);
 $shadow          : adjust-color($primary, $lightness: -20%, $saturation: -40%, $alpha: -0.8);
+$nav-background : #0a1931;
+$nav-text : #fdfaf6;
+$nav-hover :#0a1931;
 
 body {
     // width: 100vw;
