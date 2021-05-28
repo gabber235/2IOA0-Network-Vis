@@ -11,6 +11,8 @@ async function loadRivFile(filePath: string): Promise<[RiveCanvas, File]> {
     return [rive, rive.load(file)];
 }
 
+document.onscroll = (e) => console.log(e)
+
 async function loadNodeLink() {
     const [rive, nodeFile] = await loadRivFile(nodeRiv.default)
     const artboard = nodeFile.defaultArtboard()
@@ -21,6 +23,11 @@ async function loadNodeLink() {
     const canvas = <HTMLCanvasElement>document.getElementById("nodeLinkCanvas")
     const ctx = canvas.getContext('2d');
     const renderer = new rive.CanvasRenderer(ctx);
+
+    const testInput = smi.input(0).asBool()
+
+    canvas.onmouseover = (e) => testInput.value = true
+    canvas.onmouseout = (e) => testInput.value = false
 
     smi.advance(artboard, 0)
     // Let's make sure our frame fits into our canvas
