@@ -6,6 +6,7 @@ import { nodeSize, titleColors } from "../constants"
 export type NodeLinkOptions = {
     hierarchical?: boolean,
     physics?: boolean,
+    groupNodes?: boolean,
     groupEdges?: boolean,
 }
 
@@ -14,6 +15,7 @@ export type NodeLinkOptions = {
 export const defaultNodeLinkOptions: NodeLinkOptions = {
     physics: true,
     hierarchical: false,
+    groupNodes: false,
     groupEdges: true
 }
 

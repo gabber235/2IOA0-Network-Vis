@@ -3,15 +3,15 @@ import { groupBy, map, max, share } from 'rxjs/operators';
 import * as vis from 'vis';
 import { Email, Person, } from '../../data';
 import { diffStream } from '../../pipeline/basics';
-import { DataSet, diffPureDataSet, DataSetDiff, NumberSetDiff } from '../../pipeline/dynamicDataSet';
+import { DataSet, diffPureDataSet, DataSetDiff, NumberSetDiff, ID } from '../../pipeline/dynamicDataSet';
 import { groupDiffBy } from '../../pipeline/groupDiffBy';
-import { arrayToObject, pair, pairMap2, span, text, tripple } from '../../utils';
+import { arrayToObject, pair, pairMap2, span, text, tripple, tuple4 } from '../../utils';
 import { edgeColorContrast, nodeSize, titleColors, titleRanks } from '../constants';
 import { defaultNodeLinkOptions, initialVisOptions, NodeLinkOptions, nodeLinkOptionsToVisOptions } from './options';
 
 
 
-
+export type PersonGroup = DataSet<Person>
 export type EmailGroup = DataSet<Email>
 
 
@@ -38,6 +38,7 @@ class NodeLinkVisualisation {
 
     private people: DataSet<Person> = {}
     private emails: DataSet<Email> = {}
+    private personGroups: DataSet<PersonGroup> = {}
     private emailGroups: DataSet<EmailGroup> = {}
 
     private maxNodes: number
@@ -55,9 +56,14 @@ class NodeLinkVisualisation {
         options.subscribe(this.onOptions.bind(this))
         data.pipe(
             groupDiffBy(
+                ([peopleDiff, _]) => peopleDiff,
+                person => person.title,
+                ([peopleDiff, emailDiff], personGroupDiff) => tripple(peopleDiff, emailDiff, personGroupDiff)
+            ),
+            groupDiffBy(
                 ([_, emailDiff]) => emailDiff, 
                 email => email.fromId + "," + email.toId, 
-                ([peopleDiff, emailDiff], emailGroupDiff) => tripple(peopleDiff, emailDiff, emailGroupDiff)
+                ([peopleDiff, emailDiff, personGroupDiff], emailGroupDiff) => tuple4(peopleDiff, emailDiff, personGroupDiff, emailGroupDiff)
             )
         ).subscribe(this.onData.bind(this))
     }
@@ -74,6 +80,7 @@ class NodeLinkVisualisation {
 
         const fullReset = 
             ('hierarchical' in options && this.options.hierarchical !== options.hierarchical)
+            || ('groupNodes' in options)
             || ('groupEdges' in options)
 
 
@@ -84,7 +91,11 @@ class NodeLinkVisualisation {
         this.visualisation.setOptions(nodeLinkOptionsToVisOptions(Object.assign(this.options, options)))
 
         if (fullReset) {
-            this.nodes.add(Object.values(this.people).map(person => Object.assign({}, personToNode(person), this.nodeLocation(person))))
+
+            if (this.options.groupNodes)
+                this.nodes.add(Object.entries(this.personGroups).map(([id, val]) => personGroupToNode(id, this.personGroups[id])))
+            else 
+                this.nodes.add(Object.values(this.people).map(person => Object.assign({}, personToNode(person), this.nodeLocation(person))))
 
             if (this.options.groupEdges) 
                 this.edges.add(Object.entries(this.emailGroups).map(([id, val]) => emailGroupToEdge(id, val)))
@@ -92,37 +103,42 @@ class NodeLinkVisualisation {
                 this.edges.add(Object.values(this.emails).map(emailToEdge))
         }
     }
-    private onData([peopleDiff, emailDiff, emailGroupDiff]: [DataSetDiff<Person>, DataSetDiff<Email>, DataSetDiff<DataSetDiff<Email>>]) {
+    private onData([peopleDiff, emailDiff, personGroupDiff, emailGroupDiff]: [DataSetDiff<Person>, DataSetDiff<Email>, DataSetDiff<DataSetDiff<Person>>, DataSetDiff<DataSetDiff<Email>>]) {
 
         peopleDiff.apply(this.people)
         emailDiff.apply(this.emails)
         
+        for (const change of personGroupDiff.insertions) {
+            this.personGroups[change.id] = {}
+            change.value.apply(this.personGroups[change.id])
+        }
+        for (const change of personGroupDiff.updates) {
+            change.value.apply(this.personGroups[change.id])
+        }
 
         for (const change of emailGroupDiff.insertions) {
             this.emailGroups[change.id] = {}
-
             change.value.apply(this.emailGroups[change.id])
         }
         for (const change of emailGroupDiff.updates) {
             change.value.apply(this.emailGroups[change.id])
         }
 
-        const nodeDiff = peopleDiff.map((person) => Object.assign({}, personToNode(person), this.nodeLocation(person)), identity)
+        const nodePeopleDiff = peopleDiff.map((person) => Object.assign({}, personToNode(person), this.nodeLocation(person)), identity)
+        const nodeGroupDiff = personGroupDiff.map((_, id) => personGroupToNode(id, this.personGroups[id]), identity)
+        const edgeEmailDiff = emailDiff.map(emailToEdge, identity)
+        const edgeGroupDiff = emailGroupDiff.map((_, id) => emailGroupToEdge(id, this.emailGroups[id]), identity)
 
-        if (this.options.groupEdges) {
-            this.updateDataSets(
-                nodeDiff,
-                emailGroupDiff.map((_, id) => emailGroupToEdge(id, this.emailGroups[id]), identity)
-            )
-        } else {
-            this.updateDataSets(
-                nodeDiff,
-                emailDiff.map(emailToEdge, identity)
-            )
-        }
+        this.updateDataSets(
+            (this.options.groupNodes) ? nodeGroupDiff : nodePeopleDiff, 
+            (this.options.groupEdges) ? edgeGroupDiff : edgeEmailDiff
+        )
 
         for (const change of emailGroupDiff.deletions) {
             delete this.emailGroups[change.id]
+        }
+        for (const change of personGroupDiff.deletions) {
+            delete this.personGroups[change.id]
         }
     }
     private updateDataSets(nodes: DataSetDiff<vis.Node>, edges: DataSetDiff<vis.Edge>) {
@@ -180,6 +196,17 @@ function personToNode(p: Person): vis.Node {
         level: titleRanks[p.title],
     }
 }
+function personGroupToNode(id: ID, g: PersonGroup): vis.Node {
+
+    const personList = Object.values(g)
+
+    return {
+        id: id,
+        title: multipleString(personList.length, personList[0].title, personList[0].title === "CEO"),
+        group: personList[0].title
+    }
+}
+
 function emailToEdge(e: Email): vis.Edge {
     return {
         id: e.id,
@@ -200,7 +227,7 @@ function emailGroupToEdge(id: string, g: EmailGroup): vis.Edge {
         id: id,
         from: someEmail.fromId,
         to: someEmail.toId,
-        width: Object.values(g).length / 2,
+        width: Math.log(Object.values(g).length) * 2,
         title: `${multipleString(toCount, 'Direct')}, ${multipleString(ccCount, 'CC', true)}, Av Sentiment: ${Math.round(avSent * 1000)/10}%`,
         color: {color: hueGradient(Math.tanh(avSent * edgeColorContrast) / 2 + 0.5), inherit: false}
     }

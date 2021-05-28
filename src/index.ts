@@ -11,7 +11,6 @@ import { prettifyFileInput, TimeSliders } from "./looks";
 import { checkBoxObserable, diffStream, fileInputObservable, sliderToObservable } from "./pipeline/basics";
 import { dynamicSlice } from "./pipeline/dynamicSlice";
 import { diffSwitchAll } from "./pipeline/diffSwitchAll";
-import { titleColors } from "./visualizations/constants";
 import { NodeLinkOptions } from "./visualizations/node-link/options";
 
 const logo = require('../resources/static/logo.png')
@@ -112,6 +111,9 @@ window.addEventListener("load", async () => {
         ),
         checkBoxObserable(document.getElementById('hierarchical')).pipe(
             map((b): NodeLinkOptions => {return {hierarchical: b}})   
+        ),
+        checkBoxObserable(document.getElementById('group-nodes')).pipe(
+            map((b): NodeLinkOptions => {return {groupNodes: b}})   
         ),
         checkBoxObserable(document.getElementById('group-edges')).pipe(
             map((b): NodeLinkOptions => {return {groupEdges: b}})   
