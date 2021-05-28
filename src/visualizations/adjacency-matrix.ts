@@ -278,6 +278,7 @@ export class AdjacencyMatrix implements Visualization {
       d3.select("#order").on("change", function () {
         // clearTimeout(timeout);
         // @ts-expect-error
+        // can be fixed by declaring a var for this as any
         order(this.value);
       });
 
