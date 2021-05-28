@@ -39,10 +39,10 @@ export class DataSetDiff<A> {
     /**
      * Changes every value and id using the given functions
      */
-    map<B>(valueMap: (a: A) => B, idMap: (id: ID) => ID): DataSetDiff<B> {
+    map<B>(valueMap: (a: A, id?: ID) => B, idMap: (id: ID) => ID): DataSetDiff<B> {
         return new DataSetDiff(
-            this.insertions.map(({id, value}) => {return {id: idMap(id), value: valueMap(value)}}),
-            this.updates.map(({id, value}) => {return {id: idMap(id), value: valueMap(value)}}),
+            this.insertions.map(({id, value}) => {return {id: idMap(id), value: valueMap(value, id)}}),
+            this.updates.map(({id, value}) => {return {id: idMap(id), value: valueMap(value, id)}}),
             this.deletions.map(({id}) => {return {id: idMap(id)}})
         )
     }

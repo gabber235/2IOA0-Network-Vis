@@ -1,6 +1,6 @@
 import "vis/dist/vis.min.css"
 import { AdjacencyMatrix } from "./visualizations/adjacency-matrix";
-import { visualizeNodeLinkDiagram, NodeLinkOptions, getVisNodeSeletions, titleColors } from "./visualizations/node-link";
+import { visualizeNodeLinkDiagram, getVisNodeSeletions, createLegend } from "./visualizations/node-link/node-link";
 import { Email, getCorrespondants, parseData, Person } from "./data"
 import { combineLatest, merge, Subject } from "rxjs";
 import { auditTime, map, scan, share, shareReplay } from "rxjs/operators";
@@ -11,6 +11,8 @@ import { prettifyFileInput, TimeSliders } from "./looks";
 import { checkBoxObserable, diffStream, fileInputObservable, sliderToObservable } from "./pipeline/basics";
 import { dynamicSlice } from "./pipeline/dynamicSlice";
 import { diffSwitchAll } from "./pipeline/diffSwitchAll";
+import { titleColors } from "./visualizations/constants";
+import { NodeLinkOptions } from "./visualizations/node-link/options";
 
 const logo = require('../resources/static/logo.png')
 
@@ -18,13 +20,6 @@ window.addEventListener("load", async () => {
 
     console.log('Image:', logo.default)
 
-    
-    for (let title in titleColors) {
-        span({}, [
-            span({style: `background-color: ${titleColors[title].color.background};`, class: 'color-dot'}), 
-            text(title)
-        ], document.getElementById("node-link-legend"))
-    }
 
     const fileSelector = document.getElementById('file-selector');
 
@@ -141,6 +136,7 @@ window.addEventListener("load", async () => {
         map(([_, [peopleDiff, emailDiff]]) => pair(peopleDiff, emailDiff)),
         share()
     )
+    createLegend(document.getElementById("node-link-legend"))
 
     const nodeLinkDiagram = await visualizeNodeLinkDiagram(document.getElementById("node-links"), maybeShowAllNodes, nodeLinkOptions, 150)
     getVisNodeSeletions(nodeLinkDiagram).subscribe(selectionSubject)
