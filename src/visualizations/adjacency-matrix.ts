@@ -3,13 +3,13 @@ import { Email, Person, Title, getCorrespondants } from "../data";
 import * as d3 from "d3";
 import { Observable } from 'rxjs';
 import { DataSetDiff, DataSet } from '../pipeline/dynamicDataSet';
-// import { titleRanks } from './node-link';
+import { titleRanks } from './constants';
 
 
 type Node = {
   name: string,
   id: number,
-  group: string,  // used for titles in our dataset
+  group: Title,  // used for titles in our dataset
   index?: number, // used in adjacency matrix
   count?: number, // used in adjacency matrix
 }
@@ -78,21 +78,21 @@ export class AdjacencyMatrix implements Visualization {
       if (!existingSVG) {
         // SVG does not exist already, create it
         d3.select("#adj-matrix").append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .attr("id", "AM-SVG")
-        // .style("margin-left", -margin.left + "px")
-        .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+          .attr("id", "AM-SVG")
+          // .style("margin-left", -margin.left + "px")
+          .append("g")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
       } else {
         d3.select("#AM-SVG").remove();
         d3.select("#adj-matrix").append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .attr("id", "AM-SVG")
-        // .style("margin-left", -margin.left + "px")
-        .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+          .attr("id", "AM-SVG")
+          // .style("margin-left", -margin.left + "px")
+          .append("g")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
       }
       let svg = d3.select("#AM-SVG");
 
@@ -117,14 +117,16 @@ export class AdjacencyMatrix implements Visualization {
       nodes.forEach(function (node: Node, i) {
         node.index = i;
         node.count = 0;
-        matrix[i] = d3.range(n).map(function (j) { 
-          return { 
-            x: j, 
-            y: i, 
-            z: 0, 
-            selected: false, 
-            from: node, 
-            to: nodes[j] }; });
+        matrix[i] = d3.range(n).map(function (j) {
+          return {
+            x: j,
+            y: i,
+            z: 0,
+            selected: false,
+            from: node,
+            to: nodes[j]
+          };
+        });
       });
 
 
@@ -145,15 +147,15 @@ export class AdjacencyMatrix implements Visualization {
       let orders = {
         name: d3.range(n).sort(function (a, b) { return d3.ascending(nodes[a].name, nodes[b].name); }),
         count: d3.range(n).sort(function (a, b) { return nodes[b].count - nodes[a].count; }),
-        group: d3.range(n).sort(function (a, b) { return nodes[a].group.localeCompare(nodes[b].group); }),
+        group: d3.range(n).sort(function (a, b) { return titleRanks[nodes[a].group] - titleRanks[ nodes[b].group]; }),
       };
 
 
-      
+
       // get sort order from page
       const dropDown: any = document.getElementById("order")
       const sorter: "name" | "count" | "group" = dropDown.value;
-      
+
 
       // The default sort order.
       x.domain(orders[sorter]);
@@ -224,21 +226,21 @@ export class AdjacencyMatrix implements Visualization {
 
       // create tooltip
       let tooltip: d3.Selection<HTMLDivElement, unknown, any, any>;
-      if (document.getElementsByClassName("tooltip").length === 0){
+      if (document.getElementsByClassName("tooltip").length === 0) {
         tooltip = d3.select("#adj-matrix")
-        .append("div")
-        .style("position", "absolute")
-        .style("visibility", "hidden")
-        .attr("class", "tooltip")
-        .attr("id", "AM-tooltip")
-        .style("background-color", "white")
-        .style("border", "solid")
-        .style("border-width", "1px")
-        .style("border-radius", "3px")
-        .style("padding", "4px")
-        .style("font-size", "12px")
-        .style("left", "10px").style("top", "10px")
-        .style("text-align", "left")
+          .append("div")
+          .style("position", "absolute")
+          .style("visibility", "hidden")
+          .attr("class", "tooltip")
+          .attr("id", "AM-tooltip")
+          .style("background-color", "white")
+          .style("border", "solid")
+          .style("border-width", "1px")
+          .style("border-radius", "3px")
+          .style("padding", "4px")
+          .style("font-size", "12px")
+          .style("left", "10px").style("top", "10px")
+          .style("text-align", "left")
       }
       tooltip = d3.select("#AM-tooltip");
 
