@@ -24,27 +24,38 @@ export class AdjacencyMatrix implements Visualization {
   async visualize(data: Observable<[DataSetDiff<Person>, DataSetDiff<Email>]>): Promise<void> {
     // document.body.appendChild(div({}, [text("Adjacency-matrix")]));
 
-    // let persons: DataSet<Person> = {};
+    let persons: DataSet<Person> = {};
     let emails: DataSet<Email> = {};
 
     data.subscribe(event => {
       // console.log(event)
 
       // implement the changes given by the diffs
-      // const personDiff = event[0];
-      // personDiff.apply(persons)
+      const personDiff = event[0];
+      personDiff.apply(persons)
       const emailsDiff = event[1];
       emailsDiff.update
       emailsDiff.apply(emails)
 
-      // const personList = Object.values(persons);
+      const personList = Object.values(persons);
       const emailList = Object.values(emails)
 
-      // Creating array with person object
-      const correspondants = Object.values(getCorrespondants(emailList)); //dictionary with persons
+      // get if user wants to see all nodes
+      const showAllNodes: any = document.getElementById("show-all-nodes");
+      const boolShowAllNodes: boolean = showAllNodes.checked;
 
-      // turn personlist into nodes for adjacency matrix
-      const nodes = peopleToNodes(correspondants);
+      let nodes: Node[];
+
+      //depending on if the user wants to see all nodes, calc what nodes we want
+      if (!boolShowAllNodes) {
+        // Creating array with person object
+        const correspondants = Object.values(getCorrespondants(emailList)); //dictionary with persons
+        // turn personlist into nodes for adjacency matrix
+        nodes = peopleToNodes(correspondants);
+      } else {
+        nodes = peopleToNodes(personList);
+      }
+
 
       // get edges
       const links = edgeHash(emailList, nodes);
@@ -147,7 +158,7 @@ export class AdjacencyMatrix implements Visualization {
       let orders = {
         name: d3.range(n).sort(function (a, b) { return d3.ascending(nodes[a].name, nodes[b].name); }),
         count: d3.range(n).sort(function (a, b) { return nodes[b].count - nodes[a].count; }),
-        group: d3.range(n).sort(function (a, b) { return titleRanks[nodes[a].group] - titleRanks[ nodes[b].group]; }),
+        group: d3.range(n).sort(function (a, b) { return titleRanks[nodes[a].group] - titleRanks[nodes[b].group]; }),
       };
 
 
