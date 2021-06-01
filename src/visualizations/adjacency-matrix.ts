@@ -12,12 +12,14 @@ type Node = {
   group: Title,  // used for titles in our dataset
   index?: number, // used in adjacency matrix
   count?: number, // used in adjacency matrix
+  sentiment?: number, // total sentiment
 }
 
 type Edge = {
   source: number,
   target: number,
   value: number,
+  sentiment: number,
 }
 
 export class AdjacencyMatrix implements Visualization {
@@ -100,7 +102,7 @@ export class AdjacencyMatrix implements Visualization {
       const n = nodes.length
 
 
-      // Compute index per node.
+      // Compute most importantly index but also other values for each node.
       nodes.forEach(function (node: Node, i) {
         node.index = i;
         node.count = 0;
@@ -128,6 +130,8 @@ export class AdjacencyMatrix implements Visualization {
         // matrix[link.target][link.target].z += link.value;
         nodes[link.source].count += link.value;
         nodes[link.target].count += link.value;
+        nodes[link.source].sentiment += link.sentiment;
+        nodes[link.target].sentiment += link.sentiment;
       });
 
       // Precompute the sorting orders
@@ -399,6 +403,7 @@ function edgeHash(emails: Email[], nodes: Node[]) {
         source: source,
         target: target,
         value: 1,
+        sentiment: email.sentiment,
       }
       edges.push(edge);
     } else {
