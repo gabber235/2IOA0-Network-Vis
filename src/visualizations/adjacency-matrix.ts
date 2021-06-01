@@ -135,6 +135,7 @@ export class AdjacencyMatrix implements Visualization {
         name: d3.range(n).sort(function (a, b) { return d3.ascending(nodes[a].name, nodes[b].name); }),
         count: d3.range(n).sort(function (a, b) { return nodes[b].count - nodes[a].count; }),
         group: d3.range(n).sort(function (a, b) { return titleRanks[nodes[a].group] - titleRanks[nodes[b].group]; }),
+        sentiment: d3.range(n).sort(function (a, b) { return nodes[b].count - nodes[a].count; }),
       };
 
 
