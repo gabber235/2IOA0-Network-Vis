@@ -24,8 +24,8 @@ export class AdjacencyMatrix implements Visualization {
   async visualize(data: Observable<[DataSetDiff<Person>, DataSetDiff<Email>]>): Promise<void> {
     // document.body.appendChild(div({}, [text("Adjacency-matrix")]));
 
-    let persons: DataSet<Person> = {};
-    let emails: DataSet<Email> = {};
+    const persons: DataSet<Person> = {};
+    const emails: DataSet<Email> = {};
 
     data.subscribe(event => {
       // console.log(event)
@@ -68,24 +68,24 @@ export class AdjacencyMatrix implements Visualization {
 
 
     function createAdjacencyMatrix(nodes: Node[], links: Edge[]) {
-      let margin = {
+      const margin = {
         top: 0,
         right: 0,
         bottom: 0,
         left: 0
       }
 
-      let width = 750;
-      let height = 750;
+      const width = 750;
+      const height = 750;
 
       // @ts-expect-error
-      let x = d3.scale.ordinal().rangeBands([0, width]);
+      const x = d3.scale.ordinal().rangeBands([0, width]);
       // @ts-expect-error
-      let z = d3.scale.linear().domain([0, 4]).clamp(true);
+      const z = d3.scale.linear().domain([0, 4]).clamp(true);
       // @ts-expect-error
-      let c = d3.scale.category10().domain(d3.range(10));
+      const c = d3.scale.category10().domain(d3.range(10));
 
-      let existingSVG = document.getElementById("AM-SVG");
+      const existingSVG = document.getElementById("AM-SVG");
       if (!existingSVG) {
         // SVG does not exist already, create it
         d3.select("#adj-matrix").append("svg")
@@ -105,7 +105,7 @@ export class AdjacencyMatrix implements Visualization {
           .append("g")
           .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
       }
-      let svg = d3.select("#AM-SVG");
+      const svg = d3.select("#AM-SVG");
 
 
       type Cell = {
@@ -120,8 +120,8 @@ export class AdjacencyMatrix implements Visualization {
       // declare variable to store the matrix values
       const matrix: Cell[][] = []
 
-      // variable to keep number of nodes
-      let n = nodes.length
+      // variable to keep current number of nodes
+      const n = nodes.length
 
 
       // Compute index per node.
@@ -155,7 +155,7 @@ export class AdjacencyMatrix implements Visualization {
       });
 
       // Precompute the sorting orders
-      let orders = {
+      const orders = {
         name: d3.range(n).sort(function (a, b) { return d3.ascending(nodes[a].name, nodes[b].name); }),
         count: d3.range(n).sort(function (a, b) { return nodes[b].count - nodes[a].count; }),
         group: d3.range(n).sort(function (a, b) { return titleRanks[nodes[a].group] - titleRanks[nodes[b].group]; }),
@@ -176,7 +176,7 @@ export class AdjacencyMatrix implements Visualization {
         .attr("width", width)
         .attr("height", height);
 
-      let rows = svg.selectAll(".row")
+      const rows = svg.selectAll(".row")
         .data(matrix)
         .enter().append("g")
         .attr("class", "row")
@@ -193,7 +193,7 @@ export class AdjacencyMatrix implements Visualization {
       //   .attr("text-anchor", "end")
       //   .text(function (d, i) { return nodes[i].name; });
 
-      let column = svg.selectAll(".column")
+      const column = svg.selectAll(".column")
         .data(matrix)
         .enter().append("g")
         .attr("class", "column")
@@ -210,7 +210,7 @@ export class AdjacencyMatrix implements Visualization {
       //   .text(function (d, i) { return nodes[i].name; });
 
       function row(row: Cell[]) {
-        let cell = d3.select(this).selectAll(".cell")
+        const cell = d3.select(this).selectAll(".cell")
           .data(row.filter(function (d) { return d.z; }))
           .enter().append("rect")
           .attr("class", "cell")
@@ -300,7 +300,7 @@ export class AdjacencyMatrix implements Visualization {
         // @ts-expect-error
         x.domain(orders[value]);
 
-        let t = svg.transition().duration(2500);
+        const t = svg.transition().duration(2500);
 
         t.selectAll(".row")
           .delay(function (d, i) { return x(i) * 4; })
@@ -344,10 +344,10 @@ export function emailToName(email: string) {
   let name: string = "";
 
   // remove everything behind @ and replace space with dot for next step
-  let withoutAt = email.split('@')[0].replace(" ", ".")
+  const withoutAt = email.split('@')[0].replace(" ", ".")
 
   // split string at dots for each name part
-  let parts: string[] = withoutAt.split(".");
+  const parts: string[] = withoutAt.split(".");
 
   // capitalise first letter of each part
   for (let i = 0; i < parts.length; i++) {
@@ -389,7 +389,7 @@ function edgeHash(emails: Email[], nodes: Node[]) {
 
     if (indexInEdges === -1) {
       // new edge
-      let edge: Edge = {
+      const edge: Edge = {
         source: source,
         target: target,
         value: 1,
@@ -411,8 +411,8 @@ function filterCorrespondants(
   correspondants: Person[]
 ) {
   let filtered: Person[] = [];
-  for (let person in correspondants) {
-    for (let job in jobTitleList) {
+  for (const person in correspondants) {
+    for (const job in jobTitleList) {
       if (jobTitleList[job] === correspondants[person].title) {
         filtered.push(correspondants[person]);
         break;
