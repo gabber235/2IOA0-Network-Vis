@@ -4,6 +4,7 @@ import * as d3 from "d3";
 import { Observable } from 'rxjs';
 import { DataSetDiff, DataSet } from '../pipeline/dynamicDataSet';
 import { titleRanks } from './constants';
+import { CleanPlugin } from 'webpack';
 
 
 type Node = {
@@ -93,6 +94,7 @@ export class AdjacencyMatrix implements Visualization {
         selected?: boolean,
         from: Node,
         to: Node,
+        sentSum: number, // total sentiment
       }
 
       // declare variable to store the matrix values
@@ -113,7 +115,8 @@ export class AdjacencyMatrix implements Visualization {
             z: 0,
             selected: false,
             from: node,
-            to: nodes[j]
+            to: nodes[j],
+            sentSum: 0,
           };
         });
       });
@@ -134,6 +137,14 @@ export class AdjacencyMatrix implements Visualization {
         nodes[link.target].sentiment += link.sentiment;
       });
 
+      // update for total sentiment
+      nodes.forEach(function (node: Node, i) {
+        matrix[node.index].forEach((c) => {
+          c.sentSum = node.index;
+        })
+        // const sum = matrix[node.index].reduce()
+      });
+
       // Precompute the sorting orders
       const orders = {
         name: d3.range(n).sort(function (a, b) { return d3.ascending(nodes[a].name, nodes[b].name); }),
@@ -146,7 +157,7 @@ export class AdjacencyMatrix implements Visualization {
 
       // get sort order from page
       const dropDown: any = document.getElementById("order")
-      const sorter: "name" | "count" | "group" = dropDown.value;
+      const sorter: "name" | "count" | "group" | "sentiment" = dropDown.value;
 
 
       // The default sort order.
@@ -249,7 +260,10 @@ export class AdjacencyMatrix implements Visualization {
         html += "To: <br>" + receiver.name + ", " + receiver.group + "<br>";
 
         // num of emails
-        html += "n.o. emails: " + c.z;
+        html += "n.o. emails: " + c.z + "<br>";
+
+        // total sentiment
+        html += "Sum sentiment: " + c.sentSum;
 
         return html;
       }
