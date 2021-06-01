@@ -39,7 +39,7 @@ export class AdjacencyMatrix implements Visualization {
       const personList = Object.values(persons);
       const emailList = Object.values(emails);
 
-      updateAM(personList, emailList, 1);
+      updateAM(personList, emailList);
     });
     
     
@@ -298,7 +298,7 @@ export class AdjacencyMatrix implements Visualization {
     }
 
     // takes persons, emails and selections and update the on-screen matrix accordingly
-    function updateAM(persons: Person[], emails: Email[], selection: any) {      
+    function updateAM(persons: Person[], emails: Email[]) {      
 
 
       // get if user wants to see all nodes
