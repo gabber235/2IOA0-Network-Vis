@@ -2,99 +2,80 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta content="IE=edge" http-equiv="X-UA-Compatible" />
-  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-  <link href="css/vis.css" rel="stylesheet" />
-  <title>CoVis19 - Network Visualization</title>
+    <meta charset="UTF-8" />
+    <meta content="IE=edge" http-equiv="X-UA-Compatible" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <link href="css/landing.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600&family=Raleway:wght@500&display=swap"
+        rel="stylesheet">
+    <title>CoVis19 - Network Visualization</title>
 </head>
 
 <body>
-  <nav>
-    <img src="resources/static/logo.png" alt="" class="logo-image">
-    <label class="logo-text">CoVis-19</label>
-    <ul>
-        <li><a href="index1.html" class="active">Home</a></li>
-        <li><a href="./about.html" class="active">About</a></li>
-        <li><a href="index.html" class="active cur">Visualisations</a></li>
-    </ul>
-</nav>
+    <!-- Navigation Bar -->
+    <nav>
+        <img src="resources/static/logo.png" alt="" class="logo-image">
+        <label class="logo-text">CoVis-19</label>
+        <ul>
+            <li><a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" class="active cur">Home</a></li>
+            <li><a href="about.html" class="active">About</a></li>
+            <li><a href="vis.html" class="active">Visualisations</a></li>
+        </ul>
+    </nav>
 
-    <div id="heading">
-        <header id="header">
-            <img src="./resources/static/logo.png" alt="CoVis 19 Logo">
-            <h1>CoVis 19</h1>
-        </header>
-        <p>Visualizing data is a challenging task due to multiple reasons:  One reason is selecting the most fitting visualizationtechnique. 
-        Data can be presented in different ways and choosing the right visualization technique is vital for understanding whichinformation the data is representing. 
-        As technology is on the rise these challenges become more important to be tackled. 
-        Using thewrong visualization techniques can result to people misunderstanding the data and as as result come to a wrong conclusion. 
-        Thispaper describes two visualization techniques, the node-link diagram and the adjacency matrix, and how these visualizations can bemade dynamic. 
-        Dynamic visualizations are relevant since data is often collected over a period of time. Dynamic visualizations help todiscover trends and changes in the data. 
-        Different methods can be used to make a visualization dynamic, such as animation or the small multiples method. 
-        Furthermore, this report describes different ways of interacting with the visualization to make it fit to theusers needs. 
-        The methods include making use of a time slider, dragging nodes around, selecting certain data points to focus on orselecting clusters of data to be presented in the visualization</p>
-
-        <input type="file" name="file-selector" id="file-selector" accept=".csv">
-        <label for="file-selector">Choose a dataset</label>
-
-        <div id="selectors">
-            <div id="split-options">
-                <div id="matrix-options">
-                    <label for="order">Order:</label>
-                    <select id="order" name="order">
-                    <option value="name">by Name</option>
-                    <option value="count">by Frequency</option>
-                    <option value="group">by Title</option>
-                    </select>
-                </div>
-                <div id="node-link-options">
-                    <label for="hierarchical">Hierarchical layout</label>
-                    <input type="checkbox" id="hierarchical" name="hierarchical">
-
-                    <label for="physics">Physics</label>
-                    <input type="checkbox" id="physics" name="physics">
-
-                    <label for="show-all-nodes">Show all nodes</label>
-                    <input type="checkbox" id="show-all-nodes" name="show-all-nodes">
-
-                    <label for="group-nodes">Group nodes by title</label>
-                    <input type="checkbox" id="group-nodes" name="group-nodes">
-
-                    <label for="group-edges">Combine Edges</label>
-                    <input type="checkbox" id="group-edges" name="group-edges" checked>
-                </div>
-            </div>
-            <div id="universal-options">
-                
-                <span id="duration">---</span>
-
-                <input type="range" min="1" max="28" value="14" class="slider" id="duration-slider">
-
-                From
-                <span id="first-day">---</span>
-                til
-                <span id="last-day">---</span>
-            </div>
-            <div id="big-slider-container">
-                <input type="range" min="0" max="10" value="0" class="slider" id="first-day-slider">
-            </div>
-                
+    <!-- Teaser Image -->
+    <section>
+        <div class="teaser">
+            <div id="scroll">Scroll Down</div>
         </div>
+    </section>
+
+    <!-- Text about the visualisations -->
+    <div class="container">
+        <div class="box image"><canvas id="nodeLinkCanvas" width=300 height=300></canvas></div>
+        <div class="box js-scroll slide-right"> <strong> Node-Link diagram</strong><br />
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce ac ultricies
+            quam, sagittis vehicula magna. Sed gravida ac ipsum non congue. Aenean consequat pulvinar mauris. Maecenas
+            vitae rhoncus nulla. Sed luctus interdum libero in rhoncus. Morbi efficitur congue egestas. Vivamus ut neque
+            lacinia, ultricies enim quis, vulputate nisi. Nam pulvinar metus enim, quis varius nisi egestas vitae. Ut
+            hendrerit sit amet mi tincidunt mattis. Donec a augue condimentum, varius mi in, pellentesque ligula.
+            Quisque vel urna sagittis, facilisis purus ac, luctus sapien. Donec euismod, lacus ac pellentesque vehicula,
+            velit nisl ultricies mi, et maximus tortor urna nec urna. Vivamus nibh felis, lobortis sed enim interdum,
+            porttitor interdum elit.</div>
+        <div class="box js-scroll slide-left"> <strong> Adjacency Matrix</strong><br />
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce ac ultricies
+            quam, sagittis vehicula magna. Sed gravida ac ipsum non congue. Aenean consequat pulvinar mauris. Maecenas
+            vitae rhoncus nulla. Sed luctus interdum libero in rhoncus. Morbi efficitur congue egestas. Vivamus ut neque
+            lacinia, ultricies enim quis, vulputate nisi. Nam pulvinar metus enim, quis varius nisi egestas vitae. Ut
+            hendrerit sit amet mi tincidunt mattis. Donec a augue condimentum, varius mi in, pellentesque ligula.
+            Quisque vel urna sagittis, facilisis purus ac, luctus sapien. Donec euismod, lacus ac pellentesque vehicula,
+            velit nisl ultricies mi, et maximus tortor urna nec urna. Vivamus nibh felis, lobortis sed enim interdum,
+            porttitor interdum elit.</div>
+        <div class="box image"><canvas id="adjacencyCanvas" width=300 height=300></canvas></div>
+        <div class="box image"><img src="https://via.placeholder.com/300?text=Interaction+Image" alt=""></div>
+        <div class="box js-scroll slide-right"><strong>Interaction techniques</strong> <br />
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce ac ultricies
+            quam, sagittis vehicula magna. Sed gravida ac ipsum non congue. Aenean consequat pulvinar mauris. Maecenas
+            vitae rhoncus nulla. Sed luctus interdum libero in rhoncus. Morbi efficitur congue egestas. Vivamus ut neque
+            lacinia, ultricies enim quis, vulputate nisi. Nam pulvinar metus enim, quis varius nisi egestas vitae. Ut
+            hendrerit sit amet mi tincidunt mattis. Donec a augue condimentum, varius mi in, pellentesque ligula.
+            Quisque vel urna sagittis, facilisis purus ac, luctus sapien. Donec euismod, lacus ac pellentesque vehicula,
+            velit nisl ultricies mi, et maximus tortor urna nec urna. Vivamus nibh felis, lobortis sed enim interdum,
+            porttitor interdum elit.</div>
     </div>
 
-    <div id="visualizations">
-    <div id="adj-matrix" class="visual"></div>
-    <div class="visual">
-        <div>
-            <div id="node-link-legend">
-
-            </div>   
-            <div id="node-links"
-                style="position: absolute; top: 0px; right: 0px; bottom: 0px; left: 0px; width: 1000px; height: 1000px"></div>
-            </div> 
+    <!-- Footer -->
+    <div class="footer">
+        <div class="footer footer-text">Covis-19 is a visualisation tool designed to help users in visualising network
+            datasets.</div>
+        <div class="footer footer-links">
+            <ul>
+                <li><a href="#">Home</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="index.html">Visualisations</a></li>
+            </ul>
         </div>
-        
     </div>
 </body>
 

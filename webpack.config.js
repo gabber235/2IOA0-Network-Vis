@@ -7,7 +7,7 @@ module.exports = {
     entry: {
         landing: './src/landing.ts',
         landingScss: './resources/scss/landing.scss',
-        vis: './src/index.ts',
+        vis: './src/vis.ts',
         visScss: './resources/scss/vis.scss',
         about: './src/about.ts',
         aboutScss: './resources/scss/about.scss',
@@ -67,13 +67,13 @@ module.exports = {
     },
     plugins: [
         new HtmlWebpackPlugin({
-            template: "./index.html",
-
+            template: "./vis.html",
+            filename: "vis.html",
             chunks: ['vis']
         }),
         new HtmlWebpackPlugin({
-            template: "./index1.html",
-            filename: "index1.html",
+            template: "./index.html",
+            filename: "index.html",
             chunks: ['landing']
         }),
         new HtmlWebpackPlugin({
