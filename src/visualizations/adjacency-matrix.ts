@@ -137,14 +137,6 @@ export class AdjacencyMatrix implements Visualization {
         nodes[link.target].sentiment += link.sentiment;
       });
 
-      // update for total sentiment
-      nodes.forEach(function (node: Node, i) {
-        matrix[node.index].forEach((c) => {
-          c.sentSum = node.index;
-        })
-        // const sum = matrix[node.index].reduce()
-      });
-
       // Precompute the sorting orders
       const orders = {
         name: d3.range(n).sort(function (a, b) { return d3.ascending(nodes[a].name, nodes[b].name); }),
