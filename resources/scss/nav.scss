@@ -1,56 +1,68 @@
 nav {
+    display    : flex;
+    align-items: center;
+    background : $nav-background;
+    height     : 100px;
+    width      : 100%;
+    box-sizing : border-box;
+    box-shadow : adjust-color($nav-background, $alpha: -0.76) 0px 7px 29px 0px;
+
+    .logo-text {
+        color          : $primary;
+        font-size      : 35px;
+        line-height    : 80px;
+        padding        : 0px 30px;
+        font-weight    : bold;
+        text-decoration: none;
+    }
+
+    .logo-image {
+        height     : 50px;
+        width      : auto;
+        margin-left: 20px;
+    }
+
+
+    ul {
+        margin-left : auto;
+        margin-right: 20px;
+
+        li {
+            display    : inline-block;
+            line-height: 80px;
+            margin     : 0 5px;
+
+            a {
+                color          : $nav-text;
+                font-size      : 20px;
+                text-transform : uppercase;
+                padding        : $button-padding;
+                border-radius  : $button-border-radius;
+                text-decoration: none;
+            }
+
+            a:hover,
+            .cur {
+                background-color: $primary;
+                transition      : .5s;
+                color           : $nav-background;
+                box-shadow      : $dark-button-shadow;
+            }
+        }
+    }
+
+}
+
+.footer {
+    display        : flex;
+    justify-content: center;
+    align-items    : center;
+
     background: $nav-background;
-    height    : 12vh;
+    height    : 100px;
     width     : 100%;
     box-sizing: border-box;
-}
+    margin-top: 30px;
 
-.logo-text {
-    float       : left;
-    justify-self: center;
-    color       : $primary;
-    font-size   : 2.5rem;
-    line-height : 100%;
-    padding     : 1.6% 2%;
-    font-weight : bold;
-    font-family: 'Oswald', sans-serif;
-}
-
-.logo-image {
-    float      : left;
-    height     : 55%;
-    width      : auto;
-    margin-top : 1.5%;
-    margin-left: 1.5%;
-}
-
-nav ul {
-    float       : right;
-    margin-right: 1.5%;
-}
-
-nav ul li {
-    display    : inline-block;
-    line-height: 100%;
-    margin     : 6% auto;
-}
-
-nav ul li a {
-    color          : $nav-text;
-    font-size      : 1.4rem;
-    text-transform : uppercase;
-    padding        : 7px 13px;
-    border-radius  : 3px;
-    text-decoration: none;
-    font-family: 'Raleway', sans-serif;
-}
-
-.active:hover {
-    background-color: $primary;
-    transition      : .5s;
-    color           : $nav-hover;
-}
-
-.cur {
-    text-decoration: underline;
+    color: $nav-text;
 }

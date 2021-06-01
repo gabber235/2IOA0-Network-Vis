@@ -50,8 +50,16 @@ module.exports = {
                 use: ["style-loader", "css-loader"],
             },
             {
-                test: /\.(png|jpg)$/,
-                use: 'file-loader?name=resources/static/[name].[ext]',
+                test: /\.(png|svg|jpg|gif|jpe?g)$/,
+                use: [
+                    {
+                        options: {
+                            name: "[name].[ext]",
+                            outputPath: "resources/static/"
+                        },
+                        loader: "file-loader"
+                    }
+                ]
             },
             {
                 test: /\.(csv|riv)$/,
@@ -59,13 +67,16 @@ module.exports = {
             },
         ],
     },
-    devServer: {
-        contentBase: './dist',
-    },
+    // devServer: {
+    //     contentBase: './dist',
+    // },
     resolve: {
         extensions: ['.tsx', '.ts', '.js'],
     },
     plugins: [
+        new EncodingPlugin({
+            encoding: 'utf-16'
+        }),
         new HtmlWebpackPlugin({
             template: "./vis.html",
             filename: "vis.html",
@@ -80,9 +91,6 @@ module.exports = {
             template: "./about.html",
             filename: "about.html",
             chunks: ['about']
-        }),
-        new EncodingPlugin({
-            encoding: 'utf-16'
         }),
         new FaviconsWebpackPlugin({
             logo: './resources/static/logo.png',

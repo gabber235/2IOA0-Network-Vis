@@ -45,6 +45,9 @@ export function handleScrollAnimaton(elements: Element | NodeListOf<Element>, sc
         window.addEventListener('scroll', () => {
             lastInView = handle(elements, lastInView);
         })
+        window.addEventListener('load', () => {
+            lastInView = handle(elements, lastInView);
+        })
     } else {
         elements.forEach(element => handleScrollAnimaton(element, scrollOffset, onView, onExit))
     }
