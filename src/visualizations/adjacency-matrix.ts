@@ -123,7 +123,7 @@ export class AdjacencyMatrix implements Visualization {
 
 
 
-      // Convert links to matrix; count character occurrences.
+      // Convert links to matrix
       links.forEach(function (link) {
         // we have a directional dataset
         matrix[link.source][link.target].z += link.value;
