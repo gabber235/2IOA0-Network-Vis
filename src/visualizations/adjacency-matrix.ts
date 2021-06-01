@@ -34,39 +34,15 @@ export class AdjacencyMatrix implements Visualization {
       const personDiff = event[0];
       personDiff.apply(persons)
       const emailsDiff = event[1];
-      emailsDiff.update
-      emailsDiff.apply(emails)
+      emailsDiff.apply(emails);
 
       const personList = Object.values(persons);
-      const emailList = Object.values(emails)
+      const emailList = Object.values(emails);
 
-      // get if user wants to see all nodes
-      const showAllNodes: any = document.getElementById("show-all-nodes");
-      const boolShowAllNodes: boolean = showAllNodes.checked;
-
-      let nodes: Node[];
-
-      //depending on if the user wants to see all nodes, calc what nodes we want
-      if (!boolShowAllNodes) {
-        // Creating array with person object
-        const correspondants = Object.values(getCorrespondants(emailList)); //dictionary with persons
-        // turn personlist into nodes for adjacency matrix
-        nodes = peopleToNodes(correspondants);
-      } else {
-        nodes = peopleToNodes(personList);
-      }
-
-
-      // get edges
-      const links = edgeHash(emailList, nodes);
-
-      // call adjacency matrix  
-      // createAdjacencyMatrix(filteredCorrespondants, emailsToEdges(emails), svg);
-      createAdjacencyMatrix(nodes, links);
+      updateAM(personList, emailList, 1);
     });
-
-
-
+    
+    
     function createAdjacencyMatrix(nodes: Node[], links: Edge[]) {
       const margin = {
         top: 0,
@@ -319,6 +295,35 @@ export class AdjacencyMatrix implements Visualization {
       //     // @ts-expect-error
       //     d3.select("#order").property("selectedIndex", 2).node().focus();
       //   }, 1000);
+    }
+
+    // takes persons, emails and selections and update the on-screen matrix accordingly
+    function updateAM(persons: Person[], emails: Email[], selection: any) {      
+
+
+      // get if user wants to see all nodes
+      const showAllNodes: any = document.getElementById("show-all-nodes");
+      const boolShowAllNodes: boolean = showAllNodes.checked;
+
+      let nodes: Node[];
+
+      //depending on if the user wants to see all nodes, calc what nodes we want
+      if (!boolShowAllNodes) {
+        // Creating array with person object
+        const correspondants = Object.values(getCorrespondants(emails)); //dictionary with persons
+        // turn personlist into nodes for adjacency matrix
+        nodes = peopleToNodes(correspondants);
+      } else {
+        nodes = peopleToNodes(persons);
+      }
+
+
+      // get edges
+      const links = edgeHash(emails, nodes);
+
+      // call adjacency matrix  
+      // createAdjacencyMatrix(filteredCorrespondants, emailsToEdges(emails), svg);
+      createAdjacencyMatrix(nodes, links);
     }
   }
 }
