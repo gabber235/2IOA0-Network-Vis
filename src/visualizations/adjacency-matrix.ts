@@ -1,17 +1,15 @@
 import { Visualization } from './visualization'
-import { Email, Person, Title, parseData, getCorrespondants } from "../data";
+import { Email, Person, Title, getCorrespondants } from "../data";
 import * as d3 from "d3";
 import { Observable } from 'rxjs';
-import { DataSetDiff } from '../pipeline/dynamicDataSet';
+import { DataSetDiff, DataSet } from '../pipeline/dynamicDataSet';
+import { titleRanks } from './constants';
 
-
-// get used data
-const dataFile = require("../../resources/static/enron-v1.csv");
 
 type Node = {
   name: string,
   id: number,
-  group: string,  // used for titles in our dataset
+  group: Title,  // used for titles in our dataset
   index?: number, // used in adjacency matrix
   count?: number, // used in adjacency matrix
 }
@@ -26,46 +24,41 @@ export class AdjacencyMatrix implements Visualization {
   async visualize(data: Observable<[DataSetDiff<Person>, DataSetDiff<Email>]>): Promise<void> {
     // document.body.appendChild(div({}, [text("Adjacency-matrix")]));
 
+    let persons: DataSet<Person> = {};
+    let emails: DataSet<Email> = {};
+
     data.subscribe(event => {
-      let personDiff = event[0].insertions;
-      let emailsDiff = event[1].insertions;
+      // console.log(event)
 
-      // this is an extremely hacky temporary solution
-      const emails: Email[] = [];
-      emailsDiff.forEach(e => {
-        emails.push(e.value);
-      });
+      // implement the changes given by the diffs
+      const personDiff = event[0];
+      personDiff.apply(persons)
+      const emailsDiff = event[1];
+      emailsDiff.update
+      emailsDiff.apply(emails)
 
-      // const persons: Person[] = [];
-      // personDiff.forEach(p => {
-      //   // @ts-expect-error
-      //   persons.push(p.value)
-      // });
+      const personList = Object.values(persons);
+      const emailList = Object.values(emails)
 
-      // Creating array with person object
-      const correspondants = getCorrespondants(emails); //dictionary with persons
-      let persons = Object.values(correspondants);
-      
+      // get if user wants to see all nodes
+      const showAllNodes: any = document.getElementById("show-all-nodes");
+      const boolShowAllNodes: boolean = showAllNodes.checked;
 
-      // // Get data
-      // let file = await fetch(dataFile.default);
-      // let emails = parseData(await file.text());
+      let nodes: Node[];
+
+      //depending on if the user wants to see all nodes, calc what nodes we want
+      if (!boolShowAllNodes) {
+        // Creating array with person object
+        const correspondants = Object.values(getCorrespondants(emailList)); //dictionary with persons
+        // turn personlist into nodes for adjacency matrix
+        nodes = peopleToNodes(correspondants);
+      } else {
+        nodes = peopleToNodes(personList);
+      }
 
 
-      // // Testing filtering
-      // let filteredCorrespondants = filterCorrespondants(
-      //   ["CEO", "Trader", "Employee"],
-      //   correspondantList
-      // );
-
-      // // get nodes from people list
-      // const nodes = peopleToNodes(filteredCorrespondants);
-      const nodes = peopleToNodes(persons);
-
-      // // get edges
-      // const filteredEmail = filterEmail(filteredCorrespondants, emails);
-      // const links = edgeHash(filteredEmail, nodes);
-      const links = edgeHash(emails, nodes);
+      // get edges
+      const links = edgeHash(emailList, nodes);
 
       // call adjacency matrix  
       // createAdjacencyMatrix(filteredCorrespondants, emailsToEdges(emails), svg);
@@ -76,11 +69,12 @@ export class AdjacencyMatrix implements Visualization {
 
     function createAdjacencyMatrix(nodes: Node[], links: Edge[]) {
       let margin = {
-        top: 150,
-        right: 0,
+        top: 10,
+        right: 10,
         bottom: 10,
-        left: 0
-      };
+        left: 10
+      }
+
       let width = 750;
       let height = 750;
 
@@ -91,12 +85,27 @@ export class AdjacencyMatrix implements Visualization {
       // @ts-expect-error
       let c = d3.scale.category10().domain(d3.range(10));
 
-      let svg = d3.select("#adj-matrix").append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        // .style("margin-left", -margin.left + "px")
-        .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+      let existingSVG = document.getElementById("AM-SVG");
+      if (!existingSVG) {
+        // SVG does not exist already, create it
+        d3.select("#adj-matrix").append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+          .attr("id", "AM-SVG")
+          // .style("margin-left", -margin.left + "px")
+          .append("g")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+      } else {
+        d3.select("#AM-SVG").remove();
+        d3.select("#adj-matrix").append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+          .attr("id", "AM-SVG")
+          // .style("margin-left", -margin.left + "px")
+          .append("g")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+      }
+      let svg = d3.select("#AM-SVG");
 
 
       type Cell = {
@@ -104,6 +113,8 @@ export class AdjacencyMatrix implements Visualization {
         y: number,
         z: number,
         selected?: boolean,
+        from: Node,
+        to: Node,
       }
 
       // declare variable to store the matrix values
@@ -114,10 +125,19 @@ export class AdjacencyMatrix implements Visualization {
 
 
       // Compute index per node.
-      nodes.forEach(function (node, i) {
+      nodes.forEach(function (node: Node, i) {
         node.index = i;
         node.count = 0;
-        matrix[i] = d3.range(n).map(function (j) { return { x: j, y: i, z: 0, selected: false }; });
+        matrix[i] = d3.range(n).map(function (j) {
+          return {
+            x: j,
+            y: i,
+            z: 0,
+            selected: false,
+            from: node,
+            to: nodes[j]
+          };
+        });
       });
 
 
@@ -138,13 +158,18 @@ export class AdjacencyMatrix implements Visualization {
       let orders = {
         name: d3.range(n).sort(function (a, b) { return d3.ascending(nodes[a].name, nodes[b].name); }),
         count: d3.range(n).sort(function (a, b) { return nodes[b].count - nodes[a].count; }),
-        group: d3.range(n).sort(function (a, b) { return nodes[a].group.localeCompare(nodes[b].group); }),
+        group: d3.range(n).sort(function (a, b) { return titleRanks[nodes[a].group] - titleRanks[nodes[b].group]; }),
       };
 
-      //   console.log(nodes)
+
+
+      // get sort order from page
+      const dropDown: any = document.getElementById("order")
+      const sorter: "name" | "count" | "group" = dropDown.value;
+
 
       // The default sort order.
-      x.domain(orders.name);
+      x.domain(orders[sorter]);
 
       svg.append("rect")
         .attr("class", "background")
@@ -193,13 +218,59 @@ export class AdjacencyMatrix implements Visualization {
           .attr("width", x.rangeBand())
           .attr("height", x.rangeBand())
           .style("fill-opacity", function (d) { return z(d.z); })
-          // coloring based on title
           .style("fill", selectColor)
-          // coloring based on ? (testing)
-          // .style("fill", function (d) { console.log(d); return c(d.z)})
-          .on("mouseover", mouseover)
-          .on("mouseout", mouseout)
+          .on("mouseover", () => {
+            return tooltip.style("visibility", "visible");
+          })
+          .on("mousemove", (d: Cell) => {
+            return tooltip
+              // this works but doesn't handle scaling
+              // @ts-expect-error
+              .style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 525) + "px")
+              .html(tooltipHTML(d));
+          })
+          .on("mouseout", () => {
+            return tooltip.style("visibility", "hidden");
+          })
           .on("click", clickCell);
+      }
+
+      // create tooltip
+      let tooltip: d3.Selection<HTMLDivElement, unknown, any, any>;
+      if (document.getElementsByClassName("tooltip").length === 0) {
+        tooltip = d3.select("#adj-matrix")
+          .append("div")
+          .style("position", "absolute")
+          .style("visibility", "hidden")
+          .attr("class", "tooltip")
+          .attr("id", "AM-tooltip")
+          .style("background-color", "white")
+          .style("border", "solid")
+          .style("border-width", "1px")
+          .style("border-radius", "3px")
+          .style("padding", "4px")
+          .style("font-size", "12px")
+          .style("left", "10px").style("top", "10px")
+          .style("text-align", "left")
+      }
+      tooltip = d3.select("#AM-tooltip");
+
+
+      function tooltipHTML(c: Cell): string {
+        let html = "";
+        const sender = c.from;
+        const receiver = c.to;
+
+        // sender
+        html += "From: <br>" + sender.name + ", " + sender.group + "<br>";
+
+        // receiver
+        html += "To: <br>" + receiver.name + ", " + receiver.group + "<br>";
+
+        // num of emails
+        html += "n.o. emails: " + c.z;
+
+        return html;
       }
 
       function selectColor(d: Cell) {
@@ -208,15 +279,6 @@ export class AdjacencyMatrix implements Visualization {
         } else {
           return nodes[d.x].group == nodes[d.y].group ? c(nodes[d.x].group) : null;
         }
-      }
-
-      function mouseover(p: Cell) {
-        d3.selectAll(".row text").classed("active", function (d, i) { return i == p.y; });
-        d3.selectAll(".column text").classed("active", function (d, i) { return i == p.x; });
-      }
-
-      function mouseout() {
-        d3.selectAll("text").classed("active", false);
       }
 
       function clickCell(cell: Cell) {
@@ -230,6 +292,7 @@ export class AdjacencyMatrix implements Visualization {
       d3.select("#order").on("change", function () {
         // clearTimeout(timeout);
         // @ts-expect-error
+        // can be fixed by declaring a var for this as any
         order(this.value);
       });
 
@@ -300,7 +363,8 @@ export function emailToName(email: string) {
     }
   });
 
-  return name;
+  // remove last space and return
+  return name.slice(0, -1);
 }
 
 // takes emails and turns them into edges for the adjacency matrix

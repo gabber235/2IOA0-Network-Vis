@@ -8,11 +8,6 @@ line {
     stroke: #fff;
 }
 
-text.active {
-    fill: red;
-}
-
-
 #heading {
     display    : flex;
     flex-flow  : column;
@@ -90,6 +85,7 @@ text.active {
         top     : 50px;
 
         display         : flex;
+        flex-direction: column;
         justify-content : center;
         align-items     : center;
         padding         : 20px 50px;
@@ -101,10 +97,41 @@ text.active {
         * {
             margin: 0px 10px;
         }
+        #split-options {
+            display: flex;
+            flex-direction: row;
+
+            width: 100%;
+            justify-content: center;
+            align-items: center;
+
+            #matrix-options {
+                display: flex;
+                width: 100%;
+                justify-content: center;
+                align-items: center;
+                border-right: 1px solid $shadow
+            }
+            #node-link-options {
+                display: flex;
+                width: 100%;
+                justify-content: center;
+                align-items: center;
+
+            }
+        }
+        #universal-options {
+            width: 100%;
+        }
+        #big-slider-container {
+            width: 100%;
+
+            #first-day-slider {
+                width: 100%
+            }
+        }
     }
 }
-
-
 #visualizations {
     height               : 100%;
     display              : grid;
@@ -121,4 +148,17 @@ text.active {
     #adj-matrix {}
 
     #node-link {}
+}
+
+#node-link-legend {
+    font-size: 10px;
+
+    .color-dot {    
+        display: inline-block;
+        width: 0.8em;
+        height: 0.8em;
+        border-radius: 0.8em;
+        margin-right: 0.5em;
+        margin-left: 1em;
+    }
 }
