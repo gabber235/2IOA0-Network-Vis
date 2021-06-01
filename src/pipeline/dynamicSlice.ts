@@ -1,40 +1,74 @@
-// import { Observable } from "rxjs"
-// import { DataSetDiff } from "./dynamicDataSet"
-
 import { Observable } from "rxjs";
-import { DataSetDiff } from "./dynamicDataSet";
+import { ConstArray } from "../utils";
+import { DataSet, DataSetDiff, ID } from "./dynamicDataSet";
 
-// export function dynamicSlice<A>(array: A[], range: Observable<[number, number]>): Observable<DataSetDiff<A>> {
 
-//     function getDiff(oldIndex: number, newIndex: number): DataSetDiff<A> | undefined {
-//         if (oldIndex < newIndex) {
-//             return DataSetDiff.add(array.slice(oldIndex, newIndex))
-//         } else if (newIndex < oldIndex) {
-//             return DataSetDiff.remove(array.slice(newIndex, oldIndex))
-//         }
-//     }
 
-//     let previous: [number, number] | undefined = undefined
+/**
+ * Takes an array of key-value pairs and an observable of ranges of integers, and returns a dynamic subset of all values with indices within that range.
+ */
+export function dynamicSlice<A>(
+    array: ConstArray<[ID, A]>,
+    range: Observable<[number, number]>
+): Observable<DataSetDiff<A>> {
 
-//     return new Observable(sub => {
-//         range.subscribe({
-//             next([begin_, end_]) {
+    let prevDataSet: DataSet<A> = {}
+    let prevBegin: number|undefined = undefined
+    let prevEnd: number|undefined = undefined
 
-//                 if (previous === undefined) {
-//                     previous = [begin_, end_]
-//                     sub.next(DataSetDiff.add(array.slice(begin_, end_)))
-//                 } else {
-//                     let [prevBegin, prevEnd] = previous
+    
 
-//                     let left = getDiff(begin_, prevBegin)
-//                     let right = getDiff(prevEnd, end_)
+    return new Observable(sub => {
 
-//                     if (left !== undefined) sub.next(left)
-//                     if (right !== undefined) sub.next(right)
+        range.subscribe(([curBegin, curEnd]) => {
+            const diff = new DataSetDiff<A>()
 
-//                     previous = [begin_, end_]
-//                 }
-//             }
-//         })
-//     })
-// }
+            if (prevBegin !== undefined && prevEnd !== undefined) {
+                if (curBegin <= prevEnd && prevBegin <= curEnd) {
+                    if (curBegin < prevBegin) // expand left
+                        for (let i = Math.max(curBegin, 0); i < Math.min(prevBegin, array.length); i++) { 
+                            const [key, value] = array.getItem(i)
+                            diff.add(key, value)
+                        }
+                    else if (prevBegin < curBegin) // shrink left
+                        for (let i = Math.max(prevBegin, 0); i < Math.min(curBegin, array.length); i++) { 
+                            const [key, _] = array.getItem(i)
+                            diff.remove(key)
+                        }
+                    if (curEnd < prevEnd) // shrink right
+                        for (let i = Math.max(curEnd, 0); i < Math.min(prevEnd, array.length); i++) { 
+                            const [key, _] = array.getItem(i)
+                            diff.remove(key)
+                        }
+                    else if (prevEnd < curEnd) // expand right
+                        for (let i = Math.max(prevEnd, 0); i < Math.min(curEnd, array.length); i++) { 
+                            const [key, value] = array.getItem(i)
+                            diff.add(key, value)
+                        }
+                } else {
+                    // move entire slice
+                    for (let i = Math.max(prevBegin, 0); i < Math.min(prevEnd, array.length); i++) {
+                        const [key, _] = array.getItem(i)
+                        diff.remove(key)
+                    }
+                    for (let i = Math.max(curBegin, 0); i < Math.min(curEnd, array.length); i++) {
+                        const [key, value] = array.getItem(i)
+                        diff.add(key, value)
+                    }
+                }
+            } else {
+                // Add initial slice
+                for (let i = Math.max(curBegin, 0); i < Math.min(curEnd, array.length); i++) {
+                    const [key, value] = array.getItem(i)
+                    diff.add(key, value)
+                }
+            }
+
+            sub.next(diff)
+            diff.apply(prevDataSet)
+
+            prevBegin = curBegin
+            prevEnd = curEnd
+        })    
+    })
+}

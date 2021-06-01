@@ -1,4 +1,4 @@
-@import "variables", "nav";
+@import "variables", "nav", "animation";
 
 
 body {
@@ -76,7 +76,7 @@ body {
     color      : #dddddd;
     padding-top: 18em;
     font-weight: bold;
-    animation  : mover 6s linear infinite;
+    animation  : mover 6s cubic-bezier(0.64, 0, 0.34, 0.96) infinite;
 }
 
 @keyframes mover {

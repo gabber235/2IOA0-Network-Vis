@@ -1,11 +1,17 @@
 import "vis/dist/vis.min.css"
 import { AdjacencyMatrix } from "./visualizations/adjacency-matrix";
-import { visualizeNodeLinkDiagram, NodeLinkOptions } from "./visualizations/node-link";
+import { visualizeNodeLinkDiagram, getVisNodeSeletions, createLegend } from "./visualizations/node-link/node-link";
 import { Email, getCorrespondants, parseData, Person } from "./data"
-import { Observable, of } from "rxjs";
-import { map, share } from "rxjs/operators";
-import { DataSet, DataSetDiff, diffDataSet, getDynamicCorrespondants } from "./pipeline/dynamicDataSet";
-import { diffMapFirst, swap } from "./utils";
+import { combineLatest, merge, Subject } from "rxjs";
+import { auditTime, map, scan, share, shareReplay } from "rxjs/operators";
+import { DataSet, DataSetDiff, diffDataSet, foldDataSet, NumberSetDiff } from "./pipeline/dynamicDataSet";
+import { getDynamicCorrespondants } from "./pipeline/getDynamicCorrespondants";
+import { binarySearch, ConstArray, div, millisInDay, pair, pairMap2, span, text, tripple } from "./utils";
+import { prettifyFileInput, TimeSliders } from "./looks";
+import { checkBoxObserable, diffStream, fileInputObservable, sliderToObservable } from "./pipeline/basics";
+import { dynamicSlice } from "./pipeline/dynamicSlice";
+import { diffSwitchAll } from "./pipeline/diffSwitchAll";
+import { NodeLinkOptions } from "./visualizations/node-link/options";
 
 const logo = require('../resources/static/logo.png')
 
@@ -13,66 +19,131 @@ window.addEventListener("load", async () => {
 
     console.log('Image:', logo.default)
 
-    const baseEmailObservable = new Observable<Email[]>(sub => {
-        const fileSelector = document.getElementById('file-selector');
-        fileSelector.addEventListener('change', async (event: any) => {
-            const fileList: FileList = event.target.files;
 
-            for (let i = 0; i < fileList.length; i++) {
-                const file = fileList.item(i);
+    const fileSelector = document.getElementById('file-selector');
 
-                const label = fileSelector.nextElementSibling;
-                label.innerHTML = file.name
+    const timeSliderElm = document.getElementById('first-day-slider')
+    const durationSliderElm = document.getElementById('duration-slider')
 
-                const txt = await file.text()
-                const emails = parseData(txt)
-                const correspondants = getCorrespondants(emails)
-                sub.next(emails)
+    const timeRange = combineLatest([
+        sliderToObservable(timeSliderElm),
+        sliderToObservable(durationSliderElm)
+    ]).pipe(
+        map(([i, j]): [number, number] => [i, i + j]),
+        auditTime(100)
+    )
+
+    const timeSliders = new TimeSliders(
+        timeSliderElm,
+        durationSliderElm,
+        document.getElementById('first-day'),
+        document.getElementById('last-day'),
+        document.getElementById('duration'),
+    )
+
+
+    prettifyFileInput(fileSelector)
+
+    // This subject is used to represent selected correspondants and emails respectivly
+    // They are represented by their id's
+    const selectionSubject = new Subject<[NumberSetDiff, NumberSetDiff]>()
+
+    selectionSubject.subscribe(console.log)
+
+    const baseEmailObservable = fileInputObservable(fileSelector).pipe(map(parseData))
+
+    const dataWithAllNodes = baseEmailObservable.pipe(
+        map(emails => {
+            emails.sort((i, j) => new Date(i.date).getTime() - new Date(j.date).getTime())
+
+            const firstDate = new Date(emails[0].date).getTime()
+            const lastDate = new Date(emails[emails.length - 1].date).getTime()
+
+            timeSliders.setFirstAndLastDate(firstDate, lastDate)
+
+            const constEmails: ConstArray<[string, Email]> = {getItem: i => pair(emails[i].id + "", emails[i]), length: emails.length}
+            const people = getCorrespondants(emails)
+
+            function dayToIndex(day: number): number {
+                return binarySearch(i => new Date(emails[i].date).getTime(), firstDate + millisInDay * day, 0, emails.length, (i, j) => i - j)
             }
-        });
-    })
+            const indices = timeRange.pipe(map(([begin, end]) => pair(dayToIndex(begin), dayToIndex(end))))
 
+            return dynamicSlice(constEmails, indices).pipe(
+                scan( // Get full email dataset and people
+                    ([_, emails, __], emailDiff) => tripple(people, foldDataSet(emails, emailDiff), emailDiff),
+                    tripple({} as DataSet<Person>, {} as DataSet<Email>, new DataSetDiff<Email>())
+                ),
+            )
+        }),
+        diffSwitchAll( // merge the stream of streams
+            () => ({} as DataSet<Email>),
+            diffDataSet,
+            ([_, emails, __]) => emails,
+            ([_, __, emailDiff]) => emailDiff,
+        ),
+        map(([[people, emails, __], emailDiff]) => pair(pair(people, emails), pair(people, emailDiff))), // rearange data
+        diffStream( // diff person dataset
+            pair(pair({} as DataSet<Person>, {} as DataSet<Email>), pair({} as DataSet<Person>, new DataSetDiff())), 
+            pairMap2((_, x) => x, pairMap2(diffDataSet, (_, x) => x))
+        ), 
+        share(),
+    )
 
-    const nodeLinkOptions = new Observable<NodeLinkOptions>(sub => {
-        const physicsCheckBox: any = document.getElementById("physics")
-        sub.next({ physics: physicsCheckBox.checked })
-
-        physicsCheckBox.addEventListener("change", (e: any) => {
-            sub.next({ physics: e.target.checked })
-        })
-
-        const layoutCheckBox: any = document.getElementById("hierarchical")
-        sub.next({ hierarchical: layoutCheckBox.checked })
-
-        layoutCheckBox.addEventListener("change", (e: any) => {
-            sub.next({ hierarchical: e.target.checked })
-        })
-    })
-
-
-    const changes = baseEmailObservable.pipe(
-        map((emails): [Email[], DataSet<Person>] => [emails.slice(0, 100), getCorrespondants(emails)]),
-        map(([emails, allPeople]): [DataSet<Email>, DataSet<Person>] => [arrayToDataSet(emails, email => email.id), allPeople]),
-        diffMapFirst({} as DataSet<Email>, diffDataSet),
-        map(swap),
-        diffMapFirst({} as DataSet<Person>, diffDataSet),
+    const dataWithFewerNodes = dataWithAllNodes.pipe(
+        map(([[_, emails], [__, emailDiff]]) => pair(emails, emailDiff)), // forget about people
+        getDynamicCorrespondants(([_, diff]) => diff, ([emails, emailDiff], personDiff) => pair(emails, pair(personDiff, emailDiff))),
+        scan( // get full people dataset
+            ([[people, _], __], [emails, [personDiff, emailDiff]]) => 
+                pair(pair(foldDataSet(people, personDiff), emails), pair(personDiff, emailDiff)),
+            pair(pair({} as DataSet<Person>, {} as DataSet<Email>), pair(new DataSetDiff<Person>(), new DataSetDiff<Email>()))
+        ),
         share()
     )
 
-    const changesWithFewerNodes = changes.pipe(
-        map(swap),
-        getDynamicCorrespondants,
-        map(([people, emails]): [DataSetDiff<Person>, DataSetDiff<Email>] => [people, emails])
+
+    new AdjacencyMatrix().visualize(dataWithAllNodes.pipe(map(([_, diffs]) => diffs)))
+
+
+    const nodeLinkOptions = merge(
+        checkBoxObserable(document.getElementById('physics')).pipe(
+            map((b): NodeLinkOptions => {return {physics: b}})   
+        ),
+        checkBoxObserable(document.getElementById('hierarchical')).pipe(
+            map((b): NodeLinkOptions => {return {hierarchical: b}})   
+        ),
+        checkBoxObserable(document.getElementById('group-nodes')).pipe(
+            map((b): NodeLinkOptions => {return {groupNodes: b}})   
+        ),
+        checkBoxObserable(document.getElementById('group-edges')).pipe(
+            map((b): NodeLinkOptions => {return {groupEdges: b}})   
+        ),
     )
 
+    const allNodes = dataWithAllNodes.pipe(shareReplay(1))
+    allNodes.subscribe()
 
-    new AdjacencyMatrix().visualize(changes)
-    visualizeNodeLinkDiagram(document.getElementById("node-links"), changesWithFewerNodes, nodeLinkOptions, 150)
+    const fewerNodes = dataWithFewerNodes.pipe(shareReplay(1))
+    fewerNodes.subscribe()
+
+
+    const maybeShowAllNodes = checkBoxObserable(document.getElementById('show-all-nodes')).pipe(
+        map(bool => bool ? allNodes : fewerNodes),
+        diffSwitchAll(
+            () => pair({} as DataSet<Person>, {} as DataSet<Email>),
+            pairMap2(diffDataSet, diffDataSet),
+            ([data, _]) => data,
+            ([_, diffs]) => diffs
+        ),
+        map(([_, [peopleDiff, emailDiff]]) => pair(peopleDiff, emailDiff)),
+        share()
+    )
+    createLegend(document.getElementById("node-link-legend"))
+
+    const nodeLinkDiagram = await visualizeNodeLinkDiagram(document.getElementById("node-links"), maybeShowAllNodes, nodeLinkOptions, 150)
+    getVisNodeSeletions(nodeLinkDiagram).subscribe(selectionSubject)
 })
 
-function arrayToDataSet<A>(data: A[], getId: (item: A) => number): DataSet<A> {
-    return Object.assign({}, ...data.map(item => { return { [getId(item)]: item } }))
-}
 
 // type DataSetDiff<A> = {type:'add', id: number, content: A[]}|{type:'remove', id: number, content: A[]}
 

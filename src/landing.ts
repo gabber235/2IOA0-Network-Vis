@@ -1,7 +1,21 @@
 import Rive, { File, RiveCanvas } from 'rive-canvas';
+import { handleDefaultScroll, handleScrollAnimaton } from './page/scroll';
 
 const nodeRiv = require('../resources/static/node-link.riv')
+const adjacencyRiv = require('../resources/static/adjacency-matrix.riv')
 
+handleDefaultScroll()
+handleScrollAnimaton(document.getElementById("nodeLinkCanvas"), 50, (el) => {
+    if (el instanceof HTMLCanvasElement) {
+        runRive(el, nodeRiv.default)
+    }
+})
+
+handleScrollAnimaton(document.getElementById("adjacencyCanvas"), 50, (el) => {
+    if (el instanceof HTMLCanvasElement) {
+        runRive(el, adjacencyRiv.default)
+    }
+})
 
 async function loadRivFile(filePath: string): Promise<[RiveCanvas, File]> {
     const req = new Request(filePath);
@@ -11,16 +25,19 @@ async function loadRivFile(filePath: string): Promise<[RiveCanvas, File]> {
     return [rive, rive.load(file)];
 }
 
-async function loadNodeLink() {
-    const [rive, nodeFile] = await loadRivFile(nodeRiv.default)
+async function runRive(canvas: HTMLCanvasElement, filePath: string) {
+    const [rive, nodeFile] = await loadRivFile(filePath)
     const artboard = nodeFile.defaultArtboard()
     const stateMachine = artboard.stateMachineByName("Hover Machine")
     const smi = new rive.StateMachineInstance(stateMachine)
 
-
-    const canvas = <HTMLCanvasElement>document.getElementById("nodeLinkCanvas")
     const ctx = canvas.getContext('2d');
     const renderer = new rive.CanvasRenderer(ctx);
+
+    const testInput = smi.input(0).asBool()
+
+    canvas.onmouseover = (e) => testInput.value = true
+    canvas.onmouseout = (e) => testInput.value = false
 
     smi.advance(artboard, 0)
     // Let's make sure our frame fits into our canvas
@@ -76,9 +93,3 @@ async function loadNodeLink() {
     // now kick off the animation
     requestAnimationFrame(draw);
 }
-
-async function load() {
-    loadNodeLink()
-}
-
-load().catch((err) => console.error(err))
