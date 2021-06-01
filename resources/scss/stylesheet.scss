@@ -160,7 +160,9 @@ line {
     }
 
 
-    #adj-matrix {}
+    #adj-matrix {
+        overflow: hidden;
+    }
 
     #node-link {}
 }

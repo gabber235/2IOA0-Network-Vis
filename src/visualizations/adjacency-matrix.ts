@@ -69,10 +69,10 @@ export class AdjacencyMatrix implements Visualization {
 
     function createAdjacencyMatrix(nodes: Node[], links: Edge[]) {
       let margin = {
-        top: 10,
-        right: 10,
-        bottom: 10,
-        left: 10
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0
       }
 
       let width = 750;
