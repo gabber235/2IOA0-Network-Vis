@@ -4,7 +4,6 @@ import * as d3 from "d3";
 import { Observable, Subject } from 'rxjs';
 import { DataSetDiff, DataSet, NumberSetDiff } from '../pipeline/dynamicDataSet';
 import { titleRanks } from './constants';
-import { CleanPlugin } from 'webpack';
 
 
 type Node = {
@@ -301,10 +300,25 @@ export class AdjacencyMatrix {
       }
 
       function clickCell(cell: Cell) {
-        // console.log(getMatchingEmailIDs(cell.from.id, cell.to.id, Object.values(emails)))
-
-        // d3.select(document).selectAll(".cell")
-        // .style("fill", selectColor);
+        if (cell.selected) {
+          // cell is selected -> unselect
+          pushToSelectionSubject(
+            [],
+            [],
+            getMatchingEmailIDs(cell.from.id, cell.to.id, Object.values(emails)
+            ),
+            [],
+          )
+        } else {
+          // cell is not selected -> select
+          pushToSelectionSubject(
+            getMatchingEmailIDs(cell.from.id, cell.to.id, Object.values(emails)
+            ),
+            [],
+            [],
+            [],
+          )
+        }
       }
 
       d3.select("#order").on("change", function () {
@@ -351,7 +365,7 @@ export class AdjacencyMatrix {
         nodes = peopleToNodes(persons);
       }
 
-      console.log(selPerIDs)
+      console.log(selPerIDs);
 
 
       // get edges
@@ -360,6 +374,22 @@ export class AdjacencyMatrix {
       // call adjacency matrix  
       // createAdjacencyMatrix(filteredCorrespondants, emailsToEdges(emails), svg);
       createAdjacencyMatrix(nodes, links);
+    }
+
+    // takes email IDs and sends them to selectionSubject (by first also calculating the persons involved)
+    function pushToSelectionSubject(addEmailIDs: number[], addPersonIDs: number[], delEmailIDs: number[], delPersonIDs: number[]) {
+      const emailDiff = new DataSetDiff;
+      addEmailIDs.forEach((e) => {
+        emailDiff.add(e.toString(), e)
+      });
+      delEmailIDs.forEach((e) => {
+        emailDiff.remove(e.toString())
+      });
+
+      const personDiff = new DataSetDiff;
+
+      selSub.next([personDiff, emailDiff]);
+      // console.log(emailsDiff, personDiff)
     }
   }
 }
@@ -433,9 +463,9 @@ function edgeHash(emails: Email[], nodes: Node[], selEmIDs: number[]) {
 
       // account for selected property
       let selected = false;
-      if (selEmIDs.find((e) => {return e === email.id})) {
+      if (selEmIDs.find((e) => { return e === email.id })) {
         selected = true;
-      }      
+      }
 
       const edge: Edge = {
         source: source,
