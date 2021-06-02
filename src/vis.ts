@@ -2,48 +2,30 @@ import "vis/dist/vis.min.css"
 import { AdjacencyMatrix } from "./visualizations/adjacency-matrix";
 import { visualizeNodeLinkDiagram, getVisNodeSeletions, createLegend } from "./visualizations/node-link/node-link";
 import { Email, getCorrespondants, parseData, Person } from "./data"
-import { combineLatest, merge, Subject } from "rxjs";
-import { auditTime, map, scan, share, shareReplay } from "rxjs/operators";
+import { combineLatest, fromEvent, merge, Observable, of, Subject, timer } from "rxjs";
+import { debounce, map, scan, share, shareReplay, startWith, switchMap } from "rxjs/operators";
 import { DataSet, DataSetDiff, diffDataSet, foldDataSet, NumberSetDiff } from "./pipeline/dynamicDataSet";
 import { getDynamicCorrespondants } from "./pipeline/getDynamicCorrespondants";
-import { binarySearch, ConstArray, div, millisInDay, pair, pairMap2, span, text, tripple } from "./utils";
+import { binarySearch, ConstArray, millisInDay, pair, pairMap2, tripple } from "./utils";
 import { prettifyFileInput, TimeSliders } from "./looks";
-import { checkBoxObserable, diffStream, fileInputObservable, sliderToObservable } from "./pipeline/basics";
+import { checkBoxObserable, diffStream, fileInputObservable } from "./pipeline/basics";
 import { dynamicSlice } from "./pipeline/dynamicSlice";
 import { diffSwitchAll } from "./pipeline/diffSwitchAll";
 import { NodeLinkOptions } from "./visualizations/node-link/options";
-import { startTimeline } from "./visualizations/timeline";
-
-const logo = require('../resources/static/logo.png')
+import { loadTimelineGraph, startTimeline } from "./visualizations/timeline";
+import { groupEmailsToCount } from "./pipeline/timeline";
 
 window.addEventListener("load", async () => {
-
-    console.log('Image:', logo.default)
-
-
-
     const fileSelector = document.getElementById('file-selector');
 
-    const timeSliderElm = document.getElementById('first-day-slider')
-    const durationSliderElm = document.getElementById('duration-slider')
-    startTimeline()
-
-    const timeRange = combineLatest([
-        sliderToObservable(timeSliderElm),
-        sliderToObservable(durationSliderElm)
-    ]).pipe(
-        map(([i, j]): [number, number] => [i, i + j]),
-        auditTime(100)
-    )
+    const timeLine = await startTimeline()
 
     const timeSliders = new TimeSliders(
-        timeSliderElm,
-        durationSliderElm,
+        timeLine,
         document.getElementById('first-day'),
         document.getElementById('last-day'),
         document.getElementById('duration'),
     )
-
 
     prettifyFileInput(fileSelector)
 
@@ -53,16 +35,24 @@ window.addEventListener("load", async () => {
 
     selectionSubject.subscribe(console.log)
 
-    const baseEmailObservable = fileInputObservable(fileSelector).pipe(map(parseData))
+    const baseEmailObservable = fileInputObservable(fileSelector).pipe(
+        map(parseData),
+        map(emails => {
+            emails.sort((i, j) => new Date(i.date).getTime() - new Date(j.date).getTime())
+            return emails
+        }),
+        shareReplay(1),
+    )
+
+    combineLatest([baseEmailObservable, fromEvent(window, 'resize').pipe(startWith(0))])
+        .pipe(map(([emails, _]) => groupEmailsToCount(emails)))
+        .subscribe(loadTimelineGraph)
 
     const dataWithAllNodes = baseEmailObservable.pipe(
         map(emails => {
-            emails.sort((i, j) => new Date(i.date).getTime() - new Date(j.date).getTime())
 
             const firstDate = new Date(emails[0].date).getTime()
             const lastDate = new Date(emails[emails.length - 1].date).getTime()
-
-            timeSliders.setFirstAndLastDate(firstDate, lastDate)
 
             const constEmails: ConstArray<[string, Email]> = { getItem: i => pair(emails[i].id + "", emails[i]), length: emails.length }
             const people = getCorrespondants(emails)
@@ -70,7 +60,16 @@ window.addEventListener("load", async () => {
             function dayToIndex(day: number): number {
                 return binarySearch(i => new Date(emails[i].date).getTime(), firstDate + millisInDay * day, 0, emails.length, (i, j) => i - j)
             }
-            const indices = timeRange.pipe(map(([begin, end]) => pair(dayToIndex(begin), dayToIndex(end))))
+            const indices = timeSliders.timerange.pipe(
+                map((v) => {
+                    console.log("Updating time range", v)
+                    return v
+                }),
+                debounce(() => timer(60)),
+                map(([begin, end]) => pair(dayToIndex(begin), dayToIndex(end))),
+            )
+
+            timeSliders.setFirstAndLastDate(firstDate, lastDate)
 
             return dynamicSlice(constEmails, indices).pipe(
                 scan( // Get full email dataset and people
@@ -145,7 +144,10 @@ window.addEventListener("load", async () => {
 
     const nodeLinkDiagram = await visualizeNodeLinkDiagram(document.getElementById("node-links"), maybeShowAllNodes, nodeLinkOptions, 150)
     getVisNodeSeletions(nodeLinkDiagram).subscribe(selectionSubject)
+
+    allNodes
 })
+
 
 
 // type DataSetDiff<A> = {type:'add', id: number, content: A[]}|{type:'remove', id: number, content: A[]}

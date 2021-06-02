@@ -1,4 +1,5 @@
-import { sliderToObservable } from "./pipeline/basics";
+import { Observable, Subject } from "rxjs";
+import { startWith } from "rxjs/operators";
 import { millisInDay } from "./utils";
 
 /**
@@ -21,30 +22,24 @@ export function prettifyFileInput(elm: HTMLElement) {
 
 export class TimeSliders {
     private firstDate: number
+    private lastDate: number
 
     private readonly beginElm: HTMLElement
     private readonly endElm: HTMLElement
     private readonly durationElm: HTMLElement
 
-    private readonly beginSlider: HTMLElement
-    private readonly durationSlider: HTMLElement
+    readonly timerange: Subject<[number, number]> = new Subject()
+    private start: number = 0
+    private end: number = 1
 
-    private begin: number
-    private duration: number
-
-    constructor(beginSlider: HTMLElement, durationSlider: HTMLElement, beginElm: HTMLElement, endElm: HTMLElement, durationElm: HTMLElement) {
-        this.beginSlider = beginSlider
-        this.durationSlider = durationSlider
+    constructor(timeslider: Observable<[number, number]>, beginElm: HTMLElement, endElm: HTMLElement, durationElm: HTMLElement) {
         this.beginElm = beginElm
         this.endElm = endElm
         this.durationElm = durationElm
 
-        sliderToObservable(this.beginSlider).subscribe(begin => {
-            this.begin = begin
-            this.render()
-        })
-        sliderToObservable(this.durationSlider).subscribe(duration => {
-            this.duration = duration
+        timeslider.subscribe(range => {
+            this.start = range[0]
+            this.end = range[1]
             this.render()
         })
     }
@@ -52,16 +47,29 @@ export class TimeSliders {
 
     setFirstAndLastDate(first: number, last: number) {
         this.firstDate = first
-        this.beginSlider.setAttribute("max", "" + (last - first) / millisInDay)
+        this.lastDate = last
         this.render()
     }
+
+    dayPercentage(percentage: number): number {
+        return (this.lastDate - this.firstDate) * percentage + this.firstDate
+    }
+
     private render() {
-        if (this.begin !== undefined && this.duration !== undefined && this.firstDate !== undefined) {
-            this.beginElm.textContent = new Date(this.firstDate + this.begin * millisInDay).toDateString()
-            this.endElm.textContent = new Date(this.firstDate + (this.begin + this.duration) * millisInDay).toDateString()
-            this.durationElm.textContent = `${this.duration} days`
-        }
+        if (this.firstDate == undefined || this.lastDate == undefined) return
+
+        const firstDay = this.firstDate / millisInDay
+
+        const startDate = this.dayPercentage(this.start)
+        const endDate = this.dayPercentage(this.end)
+        const startDay = startDate / millisInDay - firstDay
+        const endDay = endDate / millisInDay - firstDay
+
+        this.beginElm.textContent = new Date(startDate).toDateString()
+        this.endElm.textContent = new Date(endDate).toDateString()
+        this.durationElm.textContent = `${Math.round(endDay - startDay)} days`
+
+        this.timerange.next([startDay, endDay])
     }
 }
-
 
