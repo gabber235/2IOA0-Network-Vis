@@ -4,9 +4,16 @@ const EncodingPlugin = require('webpack-encoding-plugin');
 const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
 
 module.exports = {
-    entry: ['./src/index.ts', './resources/scss/stylesheet.scss'],
+    entry: {
+        landing: './src/landing.ts',
+        landingScss: './resources/scss/landing.scss',
+        vis: './src/vis.ts',
+        visScss: './resources/scss/vis.scss',
+        about: './src/about.ts',
+        aboutScss: './resources/scss/about.scss',
+    },
     output: {
-        filename: 'bundle.js',
+        // filename: 'bundle.js',
         path: path.resolve(__dirname, 'dist'),
     },
     module: {
@@ -43,27 +50,47 @@ module.exports = {
                 use: ["style-loader", "css-loader"],
             },
             {
-                test: /\.(png|jpg)$/,
-                use: 'file-loader?name=resources/static/[name].[ext]',
+                test: /\.(png|svg|jpg|gif|jpe?g)$/,
+                use: [
+                    {
+                        options: {
+                            name: "[name].[ext]",
+                            outputPath: "resources/static/"
+                        },
+                        loader: "file-loader"
+                    }
+                ]
             },
             {
-                test: /\.(csv)$/,
+                test: /\.(csv|riv)$/,
                 loader: 'file-loader',
             },
         ],
     },
-    devServer: {
-        contentBase: './dist',
-    },
+    // devServer: {
+    //     contentBase: './dist',
+    // },
     resolve: {
         extensions: ['.tsx', '.ts', '.js'],
     },
     plugins: [
-        new HtmlWebpackPlugin({
-            template: "./index.html",
-        }),
         new EncodingPlugin({
             encoding: 'utf-16'
+        }),
+        new HtmlWebpackPlugin({
+            template: "./vis.html",
+            filename: "vis.html",
+            chunks: ['vis']
+        }),
+        new HtmlWebpackPlugin({
+            template: "./index.html",
+            filename: "index.html",
+            chunks: ['landing']
+        }),
+        new HtmlWebpackPlugin({
+            template: "./about.html",
+            filename: "about.html",
+            chunks: ['about']
         }),
         new FaviconsWebpackPlugin({
             logo: './resources/static/logo.png',
