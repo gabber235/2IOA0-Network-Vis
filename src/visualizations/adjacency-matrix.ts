@@ -1,8 +1,8 @@
 import { Visualization } from './visualization'
 import { Email, Person, Title, getCorrespondants } from "../data";
 import * as d3 from "d3";
-import { Observable } from 'rxjs';
-import { DataSetDiff, DataSet } from '../pipeline/dynamicDataSet';
+import { Observable, Subject } from 'rxjs';
+import { DataSetDiff, DataSet, NumberSetDiff } from '../pipeline/dynamicDataSet';
 import { titleRanks } from './constants';
 import { CleanPlugin } from 'webpack';
 
@@ -23,13 +23,19 @@ type Edge = {
   sentiment: number,
 }
 
-export class AdjacencyMatrix implements Visualization {
-  async visualize(data: Observable<[DataSetDiff<Person>, DataSetDiff<Email>]>): Promise<void> {
+export class AdjacencyMatrix {
+  async visualize(data: Observable<[DataSetDiff<Person>, DataSetDiff<Email>]>, selSub: Subject<[NumberSetDiff, NumberSetDiff]>): Promise<void> {
     // document.body.appendChild(div({}, [text("Adjacency-matrix")]));
 
+    // datasets that hold the data
     const persons: DataSet<Person> = {};
     const emails: DataSet<Email> = {};
 
+    // datasets that hold IDs of selected persons and emails
+    const selectedPersons: DataSet<Number> = {};
+    const selectedEmails: DataSet<Number> = {};
+
+    // make updates work
     data.subscribe(event => {
       // console.log(event)
 
@@ -44,8 +50,22 @@ export class AdjacencyMatrix implements Visualization {
 
       updateAM(personList, emailList);
     });
-    
-    
+
+    // make selections works
+    selSub.subscribe(event => {
+      // console.log(event)
+
+      // implement the changes given by the diffs
+      const personDiff = event[0];
+      personDiff.apply(selectedPersons)
+      const emailsDiff = event[1];
+      emailsDiff.apply(selectedEmails);
+
+      // console.log(persons, emails)
+      console.log(selectedPersons, selectedEmails)
+    })
+
+
     function createAdjacencyMatrix(nodes: Node[], links: Edge[]) {
       const margin = {
         top: 0,
@@ -122,7 +142,6 @@ export class AdjacencyMatrix implements Visualization {
       });
 
 
-
       // Convert links to matrix
       links.forEach(function (link) {
         // we have a directional dataset
@@ -146,7 +165,6 @@ export class AdjacencyMatrix implements Visualization {
         sentiment: d3.range(n).sort(function (a, b) { return nodes[b].count - nodes[a].count; }),
       };
 
-      console.log(matrix)
 
       // get sort order from page
       const dropDown: any = document.getElementById("order")
@@ -310,7 +328,7 @@ export class AdjacencyMatrix implements Visualization {
     }
 
     // takes persons, emails and selections and update the on-screen matrix accordingly
-    function updateAM(persons: Person[], emails: Email[]) {      
+    function updateAM(persons: Person[], emails: Email[]) {
 
 
       // get if user wants to see all nodes

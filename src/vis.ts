@@ -51,7 +51,7 @@ window.addEventListener("load", async () => {
     // They are represented by their id's
     const selectionSubject = new Subject<[NumberSetDiff, NumberSetDiff]>()
 
-    selectionSubject.subscribe(console.log)
+    // selectionSubject.subscribe(console.log)
 
     const baseEmailObservable = fileInputObservable(fileSelector).pipe(map(parseData))
 
@@ -105,7 +105,7 @@ window.addEventListener("load", async () => {
     )
 
 
-    new AdjacencyMatrix().visualize(dataWithAllNodes.pipe(map(([_, diffs]) => diffs)))
+    new AdjacencyMatrix().visualize(dataWithAllNodes.pipe(map(([_, diffs]) => diffs)), selectionSubject)
 
 
     const nodeLinkOptions = merge(
