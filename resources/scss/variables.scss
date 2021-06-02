@@ -1,0 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
+$primary         : #5fffa7;
+$primary-text    : darken($primary, 25%);
+$background      : adjust-color($primary, $lightness: -10%, $saturation: -30%);
+$background-hover: darken($background, 20%);
+$background-focus: lighten($background, 20%);
+$shadow          : adjust-color($primary, $lightness: -20%, $saturation: -40%, $alpha: -0.8);
+$dark-shadow     : adjust-color($shadow, $alpha: +0.45);
+$nav-background  : #0a1931;
+$nav-text        : #fdfaf6;
+
+$button-shadow      : $shadow 0px 7px 29px 0px;
+$dark-button-shadow : $dark-shadow 0px 10px 29px 0px;
+$image-shadow       : adjust-color($nav-background, $alpha: -0.8) 0px 10px 29px 0px;
+
+$button-padding      : 10px 20px;
+$button-border-radius: 40px;
+
+
+body {
+    // width: 100vw;
+    // height: 100vh;
+    margin         : 0;
+    font-family    : 'Roboto', sans-serif;
+    text-align     : center;
+    text-decoration: none;
+}

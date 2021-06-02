@@ -12,6 +12,7 @@ import { checkBoxObserable, diffStream, fileInputObservable, sliderToObservable 
 import { dynamicSlice } from "./pipeline/dynamicSlice";
 import { diffSwitchAll } from "./pipeline/diffSwitchAll";
 import { NodeLinkOptions } from "./visualizations/node-link/options";
+import { startTimeline } from "./visualizations/timeline";
 
 const logo = require('../resources/static/logo.png')
 
@@ -20,10 +21,12 @@ window.addEventListener("load", async () => {
     console.log('Image:', logo.default)
 
 
+
     const fileSelector = document.getElementById('file-selector');
 
     const timeSliderElm = document.getElementById('first-day-slider')
     const durationSliderElm = document.getElementById('duration-slider')
+    startTimeline()
 
     const timeRange = combineLatest([
         sliderToObservable(timeSliderElm),
@@ -61,7 +64,7 @@ window.addEventListener("load", async () => {
 
             timeSliders.setFirstAndLastDate(firstDate, lastDate)
 
-            const constEmails: ConstArray<[string, Email]> = {getItem: i => pair(emails[i].id + "", emails[i]), length: emails.length}
+            const constEmails: ConstArray<[string, Email]> = { getItem: i => pair(emails[i].id + "", emails[i]), length: emails.length }
             const people = getCorrespondants(emails)
 
             function dayToIndex(day: number): number {
@@ -84,9 +87,9 @@ window.addEventListener("load", async () => {
         ),
         map(([[people, emails, __], emailDiff]) => pair(pair(people, emails), pair(people, emailDiff))), // rearange data
         diffStream( // diff person dataset
-            pair(pair({} as DataSet<Person>, {} as DataSet<Email>), pair({} as DataSet<Person>, new DataSetDiff())), 
+            pair(pair({} as DataSet<Person>, {} as DataSet<Email>), pair({} as DataSet<Person>, new DataSetDiff())),
             pairMap2((_, x) => x, pairMap2(diffDataSet, (_, x) => x))
-        ), 
+        ),
         share(),
     )
 
@@ -94,7 +97,7 @@ window.addEventListener("load", async () => {
         map(([[_, emails], [__, emailDiff]]) => pair(emails, emailDiff)), // forget about people
         getDynamicCorrespondants(([_, diff]) => diff, ([emails, emailDiff], personDiff) => pair(emails, pair(personDiff, emailDiff))),
         scan( // get full people dataset
-            ([[people, _], __], [emails, [personDiff, emailDiff]]) => 
+            ([[people, _], __], [emails, [personDiff, emailDiff]]) =>
                 pair(pair(foldDataSet(people, personDiff), emails), pair(personDiff, emailDiff)),
             pair(pair({} as DataSet<Person>, {} as DataSet<Email>), pair(new DataSetDiff<Person>(), new DataSetDiff<Email>()))
         ),
@@ -107,16 +110,16 @@ window.addEventListener("load", async () => {
 
     const nodeLinkOptions = merge(
         checkBoxObserable(document.getElementById('physics')).pipe(
-            map((b): NodeLinkOptions => {return {physics: b}})   
+            map((b): NodeLinkOptions => { return { physics: b } })
         ),
         checkBoxObserable(document.getElementById('hierarchical')).pipe(
-            map((b): NodeLinkOptions => {return {hierarchical: b}})   
+            map((b): NodeLinkOptions => { return { hierarchical: b } })
         ),
         checkBoxObserable(document.getElementById('group-nodes')).pipe(
-            map((b): NodeLinkOptions => {return {groupNodes: b}})   
+            map((b): NodeLinkOptions => { return { groupNodes: b } })
         ),
         checkBoxObserable(document.getElementById('group-edges')).pipe(
-            map((b): NodeLinkOptions => {return {groupEdges: b}})   
+            map((b): NodeLinkOptions => { return { groupEdges: b } })
         ),
     )
 
