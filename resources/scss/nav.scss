@@ -48,6 +48,11 @@ nav {
                 color           : $nav-background;
                 box-shadow      : $dark-button-shadow;
             }
+
+            a:focus {
+                outline   : none;
+                box-shadow: 0 0 0 5px $background-focus;
+            }
         }
     }
 

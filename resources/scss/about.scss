@@ -6,11 +6,13 @@ body {
 
 
 .container {
-    display : grid;
-    grid-gap: 15px;
-    padding : 15px;
-    margin  : auto;
-    width   : 70%;
+    display              : grid;
+    grid-gap             : 40px 110px;
+    padding              : 15px;
+    margin               : auto;
+    width                : 70%;
+    max-width            : 900px;
+    grid-template-columns: repeat(3, 1fr);
 
 
     .box {
@@ -20,9 +22,11 @@ body {
         flex-flow      : column;
 
         img {
-            height    : 300px;
-            width     : 300px;
-            object-fit: cover;
+            height       : 300px;
+            width        : 300px;
+            object-fit   : cover;
+            border-radius: 20px;
+            box-shadow   : $image-shadow;
         }
 
         &.image_right {
