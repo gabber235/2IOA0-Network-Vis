@@ -1,0 +1,31 @@
+.scrolled.slide-left {
+    animation: slide-in-left 1s ease-in-out both;
+}
+
+.scrolled.slide-right {
+    animation: slide-in-right 1s ease-in-out both;
+}
+
+@keyframes slide-in-left {
+    0% {
+        transform: translateX(-100px);
+        opacity  : 0;
+    }
+
+    100% {
+        transform: translateX(0);
+        opacity  : 1;
+    }
+}
+
+@keyframes slide-in-right {
+    0% {
+        transform: translateX(100px);
+        opacity  : 0;
+    }
+
+    100% {
+        transform: translateX(0);
+        opacity  : 1;
+    }
+}

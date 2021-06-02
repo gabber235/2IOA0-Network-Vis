@@ -1,0 +1,56 @@
+@import "variables", "nav", "animation";
+
+body {
+    background-color: white;
+}
+
+
+.container {
+    display              : grid;
+    grid-gap             : 40px 110px;
+    padding              : 15px;
+    margin               : auto;
+    width                : 70%;
+    max-width            : 900px;
+    grid-template-columns: repeat(3, 1fr);
+
+
+    .box {
+        display        : flex;
+        justify-content: center;
+        align-items    : center;
+        flex-flow      : column;
+
+        img {
+            height       : 300px;
+            width        : 300px;
+            object-fit   : cover;
+            border-radius: 20px;
+            box-shadow   : $image-shadow;
+        }
+
+        &.image_right {
+            grid-column: 3/4;
+        }
+
+        &.image_left {
+            grid-column: 1/2;
+        }
+
+        &.right {
+            grid-column: 2/4;
+            text-align : right;
+            align-items: flex-end;
+        }
+
+        &.left {
+            grid-column: 1/3;
+            text-align : left;
+            align-items: flex-start;
+        }
+
+        strong {
+            font-size: 2em;
+        }
+    }
+}
