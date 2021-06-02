@@ -21,6 +21,7 @@ type Edge = {
   target: number,
   value: number,
   sentiment: number,
+  selected: boolean,
 }
 
 export class AdjacencyMatrix {
@@ -45,10 +46,13 @@ export class AdjacencyMatrix {
       const emailsDiff = event[1];
       emailsDiff.apply(emails);
 
+      // get arrays from dataset objects
       const personList = Object.values(persons);
       const emailList = Object.values(emails);
+      const selectedPersonIDs = Object.values(selectedPersons).map(i => Number(i));
+      const selectedEmailIDs = Object.values(selectedEmails).map(i => Number(i));
 
-      updateAM(personList, emailList);
+      updateAM(personList, emailList, selectedPersonIDs, selectedEmailIDs);
     });
 
     // make selections works
@@ -61,8 +65,14 @@ export class AdjacencyMatrix {
       const emailsDiff = event[1];
       emailsDiff.apply(selectedEmails);
 
+      // get arrays from dataset objects
+      const personList = Object.values(persons);
+      const emailList = Object.values(emails);
+      const selectedPersonIDs = Object.values(selectedPersons).map(i => Number(i));
+      const selectedEmailIDs = Object.values(selectedEmails).map(i => Number(i));
+
       // console.log(persons, emails)
-      console.log(selectedPersons, selectedEmails)
+      updateAM(personList, emailList, selectedPersonIDs, selectedEmailIDs);
     })
 
 
@@ -142,19 +152,22 @@ export class AdjacencyMatrix {
       });
 
 
-      // Convert links to matrix
+      // Convert links to matrix, add values where appropriate
       links.forEach(function (link) {
-        // we have a directional dataset
+        // add amount
         matrix[link.source][link.target].z += link.value;
+
+        // add sentiment to node
         matrix[link.source][link.target].sentiment += link.sentiment;
-        // these would be for undirected-graphs
-        // matrix[link.target][link.source].z += link.value;
-        // matrix[link.source][link.source].z += link.value;
-        // matrix[link.target][link.target].z += link.value;
+
+        // add count and sentiment to nodes
         nodes[link.source].count += link.value;
         nodes[link.target].count += link.value;
         nodes[link.source].sentiment += link.sentiment;
         nodes[link.target].sentiment += link.sentiment;
+
+        // set selected
+        matrix[link.source][link.target].selected = link.selected;
       });
 
       // Precompute the sorting orders
@@ -288,16 +301,13 @@ export class AdjacencyMatrix {
       }
 
       function clickCell(cell: Cell) {
-        console.log(getMatchingEmailIDs(cell.from.id, cell.to.id, Object.values(emails)))
+        // console.log(getMatchingEmailIDs(cell.from.id, cell.to.id, Object.values(emails)))
 
         // d3.select(document).selectAll(".cell")
-          // .style("fill", selectColor);
-
-        // console.log("I've been clicked! my original coordinates are: " + cell.x + ", " + cell.y);
+        // .style("fill", selectColor);
       }
 
       d3.select("#order").on("change", function () {
-        // clearTimeout(timeout);
         // @ts-expect-error
         // can be fixed by declaring a var for this as any
         order(this.value);
@@ -323,8 +333,7 @@ export class AdjacencyMatrix {
     }
 
     // takes persons, emails and selections and update the on-screen matrix accordingly
-    function updateAM(persons: Person[], emails: Email[]) {
-
+    function updateAM(persons: Person[], emails: Email[], selPerIDs: number[], selEmIDs: number[]) {
 
       // get if user wants to see all nodes
       const showAllNodes: any = document.getElementById("show-all-nodes");
@@ -342,9 +351,11 @@ export class AdjacencyMatrix {
         nodes = peopleToNodes(persons);
       }
 
+      console.log(selPerIDs)
+
 
       // get edges
-      const links = edgeHash(emails, nodes);
+      const links = edgeHash(emails, nodes, selEmIDs);
 
       // call adjacency matrix  
       // createAdjacencyMatrix(filteredCorrespondants, emailsToEdges(emails), svg);
@@ -397,8 +408,8 @@ export function emailToName(email: string) {
   return name.slice(0, -1);
 }
 
-// takes emails and turns them into edges for the adjacency matrix
-function edgeHash(emails: Email[], nodes: Node[]) {
+// takes emails and turns them into edges for the adjacency matrix, also account for selections
+function edgeHash(emails: Email[], nodes: Node[], selEmIDs: number[]) {
   const edges: Edge[] = [];
 
   // for each email check if it is already in the edge list
@@ -419,11 +430,19 @@ function edgeHash(emails: Email[], nodes: Node[]) {
 
     if (indexInEdges === -1) {
       // new edge
+
+      // account for selected property
+      let selected = false;
+      if (selEmIDs.find((e) => {return e === email.id})) {
+        selected = true;
+      }      
+
       const edge: Edge = {
         source: source,
         target: target,
         value: 1,
         sentiment: email.sentiment,
+        selected: selected,
       }
       edges.push(edge);
     } else {
@@ -437,11 +456,11 @@ function edgeHash(emails: Email[], nodes: Node[]) {
 }
 
 // takes a sender, receiver and dataset and returns all datapoints with that sender/receiver combination in the dataset
-function getMatchingEmailIDs(senderID: number, receiverID: number, emails: Email[]){
+function getMatchingEmailIDs(senderID: number, receiverID: number, emails: Email[]) {
   let IDs: number[] = [];
 
   emails.forEach((e) => {
-    if (e.fromId === senderID && e.toId === receiverID){
+    if (e.fromId === senderID && e.toId === receiverID) {
       IDs.push(e.id);
     }
   });
