@@ -288,9 +288,10 @@ export class AdjacencyMatrix {
       }
 
       function clickCell(cell: Cell) {
-        cell.selected = !cell.selected;
-        d3.select(document).selectAll(".cell")
-          .style("fill", selectColor);
+        console.log(cell)
+
+        // d3.select(document).selectAll(".cell")
+          // .style("fill", selectColor);
 
         // console.log("I've been clicked! my original coordinates are: " + cell.x + ", " + cell.y);
       }
@@ -319,12 +320,6 @@ export class AdjacencyMatrix {
           .delay(function (d, i) { return x(i) * 4; })
           .attr("transform", function (d, i) { return "translate(" + x(i) + ")rotate(-90)"; });
       }
-
-      //   let timeout = setTimeout(function () {
-      //     order("group");
-      //     // @ts-expect-error
-      //     d3.select("#order").property("selectedIndex", 2).node().focus();
-      //   }, 1000);
     }
 
     // takes persons, emails and selections and update the on-screen matrix accordingly
@@ -439,38 +434,4 @@ function edgeHash(emails: Email[], nodes: Node[]) {
   })
 
   return edges;
-}
-
-// Returns a filtered array with the persons who have one of the jobtitles that is given as an array (jobTitleList) in the input.
-function filterCorrespondants(
-  jobTitleList: Title[],
-  correspondants: Person[]
-) {
-  let filtered: Person[] = [];
-  for (const person in correspondants) {
-    for (const job in jobTitleList) {
-      if (jobTitleList[job] === correspondants[person].title) {
-        filtered.push(correspondants[person]);
-        break;
-      }
-    }
-  }
-  return filtered;
-}
-
-// Returns filtered email array based on correspondant list and emails
-function filterEmail(correspondants: Person[], emails: Email[]) {
-  const filtered: Email[] = [];
-
-  // for each email check if the sender and receiver are both in the correspondants
-  emails.forEach((email) => {
-    if (
-      correspondants.some((x) => x.id === email.fromId) &&
-      correspondants.some((x) => x.id === email.toId)
-    ) {
-      filtered.push(email);
-    }
-  });
-
-  return filtered;
 }
