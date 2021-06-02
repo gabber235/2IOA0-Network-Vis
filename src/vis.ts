@@ -143,6 +143,7 @@ window.addEventListener("load", async () => {
     )
     createLegend(document.getElementById("node-link-legend"))
 
+
     const nodeLinkDiagram = await visualizeNodeLinkDiagram(document.getElementById("node-links"), maybeShowAllNodes, nodeLinkOptions, 150)
     getVisNodeSeletions(nodeLinkDiagram).subscribe(selectionSubject)
 })
