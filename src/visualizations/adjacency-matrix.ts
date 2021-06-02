@@ -288,7 +288,7 @@ export class AdjacencyMatrix {
       }
 
       function clickCell(cell: Cell) {
-        console.log(cell)
+        console.log(getMatchingEmails(cell.from.id, cell.to.id, Object.values(emails)))
 
         // d3.select(document).selectAll(".cell")
           // .style("fill", selectColor);
@@ -434,4 +434,17 @@ function edgeHash(emails: Email[], nodes: Node[]) {
   })
 
   return edges;
+}
+
+// takes a sender, receiver and dataset and returns all datapoints with that sender/receiver combination in the dataset
+function getMatchingEmails(senderID: number, receiverID: number, emails: Email[]){
+  let filtered: Email[] = [];
+
+  emails.forEach((e) => {
+    if (e.fromId === senderID && e.toId === receiverID){
+      filtered.push(e);
+    }
+  });
+
+  return filtered;
 }
