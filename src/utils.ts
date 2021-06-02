@@ -144,7 +144,7 @@ export function swap<X, Y>([x, y]: [X, Y]): [Y, X] {
 /**
  * Turns an array into an object with keys defined by getKey
  */
-export function arrayToObject<A>(data: A[], getKey: (item: A) => number): {[key: number]: A} {
+export function arrayToObject<A>(data: A[], getKey: (item: A) => number|string): {[key in number|string]: A} {
     return Object.assign({}, ...data.map(item => { return { [getKey(item)]: item } }))
 }
 

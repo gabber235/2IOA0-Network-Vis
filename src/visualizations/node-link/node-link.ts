@@ -1,5 +1,5 @@
 import { identity, Observable } from 'rxjs';
-import { groupBy, map, max, share } from 'rxjs/operators';
+import { filter, groupBy, map, max, share } from 'rxjs/operators';
 import * as vis from 'vis';
 import { Email, Person, } from '../../data';
 import { diffStream } from '../../pipeline/basics';
@@ -15,19 +15,19 @@ export type PersonGroup = DataSet<Person>
 export type EmailGroup = DataSet<Email>
 
 
-/**
- * Create a new vis.Network instance and bind it to 'container'
- */
-export async function visualizeNodeLinkDiagram(
-    container: HTMLElement, 
-    data: Observable<[DataSetDiff<Person>, DataSetDiff<Email>]>, 
-    options: Observable<NodeLinkOptions>, 
-    maxNodes: number
-): Promise<vis.Network> {
-    return new NodeLinkVisualisation(container, data, options, maxNodes).visualisation
-}
+// /**
+//  * Create a new vis.Network instance and bind it to 'container'
+//  */
+// export async function visualizeNodeLinkDiagram(
+//     container: HTMLElement, 
+//     data: Observable<[DataSetDiff<Person>, DataSetDiff<Email>]>, 
+//     options: Observable<NodeLinkOptions>, 
+//     maxNodes: number
+// ): Promise<vis.Network> {
+//     return new NodeLinkVisualisation(container, data, options, maxNodes).visualisation
+// }
 
-class NodeLinkVisualisation {
+export class NodeLinkVisualisation {
 
     private options: NodeLinkOptions = defaultNodeLinkOptions
 
@@ -154,12 +154,12 @@ class NodeLinkVisualisation {
             change.value.apply(this.peopleGroupEmailGroups[change.id])
         }
 
-        const nodePeopleDiff = peopleDiff.map((person) => Object.assign({}, personToNode(person), this.nodeLocation(person)), identity)
-        const nodeGroupDiff = personGroupDiff.map((_, id) => personGroupToNode(id, this.personGroups[id]), identity)
-        const edgeEmailDiff = emailDiff.map(emailToEdge, identity)
-        const edgeEmailGroupedNodesDiff = emailDiff.map(emailToEdgeGroupedNodes, identity)
-        const edgeGroupDiff = emailGroupDiff.map((_, id) => emailGroupToEdge(id, this.emailGroups[id]), identity)
-        const edgeGroupNodeGroupDiff = emailGroupPersonGroupDiff.map((_, id) => emailGroupPersonGroupToEdge(id, this.peopleGroupEmailGroups[id]), identity)
+        const nodePeopleDiff = peopleDiff.map((person) => Object.assign({}, personToNode(person), this.nodeLocation(person)), id => "s" + id)
+        const nodeGroupDiff = personGroupDiff.map((_, id) => personGroupToNode(id, this.personGroups[id]), id => "g" + id)
+        const edgeEmailDiff = emailDiff.map(emailToEdge, id => "ss" + id)
+        const edgeEmailGroupedNodesDiff = emailDiff.map(emailToEdgeGroupedNodes, id => "sg" + id)
+        const edgeGroupDiff = emailGroupDiff.map((_, id) => emailGroupToEdge(id, this.emailGroups[id]), id => "gs" + id)
+        const edgeGroupNodeGroupDiff = emailGroupPersonGroupDiff.map((_, id) => emailGroupPersonGroupToEdge(id, this.peopleGroupEmailGroups[id]), id => "gg" + id)
 
         this.updateDataSets(
             (this.options.groupNodes) ? nodeGroupDiff : nodePeopleDiff, 
@@ -189,32 +189,61 @@ class NodeLinkVisualisation {
         this.edges.remove(edges.deletions.map(({id}) => id))
         this.nodes.remove(nodes.deletions.map(({id}) => id))
     }
-}
 
-/**
- * Takes a vis Network and returns an observable of node and edge selections respectively
- */
-export function getVisNodeSeletions(visualisation: vis.Network): Observable<[NumberSetDiff, NumberSetDiff]> {
-    return new Observable<[number[], number[]]>(sub => {
-        visualisation.on("selectNode", e => {
-            sub.next([e.edges, e.nodes])
-        })
-        visualisation.on("deselectNode", e => {
-            sub.next([e.edges, e.nodes])
-        })
-        visualisation.on("selectEdge", e => {
-            sub.next([e.edges, e.nodes])
-        })    
-        visualisation.on("deselectEdge", e => {
-            sub.next([e.edges, e.nodes])
-        })
-    }).pipe(
-        map(([nodes, edges]) => pair(arrayToObject(nodes, x => x), arrayToObject(edges, x => x))),
-        diffStream(pair({}, {}), pairMap2(diffPureDataSet, diffPureDataSet)),
-        share()
-    )
-}
+    private processSelection(e: any): [string[], string[]] {
+        let people: string[] = []
 
+        for (const id of e.nodes) {
+            if (id[0] === 's') {
+                people.push(id.slice(1))
+            } else if (id[0] === 'g') {
+                for (const id2 in this.personGroups[id.slice(1)]) {
+                    people.push(id2)
+                }
+            }
+        }
+
+        let emails: string[] = []
+
+        for (const id of e.edges) {
+            if (id[0] === 's') {
+                emails.push(id.slice(2))
+            } else if (id.slice(0,2) === 'gs') {
+                for (const id2 in this.emailGroups[id.slice(2)]) {
+                    emails.push(id2)
+                }
+            } else if (id.slice(0,2) === 'gg') {
+                for (const id2 in this.peopleGroupEmailGroups[id.slice(2)]) {
+                    emails.push(id2)
+                }
+            }
+        }
+
+        return pair(people, emails)
+    }
+
+    public getVisNodeSeletions(): Observable<[NumberSetDiff, NumberSetDiff]> {
+        return new Observable<[string[], string[]]>(sub => {
+            this.visualisation.on("selectNode", e => {
+                sub.next(this.processSelection(e))
+            })
+            this.visualisation.on("deselectNode", e => {
+                sub.next(this.processSelection(e))
+            })
+            this.visualisation.on("selectEdge", e => {
+                sub.next(this.processSelection(e))
+            })    
+            this.visualisation.on("deselectEdge", e => {
+                sub.next(this.processSelection(e))
+            })
+        }).pipe(
+            map(([nodes, edges]) => pair(arrayToObject(nodes, x => x), arrayToObject(edges, x => x))),
+            diffStream(pair({}, {}), pairMap2(diffPureDataSet, diffPureDataSet)),
+            filter(([people, emails]) => !people.isEmpty || !emails.isEmpty),
+            share()
+        )
+    }
+}
 
 export function createLegend(container: HTMLElement) {
     for (let title in titleColors) {
@@ -228,7 +257,7 @@ export function createLegend(container: HTMLElement) {
 
 function personToNode(p: Person): vis.Node {
     return {
-        id: p.id,
+        id: "s"+p.id,
         title: `${p.emailAdress}, ${p.title}`,
         group: p.title,
         level: titleRanks[p.title],
@@ -239,7 +268,7 @@ function personGroupToNode(id: ID, g: PersonGroup): vis.Node {
     const personList = Object.values(g)
 
     return {
-        id: id,
+        id: "g"+id,
         title: multipleString(personList.length, personList[0].title, personList[0].title === "CEO"),
         group: personList[0].title
     }
@@ -254,18 +283,18 @@ function emailColor(e: Email): {color: string, inherit?: boolean} {
 
 function emailToEdge(e: Email): vis.Edge {
     return {
-        id: e.id,
-        from: e.fromId,
-        to: e.toId,
+        id: "ss"+e.id,
+        from: "s"+e.fromId,
+        to: "s"+e.toId,
         title: emailTitle(e),
-        color: emailColor(e)
+        color: emailColor(e),
     }
 }
 function emailToEdgeGroupedNodes(e: Email): vis.Edge {
     return {
-        id: e.id,
-        from: e.fromJobtitle,
-        to: e.toJobtitle,
+        id: "sg"+e.id,
+        from: "g"+e.fromJobtitle,
+        to: "g"+e.toJobtitle,
         title: emailTitle(e),
         color: emailColor(e),
     }
@@ -281,12 +310,12 @@ function emailGroupToEdge(id: string, g: EmailGroup): vis.Edge {
     const avSent = emailList.map(e => e.sentiment).reduce((i,j) => i + j) / emailList.length
 
     return {
-        id: id,
-        from: someEmail.fromId,
-        to: someEmail.toId,
+        id: "gs"+id,
+        from: "s"+someEmail.fromId,
+        to: "s"+someEmail.toId,
         width: Math.log(emailList.length) * 2,
         title: `${multipleString(toCount, 'Direct')}, ${multipleString(ccCount, 'CC', true)}, Av Sentiment: ${Math.round(avSent * 1000)/10}%`,
-        color: {color: hueGradient(Math.tanh(avSent * edgeColorContrast) / 2 + 0.5), inherit: false}
+        color: {color: hueGradient(Math.tanh(avSent * edgeColorContrast) / 2 + 0.5), inherit: false},
     }
 }
 
@@ -298,12 +327,12 @@ function emailGroupPersonGroupToEdge(id: string, g: EmailGroup): vis.Edge {
     const avSent = emailList.map(e => e.sentiment).reduce((i,j) => i + j) / emailList.length
 
     return {
-        id: id,
-        from: someEmail.fromJobtitle,
-        to: someEmail.toJobtitle,
+        id: "gg"+id,
+        from: "g"+someEmail.fromJobtitle,
+        to: "g"+someEmail.toJobtitle,
         width: Math.log(emailList.length) * 2,
         title: `${multipleString(toCount, 'Direct')}, ${multipleString(ccCount, 'CC', true)}, Av Sentiment: ${Math.round(avSent * 1000)/10}%`,
-        color: {color: hueGradient(Math.tanh(avSent * edgeColorContrast) / 2 + 0.5), inherit: false}
+        color: {color: hueGradient(Math.tanh(avSent * edgeColorContrast) / 2 + 0.5), inherit: false},
     }
 }
 

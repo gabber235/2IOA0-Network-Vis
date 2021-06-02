@@ -1,6 +1,6 @@
 import "vis/dist/vis.min.css"
 import { AdjacencyMatrix } from "./visualizations/adjacency-matrix";
-import { visualizeNodeLinkDiagram, getVisNodeSeletions, createLegend } from "./visualizations/node-link/node-link";
+import { createLegend, NodeLinkVisualisation } from "./visualizations/node-link/node-link";
 import { Email, getCorrespondants, parseData, Person } from "./data"
 import { combineLatest, merge, Subject } from "rxjs";
 import { auditTime, map, scan, share, shareReplay } from "rxjs/operators";
@@ -143,9 +143,9 @@ window.addEventListener("load", async () => {
     )
     createLegend(document.getElementById("node-link-legend"))
 
-
-    const nodeLinkDiagram = await visualizeNodeLinkDiagram(document.getElementById("node-links"), maybeShowAllNodes, nodeLinkOptions, 150)
-    getVisNodeSeletions(nodeLinkDiagram).subscribe(selectionSubject)
+            
+    const nodeLinkDiagram = new NodeLinkVisualisation(document.getElementById("node-links"), maybeShowAllNodes, nodeLinkOptions, 150)
+    nodeLinkDiagram.getVisNodeSeletions().subscribe(selectionSubject)
 })
 
 
