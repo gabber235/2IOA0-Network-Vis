@@ -84,26 +84,33 @@ class NodeLinkVisualisation {
 
     private onOptions(options: NodeLinkOptions) {
 
-        const fullReset = 
+        const resetNodes = 
+            ('hierarchical' in options && this.options.hierarchical !== options.hierarchical)
+            || ('groupNodes' in options)
+
+        const resetEdges =
             ('hierarchical' in options && this.options.hierarchical !== options.hierarchical)
             || ('groupNodes' in options)
             || ('groupEdges' in options)
 
-
-        if (fullReset) {
-            this.nodes.clear()
+        if (resetEdges) {
             this.edges.clear()
         }
+        if (resetNodes) {
+            this.nodes.clear()
+        }
+
         this.visualisation.setOptions(nodeLinkOptionsToVisOptions(Object.assign(this.options, options)))
 
-        if (fullReset) {
-
+        if (resetNodes) {
             if (this.options.groupNodes)
                 this.nodes.add(Object.entries(this.personGroups).map(([id, val]) => personGroupToNode(id, this.personGroups[id])))
             else 
                 this.nodes.add(Object.values(this.people).map(person => Object.assign({}, personToNode(person), this.nodeLocation(person))))
 
+        }
 
+        if (resetEdges) {
             if (!this.options.groupNodes && !this.options.groupEdges) {
                 this.edges.add(Object.values(this.emails).map(emailToEdge))   
             }
@@ -143,7 +150,7 @@ class NodeLinkVisualisation {
             this.peopleGroupEmailGroups[change.id] = {}
             change.value.apply(this.peopleGroupEmailGroups[change.id])
         }
-        for (const change of emailGroupPersonGroupDiff.insertions) {
+        for (const change of emailGroupPersonGroupDiff.updates) {
             change.value.apply(this.peopleGroupEmailGroups[change.id])
         }
 
@@ -277,7 +284,7 @@ function emailGroupToEdge(id: string, g: EmailGroup): vis.Edge {
         id: id,
         from: someEmail.fromId,
         to: someEmail.toId,
-        width: Math.log(Object.values(g).length) * 2,
+        width: Math.log(emailList.length) * 2,
         title: `${multipleString(toCount, 'Direct')}, ${multipleString(ccCount, 'CC', true)}, Av Sentiment: ${Math.round(avSent * 1000)/10}%`,
         color: {color: hueGradient(Math.tanh(avSent * edgeColorContrast) / 2 + 0.5), inherit: false}
     }
@@ -294,7 +301,7 @@ function emailGroupPersonGroupToEdge(id: string, g: EmailGroup): vis.Edge {
         id: id,
         from: someEmail.fromJobtitle,
         to: someEmail.toJobtitle,
-        width: Math.log(Object.values(g).length) * 2,
+        width: Math.log(emailList.length) * 2,
         title: `${multipleString(toCount, 'Direct')}, ${multipleString(ccCount, 'CC', true)}, Av Sentiment: ${Math.round(avSent * 1000)/10}%`,
         color: {color: hueGradient(Math.tanh(avSent * edgeColorContrast) / 2 + 0.5), inherit: false}
     }
