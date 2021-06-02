@@ -94,7 +94,7 @@ export class AdjacencyMatrix implements Visualization {
         selected?: boolean,
         from: Node,
         to: Node,
-        sentSum: number, // total sentiment
+        sentiment: number, // total sentiment
       }
 
       // declare variable to store the matrix values
@@ -116,7 +116,7 @@ export class AdjacencyMatrix implements Visualization {
             selected: false,
             from: node,
             to: nodes[j],
-            sentSum: 0,
+            sentiment: 0,
           };
         });
       });
@@ -127,6 +127,7 @@ export class AdjacencyMatrix implements Visualization {
       links.forEach(function (link) {
         // we have a directional dataset
         matrix[link.source][link.target].z += link.value;
+        matrix[link.source][link.target].sentiment += link.sentiment;
         // these would be for undirected-graphs
         // matrix[link.target][link.source].z += link.value;
         // matrix[link.source][link.source].z += link.value;
@@ -145,7 +146,7 @@ export class AdjacencyMatrix implements Visualization {
         sentiment: d3.range(n).sort(function (a, b) { return nodes[b].count - nodes[a].count; }),
       };
 
-
+      console.log(matrix)
 
       // get sort order from page
       const dropDown: any = document.getElementById("order")
@@ -255,7 +256,7 @@ export class AdjacencyMatrix implements Visualization {
         html += "n.o. emails: " + c.z + "<br>";
 
         // total sentiment
-        html += "Sum sentiment: " + c.sentSum;
+        html += "Sum sentiment: " + c.sentiment.toFixed(3);
 
         return html;
       }
