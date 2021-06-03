@@ -92,6 +92,18 @@ export class NodeLinkVisualisation {
         )
     }
 
+    private updateSelection() {
+        this.visualisation.selectNodes(
+            [...this.selectedPeople]
+            .map(i => getPersonVisId(this.people[i], this.options.groupNodes))
+        )
+
+        this.visualisation.selectEdges(
+            [...this.selectedEmails]
+            .map(i => getEmailVisId(this.emails[i], this.options.groupNodes, this.options.groupEdges))
+        )
+    }
+
 
     private onOptions(options: NodeLinkOptions) {
 
@@ -133,6 +145,7 @@ export class NodeLinkVisualisation {
                 this.edges.add(Object.entries(this.peopleGroupEmailGroups).map(([id, val]) => emailGroupPersonGroupToEdge(val)))
             }
         }
+        this.updateSelection()
     }
     private onData(
         [peopleDiff, emailDiff, personGroupDiff, emailGroupDiff, emailGroupPersonGroupDiff]: 
@@ -188,6 +201,15 @@ export class NodeLinkVisualisation {
         }
         for (const change of personGroupDiff.deletions) {
             delete this.personGroups[change.id]
+        }
+
+        // update selections
+
+        for (const {id} of peopleDiff.deletions) {
+            this.selectedPeople.delete(id)
+        }
+        for (const {id} of emailDiff.deletions) {
+            this.selectedEmails.delete(id)
         }
     }
     private updateDataSets(nodes: DataSetDiff<vis.Node>, edges: DataSetDiff<vis.Edge>) {
