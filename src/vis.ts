@@ -110,16 +110,16 @@ window.addEventListener("load", async () => {
 
     const nodeLinkOptions = merge(
         checkBoxObserable(document.getElementById('physics')).pipe(
-            map((b): NodeLinkOptions => { return { physics: b } })
+            map((b): NodeLinkOptions => ({ physics: b }))
         ),
         checkBoxObserable(document.getElementById('hierarchical')).pipe(
-            map((b): NodeLinkOptions => { return { hierarchical: b } })
+            map((b): NodeLinkOptions => ({ hierarchical: b }))
         ),
         checkBoxObserable(document.getElementById('group-nodes')).pipe(
-            map((b): NodeLinkOptions => { return { groupNodes: b } })
+            map((b): NodeLinkOptions => ({ groupNodes: b }))
         ),
         checkBoxObserable(document.getElementById('group-edges')).pipe(
-            map((b): NodeLinkOptions => { return { groupEdges: b } })
+            map((b): NodeLinkOptions => ({ groupEdges: b }))
         ),
     )
 

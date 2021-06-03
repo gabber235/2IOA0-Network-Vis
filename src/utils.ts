@@ -6,12 +6,12 @@ export function deepEquals(left: any, right: any): boolean {
     if (typeof (left) !== typeof (right)) {
         return false
     } else if (typeof (left) === 'object') {
-        for (let key in left) {
+        for (const key in left) {
             if (!deepEquals(left[key], right[key])) {
                 return false
             }
         }
-        for (let key in right) {
+        for (const key in right) {
             if (!deepEquals(left[key], right[key])) {
                 return false
             }
@@ -42,13 +42,13 @@ export function newId() {
  * Creates an element of type, type with attributes defined by attrs and children defined by children. An optional parent may be provided
  */
 export function newElm(type: string = "div", attrs: { [name: string]: string } = {}, children: Node[] = [], parent: Node | undefined = undefined): HTMLElement {
-    let elm = document.createElement(type)
+    const elm = document.createElement(type)
 
-    for (let name in attrs) {
+    for (const name in attrs) {
         elm.setAttribute(name, attrs[name])
     }
 
-    for (let child of children) {
+    for (const child of children) {
         elm.appendChild(child)
     }
 
@@ -82,13 +82,13 @@ export function text(txt: string): Text {
  * Like newElm except for svg elements
  */
 export function newSvg(type: string = "svg", attrs: { [name: string]: string } = {}, children: Node[] = [], parent: Node | undefined = undefined): SVGElement {
-    let elm = document.createElementNS("http://www.w3.org/2000/svg", type)
+    const elm = document.createElementNS("http://www.w3.org/2000/svg", type)
 
-    for (let name in attrs) {
+    for (const name in attrs) {
         elm.setAttributeNS(null, name, attrs[name])
     }
 
-    for (let child of children) {
+    for (const child of children) {
         elm.appendChild(child)
     }
 
@@ -106,7 +106,7 @@ export function newSvg(type: string = "svg", attrs: { [name: string]: string } =
  * IT DOES NOT PRESERVE THE ORDER OF THE ARRAY
  */
 function swapRemove<T>(list: T[], index: number): T {
-    let x = list[index]
+    const x = list[index]
     list[index] = list[list.length - 1]
     list.pop()
 
@@ -145,7 +145,7 @@ export function swap<X, Y>([x, y]: [X, Y]): [Y, X] {
  * Turns an array into an object with keys defined by getKey
  */
 export function arrayToObject<A>(data: A[], getKey: (item: A) => number|string): {[key in number|string]: A} {
-    return Object.assign({}, ...data.map(item => { return { [getKey(item)]: item } }))
+    return Object.assign({}, ...data.map(item => ({ [getKey(item)]: item })))
 }
 
 
@@ -232,7 +232,7 @@ export const millisInDay = 24 * 60 * 60 * 1000
 
 
 export function zipArrays<A, B>(a: A[], b: B[]): [A, B][] {
-    let ret: [A, B][] = []
+    const ret: [A, B][] = []
 
     for (let i = 0; i < Math.min(a.length, b.length); i++) {
         ret.push(pair(a[i], b[i]))

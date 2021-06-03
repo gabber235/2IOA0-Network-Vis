@@ -26,8 +26,8 @@ export class NodeLinkVisualisation {
     private people: DataSet<Person> = {}
     private emails: DataSet<Email> = {}
     private personGroups: DataSet<PersonGroup> = {}
-    private emailGroups: DataSet<EmailGroup> = {}
-    private peopleGroupEmailGroups: DataSet<EmailGroup> = {}
+    private emailGroupsByPerson: DataSet<EmailGroup> = {}
+    private emailGroupsByTitle: DataSet<EmailGroup> = {}
 
     private selectedPeople = new Set<ID>()
     private selectedEmails = new Set<ID>()
@@ -61,7 +61,7 @@ export class NodeLinkVisualisation {
             groupDiffBy(
                 ([_, emailDiff, __, ____]) => emailDiff,
                 email => email.fromJobtitle + ","+email.toJobtitle,
-                ([peopleDiff, emailDiff, personGroupDiff, emailGroupDiff], emailGroupPersonGroupDiff) => tuple5(peopleDiff, emailDiff, personGroupDiff, emailGroupDiff, emailGroupPersonGroupDiff)
+                ([peopleDiff, emailDiff, personGroupDiff, emailGroupByPersonDiff], emailGroupByTitleDiff) => tuple5(peopleDiff, emailDiff, personGroupDiff, emailGroupByPersonDiff, emailGroupByTitleDiff)
             )
         ).subscribe(this.onData.bind(this))
 
@@ -140,77 +140,65 @@ export class NodeLinkVisualisation {
             else if (this.options.groupNodes && !this.options.groupEdges) {
                 this.edges.add(Object.values(this.emails).map(emailToEdgeGroupedNodes))   
             } else if (!this.options.groupNodes && this.options.groupEdges) {
-                this.edges.add(Object.entries(this.emailGroups).map(([id, val]) => emailGroupToEdge(val)))
+                this.edges.add(Object.entries(this.emailGroupsByPerson).map(([id, val]) => emailGroupByPersonToEdge(val)))
             } else {
-                this.edges.add(Object.entries(this.peopleGroupEmailGroups).map(([id, val]) => emailGroupPersonGroupToEdge(val)))
+                this.edges.add(Object.entries(this.emailGroupsByTitle).map(([id, val]) => emailGroupByTitleToEdge(val)))
             }
         }
         this.updateSelection()
     }
     private onData(
-        [peopleDiff, emailDiff, personGroupDiff, emailGroupDiff, emailGroupPersonGroupDiff]: 
+        [peopleDiff, emailDiff, personGroupDiff, emailGroupByPersonDiff, emailGroupByTitleDiff]: 
         [DataSetDiff<Person>, DataSetDiff<Email>, DataSetDiff<DataSetDiff<Person>>, DataSetDiff<DataSetDiff<Email>>, DataSetDiff<DataSetDiff<Email>>]
     ) {
+        // update hashmaps
         peopleDiff.apply(this.people)
         emailDiff.apply(this.emails)
         
-        for (const change of personGroupDiff.insertions) {
-            this.personGroups[change.id] = {}
-            change.value.apply(this.personGroups[change.id])
-        }
-        for (const change of personGroupDiff.updates) {
-            change.value.apply(this.personGroups[change.id])
+        DataSetDiff.applyGroupInsertions(personGroupDiff, this.personGroups)
+        DataSetDiff.applyGroupUpdates(personGroupDiff, this.personGroups)
+
+        DataSetDiff.applyGroupInsertions(emailGroupByPersonDiff, this.emailGroupsByPerson)
+        DataSetDiff.applyGroupUpdates(emailGroupByPersonDiff, this.emailGroupsByPerson)
+
+        DataSetDiff.applyGroupInsertions(emailGroupByTitleDiff, this.emailGroupsByTitle)
+        DataSetDiff.applyGroupUpdates(emailGroupByTitleDiff, this.emailGroupsByTitle)
+
+        // update vis datasets
+        let nodeDiff
+        if (!this.options.groupNodes) {
+            nodeDiff = peopleDiff.map((person) => Object.assign({}, personToNode(person), this.nodeLocation(person)), id => "s" + id)
+        } else {
+            nodeDiff = personGroupDiff.map((_, id) => personGroupToNode(id, this.personGroups[id]), id => "g" + id)
         }
 
-        for (const change of emailGroupDiff.insertions) {
-            this.emailGroups[change.id] = {}
-            change.value.apply(this.emailGroups[change.id])
-        }
-        for (const change of emailGroupDiff.updates) {
-            change.value.apply(this.emailGroups[change.id])
-        }
+        let edgeDiff
+        if (!this.options.groupNodes && !this.options.groupEdges) {
+            edgeDiff = emailDiff.map(emailToEdge, id => "ss" + id)
 
-        for (const change of emailGroupPersonGroupDiff.insertions) {
-            this.peopleGroupEmailGroups[change.id] = {}
-            change.value.apply(this.peopleGroupEmailGroups[change.id])
-        }
-        for (const change of emailGroupPersonGroupDiff.updates) {
-            change.value.apply(this.peopleGroupEmailGroups[change.id])
-        }
+        } else if (!this.options.groupNodes && this.options.groupEdges) {
+            edgeDiff = emailGroupByPersonDiff.map((_, id) => emailGroupByPersonToEdge(this.emailGroupsByPerson[id]), id => "gs" + id)
 
-        const nodePeopleDiff = peopleDiff.map((person) => Object.assign({}, personToNode(person), this.nodeLocation(person)), id => "s" + id)
-        const nodeGroupDiff = personGroupDiff.map((_, id) => personGroupToNode(id, this.personGroups[id]), id => "g" + id)
-        const edgeEmailDiff = emailDiff.map(emailToEdge, id => "ss" + id)
-        const edgeEmailGroupedNodesDiff = emailDiff.map(emailToEdgeGroupedNodes, id => "sg" + id)
-        const edgeGroupDiff = emailGroupDiff.map((_, id) => emailGroupToEdge(this.emailGroups[id]), id => "gs" + id)
-        const edgeGroupNodeGroupDiff = emailGroupPersonGroupDiff.map((_, id) => emailGroupPersonGroupToEdge(this.peopleGroupEmailGroups[id]), id => "gg" + id)
+        } else if (this.options.groupNodes && !this.options.groupEdges) {
+            edgeDiff = emailDiff.map(emailToEdgeGroupedNodes, id => "sg" + id)
+
+        } else {
+            edgeDiff = emailGroupByTitleDiff.map((_, id) => emailGroupByTitleToEdge(this.emailGroupsByTitle[id]), id => "gg" + id)
+        }
 
         this.updateDataSets(
-            (this.options.groupNodes) ? nodeGroupDiff : nodePeopleDiff, 
-            (!this.options.groupNodes && !this.options.groupEdges) ? edgeEmailDiff : 
-            (this.options.groupNodes && !this.options.groupEdges) ? edgeEmailGroupedNodesDiff :
-            (!this.options.groupNodes && this.options.groupEdges) ? edgeGroupDiff :
-            edgeGroupNodeGroupDiff
+            nodeDiff,
+            edgeDiff
         )
-
-        for (const change of emailGroupPersonGroupDiff.deletions) {
-            delete this.peopleGroupEmailGroups[change.id]
-        }
-        for (const change of emailGroupDiff.deletions) {
-            delete this.emailGroups[change.id]
-        }
-        for (const change of personGroupDiff.deletions) {
-            delete this.personGroups[change.id]
-        }
+        
+        // update hashmaps
+        DataSetDiff.applyGroupDeletions(emailGroupByTitleDiff, this.emailGroupsByTitle)
+        DataSetDiff.applyGroupDeletions(emailGroupByPersonDiff, this.emailGroupsByPerson)
+        DataSetDiff.applyGroupDeletions(personGroupDiff, this.personGroups)
 
         // update selections
-
-        for (const {id} of peopleDiff.deletions) {
-            this.selectedPeople.delete(id)
-        }
-        for (const {id} of emailDiff.deletions) {
-            this.selectedEmails.delete(id)
-        }
+        peopleDiff.applySetDeletions(this.selectedPeople)
+        emailDiff.applySetDeletions(this.selectedEmails)
     }
     private updateDataSets(nodes: DataSetDiff<vis.Node>, edges: DataSetDiff<vis.Edge>) {
         this.nodes.add(nodes.insertions.map(({value}) => value))
@@ -224,7 +212,7 @@ export class NodeLinkVisualisation {
     }
 
     private processSelection(e: any): [string[], string[]] {
-        let people: string[] = []
+        const people: string[] = []
 
         for (const id of e.nodes) {
             if (id[0] === 's') {
@@ -236,17 +224,17 @@ export class NodeLinkVisualisation {
             }
         }
 
-        let emails: string[] = []
+        const emails: string[] = []
 
         for (const id of e.edges) {
             if (id[0] === 's') {
                 emails.push(id.slice(2))
             } else if (id.slice(0,2) === 'gs') {
-                for (const id2 in this.emailGroups[id.slice(2)]) {
+                for (const id2 in this.emailGroupsByPerson[id.slice(2)]) {
                     emails.push(id2)
                 }
             } else if (id.slice(0,2) === 'gg') {
-                for (const id2 in this.peopleGroupEmailGroups[id.slice(2)]) {
+                for (const id2 in this.emailGroupsByTitle[id.slice(2)]) {
                     emails.push(id2)
                 }
             }
@@ -276,12 +264,6 @@ export class NodeLinkVisualisation {
             share()
         )
 
-        // selections.subscribe(([people, emails]) => {
-        //     // console.log(emails.insertions)
-        //     people.applySet(this.selectedPeople)
-        //     emails.applySet(this.selectedEmails)
-        // })
-
         return selections
     }
 }
@@ -309,7 +291,7 @@ function getEmailVisId(email: Email, groupPeople: boolean, groupEmails: boolean)
 
 
 export function createLegend(container: HTMLElement) {
-    for (let title in titleColors) {
+    for (const title in titleColors) {
         span({}, [
             span({style: `background-color: ${titleColors[title].color.background};`, class: 'color-dot'}), 
             text(title)
@@ -365,7 +347,7 @@ function emailToEdgeGroupedNodes(e: Email): vis.Edge {
 
 
 
-function emailGroupToEdge(g: EmailGroup): vis.Edge {
+function emailGroupByPersonToEdge(g: EmailGroup): vis.Edge {
     const emailList = Object.values(g)
     const someEmail = emailList[0]
     const ccCount = emailList.filter(e => e.messageType === 'CC').length
@@ -382,7 +364,7 @@ function emailGroupToEdge(g: EmailGroup): vis.Edge {
     }
 }
 
-function emailGroupPersonGroupToEdge(g: EmailGroup): vis.Edge {
+function emailGroupByTitleToEdge(g: EmailGroup): vis.Edge {
     const emailList = Object.values(g)
     const someEmail = emailList[0]
     const ccCount = emailList.filter(e => e.messageType === 'CC').length
