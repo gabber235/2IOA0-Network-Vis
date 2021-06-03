@@ -4,7 +4,7 @@ import { createLegend, NodeLinkVisualisation } from "./visualizations/node-link/
 import { Email, getCorrespondants, parseData, Person } from "./data"
 import { combineLatest, merge, Subject } from "rxjs";
 import { auditTime, map, scan, share, shareReplay } from "rxjs/operators";
-import { DataSet, DataSetDiff, diffDataSet, foldDataSet, NumberSetDiff } from "./pipeline/dynamicDataSet";
+import { DataSet, DataSetDiff, diffDataSet, foldDataSet, IDSetDiff } from "./pipeline/dynamicDataSet";
 import { getDynamicCorrespondants } from "./pipeline/getDynamicCorrespondants";
 import { binarySearch, ConstArray, div, millisInDay, pair, pairMap2, span, text, tripple } from "./utils";
 import { prettifyFileInput, TimeSliders } from "./looks";
@@ -49,7 +49,7 @@ window.addEventListener("load", async () => {
 
     // This subject is used to represent selected correspondants and emails respectivly
     // They are represented by their id's
-    const selectionSubject = new Subject<[NumberSetDiff, NumberSetDiff]>()
+    const selectionSubject = new Subject<[IDSetDiff, IDSetDiff]>()
 
     // selectionSubject.subscribe(console.log)
 
@@ -144,7 +144,7 @@ window.addEventListener("load", async () => {
     createLegend(document.getElementById("node-link-legend"))
 
             
-    const nodeLinkDiagram = new NodeLinkVisualisation(document.getElementById("node-links"), maybeShowAllNodes, nodeLinkOptions, 150)
+    const nodeLinkDiagram = new NodeLinkVisualisation(document.getElementById("node-links"), maybeShowAllNodes, selectionSubject, nodeLinkOptions, 150)
     nodeLinkDiagram.getVisNodeSeletions().subscribe(selectionSubject)
 })
 

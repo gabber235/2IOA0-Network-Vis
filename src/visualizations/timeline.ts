@@ -14,14 +14,14 @@ export async function startTimeline(minDistance = 0.05, maxDistance = 0.3) {
 
     let mouseDown = false
 
-    console.log(elm.getBoundingClientRect())
+    // console.log(elm.getBoundingClientRect())
 
     elm.addEventListener("mouseup", () => mouseDown = false)
     elm.addEventListener("mousedown", () => mouseDown = true)
 
     elm.addEventListener("mousemove", (event: MouseEvent) => {
         if (!mouseDown) return
-        console.log(event.x - elm.getBoundingClientRect().left)
+        // console.log(event.x - elm.getBoundingClientRect().left)
     })
 }
 

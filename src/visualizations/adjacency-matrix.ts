@@ -2,7 +2,7 @@ import { Visualization } from './visualization'
 import { Email, Person, Title, getCorrespondants } from "../data";
 import * as d3 from "d3";
 import { Observable, Subject } from 'rxjs';
-import { DataSetDiff, DataSet, NumberSetDiff } from '../pipeline/dynamicDataSet';
+import { DataSetDiff, DataSet, IDSetDiff } from '../pipeline/dynamicDataSet';
 import { titleRanks } from './constants';
 
 
@@ -24,7 +24,7 @@ type Edge = {
 }
 
 export class AdjacencyMatrix {
-  async visualize(data: Observable<[DataSetDiff<Person>, DataSetDiff<Email>]>, selSub: Subject<[NumberSetDiff, NumberSetDiff]>): Promise<void> {
+  async visualize(data: Observable<[DataSetDiff<Person>, DataSetDiff<Email>]>, selSub: Subject<[IDSetDiff, IDSetDiff]>): Promise<void> {
     // document.body.appendChild(div({}, [text("Adjacency-matrix")]));
 
     // datasets that hold the data
@@ -365,7 +365,7 @@ export class AdjacencyMatrix {
         nodes = peopleToNodes(persons);
       }
 
-      console.log(selPerIDs);
+    //   console.log(selPerIDs);
 
 
       // get edges

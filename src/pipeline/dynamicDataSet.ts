@@ -73,6 +73,15 @@ export class DataSetDiff<A> {
         }
     }
 
+    applySet(set: Set<ID>) {
+        for (const {id} of this.insertions) {
+            set.add(id)
+        }
+        for (const {id} of this.deletions) {
+            set.delete(id)
+        }
+    }
+
     get isEmpty(): boolean { 
         return this.insertions.length === 0 && this.updates.length === 0 && this.deletions.length === 0 
     }
@@ -82,7 +91,7 @@ export class DataSetDiff<A> {
  * Represents changes to a set of numbers
  */
 // NOTE: This is a lazy and dumb way to do this
-export type NumberSetDiff = DataSetDiff<any>
+export type IDSetDiff = DataSetDiff<any>
 
 
 /**
