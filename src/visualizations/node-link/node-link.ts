@@ -21,11 +21,9 @@ export class NodeLinkVisualisation {
     private nodes: vis.DataSet<vis.Node> = new vis.DataSet()
     private edges: vis.DataSet<vis.Edge> = new vis.DataSet()
 
-    public readonly visualisation: vis.Network
-
     private people: DataSet<Person> = {}
     private emails: DataSet<Email> = {}
-    private personGroups: DataSet<PersonGroup> = {}
+    private personGroupsByTitle: DataSet<PersonGroup> = {}
     private emailGroupsByPerson: DataSet<EmailGroup> = {}
     private emailGroupsByTitle: DataSet<EmailGroup> = {}
 
@@ -33,6 +31,8 @@ export class NodeLinkVisualisation {
     private selectedEmails = new Set<ID>()
 
     private maxNodes: number
+
+    public readonly visualisation: vis.Network
 
     constructor(
         container: HTMLElement,
@@ -68,7 +68,7 @@ export class NodeLinkVisualisation {
         selections.subscribe(this.onSelection.bind(this))
     }
 
-    private nodeLocation(person: Person) {
+    private getInitialNodeLocation(person: Person) {
         const circleLayoutRadius = this.maxNodes * (nodeSize * 2 + 2) / Math.PI / 2
         return {
             x: circleLayoutRadius * Math.cos(2 * Math.PI * person.id / this.maxNodes),
@@ -107,33 +107,33 @@ export class NodeLinkVisualisation {
 
     private onOptions(options: NodeLinkOptions) {
 
-        const resetNodes = 
+        const shouldResetNodes = 
             ('hierarchical' in options && this.options.hierarchical !== options.hierarchical)
             || ('groupNodes' in options)
 
-        const resetEdges =
+        const shouldResetEdges =
             ('hierarchical' in options && this.options.hierarchical !== options.hierarchical)
             || ('groupNodes' in options)
             || ('groupEdges' in options)
 
-        if (resetEdges) {
+        if (shouldResetEdges) {
             this.edges.clear()
         }
-        if (resetNodes) {
+        if (shouldResetNodes) {
             this.nodes.clear()
         }
 
         this.visualisation.setOptions(nodeLinkOptionsToVisOptions(Object.assign(this.options, options)))
 
-        if (resetNodes) {
+        if (shouldResetNodes) {
             if (this.options.groupNodes)
-                this.nodes.add(Object.entries(this.personGroups).map(([id, val]) => personGroupToNode(id, this.personGroups[id])))
+                this.nodes.add(Object.entries(this.personGroupsByTitle).map(([id, val]) => personGroupToNode(id, this.personGroupsByTitle[id])))
             else 
-                this.nodes.add(Object.values(this.people).map(person => Object.assign({}, personToNode(person), this.nodeLocation(person))))
+                this.nodes.add(Object.values(this.people).map(person => Object.assign({}, personToNode(person), this.getInitialNodeLocation(person))))
 
         }
 
-        if (resetEdges) {
+        if (shouldResetEdges) {
             if (!this.options.groupNodes && !this.options.groupEdges) {
                 this.edges.add(Object.values(this.emails).map(emailToEdge))   
             }
@@ -148,15 +148,15 @@ export class NodeLinkVisualisation {
         this.updateSelection()
     }
     private onData(
-        [peopleDiff, emailDiff, personGroupDiff, emailGroupByPersonDiff, emailGroupByTitleDiff]: 
+        [peopleDiff, emailDiff, personGroupByTitleDiff, emailGroupByPersonDiff, emailGroupByTitleDiff]: 
         [DataSetDiff<Person>, DataSetDiff<Email>, DataSetDiff<DataSetDiff<Person>>, DataSetDiff<DataSetDiff<Email>>, DataSetDiff<DataSetDiff<Email>>]
     ) {
         // update hashmaps
         peopleDiff.apply(this.people)
         emailDiff.apply(this.emails)
         
-        DataSetDiff.applyGroupInsertions(personGroupDiff, this.personGroups)
-        DataSetDiff.applyGroupUpdates(personGroupDiff, this.personGroups)
+        DataSetDiff.applyGroupInsertions(personGroupByTitleDiff, this.personGroupsByTitle)
+        DataSetDiff.applyGroupUpdates(personGroupByTitleDiff, this.personGroupsByTitle)
 
         DataSetDiff.applyGroupInsertions(emailGroupByPersonDiff, this.emailGroupsByPerson)
         DataSetDiff.applyGroupUpdates(emailGroupByPersonDiff, this.emailGroupsByPerson)
@@ -167,9 +167,9 @@ export class NodeLinkVisualisation {
         // update vis datasets
         let nodeDiff
         if (!this.options.groupNodes) {
-            nodeDiff = peopleDiff.map((person) => Object.assign({}, personToNode(person), this.nodeLocation(person)), id => "s" + id)
+            nodeDiff = peopleDiff.map((person) => Object.assign({}, personToNode(person), this.getInitialNodeLocation(person)), id => "s" + id)
         } else {
-            nodeDiff = personGroupDiff.map((_, id) => personGroupToNode(id, this.personGroups[id]), id => "g" + id)
+            nodeDiff = personGroupByTitleDiff.map((_, id) => personGroupToNode(id, this.personGroupsByTitle[id]), id => "g" + id)
         }
 
         let edgeDiff
@@ -194,7 +194,7 @@ export class NodeLinkVisualisation {
         // update hashmaps
         DataSetDiff.applyGroupDeletions(emailGroupByTitleDiff, this.emailGroupsByTitle)
         DataSetDiff.applyGroupDeletions(emailGroupByPersonDiff, this.emailGroupsByPerson)
-        DataSetDiff.applyGroupDeletions(personGroupDiff, this.personGroups)
+        DataSetDiff.applyGroupDeletions(personGroupByTitleDiff, this.personGroupsByTitle)
 
         // update selections
         peopleDiff.applySetDeletions(this.selectedPeople)
@@ -211,14 +211,14 @@ export class NodeLinkVisualisation {
         this.nodes.remove(nodes.deletions.map(({id}) => id))
     }
 
-    private processSelection(e: any): [string[], string[]] {
+    private datasetIdsFromSelectionEvent(e: any): [string[], string[]] {
         const people: string[] = []
 
         for (const id of e.nodes) {
             if (id[0] === 's') {
                 people.push(id.slice(1))
             } else if (id[0] === 'g') {
-                for (const id2 in this.personGroups[id.slice(1)]) {
+                for (const id2 in this.personGroupsByTitle[id.slice(1)]) {
                     people.push(id2)
                 }
             }
@@ -246,16 +246,16 @@ export class NodeLinkVisualisation {
     public getVisNodeSeletions(): Observable<[IDSetDiff, IDSetDiff]> {
         const selections = new Observable<[string[], string[]]>(sub => {
             this.visualisation.on("selectNode", e => {
-                sub.next(this.processSelection(e))
+                sub.next(this.datasetIdsFromSelectionEvent(e))
             })
             this.visualisation.on("deselectNode", e => {
-                sub.next(this.processSelection(e))
+                sub.next(this.datasetIdsFromSelectionEvent(e))
             })
             this.visualisation.on("selectEdge", e => {
-                sub.next(this.processSelection(e))
+                sub.next(this.datasetIdsFromSelectionEvent(e))
             })    
             this.visualisation.on("deselectEdge", e => {
-                sub.next(this.processSelection(e))
+                sub.next(this.datasetIdsFromSelectionEvent(e))
             })
         }).pipe(
             map(([nodes, edges]) => pair(arrayToObject(nodes, x => x), arrayToObject(edges, x => x))),
@@ -314,7 +314,7 @@ function personGroupToNode(id: ID, g: PersonGroup): vis.Node {
 
     return {
         id: getPersonVisId(personList[0], true),
-        title: multipleString(personList.length, personList[0].title, personList[0].title === "CEO"),
+        title: nounMultiple(personList.length, personList[0].title, personList[0].title === "CEO"),
         group: personList[0].title
     }
 }
@@ -359,7 +359,7 @@ function emailGroupByPersonToEdge(g: EmailGroup): vis.Edge {
         from: "s"+someEmail.fromId,
         to: "s"+someEmail.toId,
         width: Math.log(emailList.length) * 2,
-        title: `${multipleString(toCount, 'Direct')}, ${multipleString(ccCount, 'CC', true)}, Av Sentiment: ${Math.round(avSent * 1000)/10}%`,
+        title: `${nounMultiple(toCount, 'Direct')}, ${nounMultiple(ccCount, 'CC', true)}, Av Sentiment: ${Math.round(avSent * 1000)/10}%`,
         color: {color: hueGradient(Math.tanh(avSent * edgeColorContrast) / 2 + 0.5), inherit: false},
     }
 }
@@ -376,7 +376,7 @@ function emailGroupByTitleToEdge(g: EmailGroup): vis.Edge {
         from: "g"+someEmail.fromJobtitle,
         to: "g"+someEmail.toJobtitle,
         width: Math.log(emailList.length) * 2,
-        title: `${multipleString(toCount, 'Direct')}, ${multipleString(ccCount, 'CC', true)}, Av Sentiment: ${Math.round(avSent * 1000)/10}%`,
+        title: `${nounMultiple(toCount, 'Direct')}, ${nounMultiple(ccCount, 'CC', true)}, Av Sentiment: ${Math.round(avSent * 1000)/10}%`,
         color: {color: hueGradient(Math.tanh(avSent * edgeColorContrast) / 2 + 0.5), inherit: false},
     }
 }
@@ -396,6 +396,6 @@ function hueGradient(v: number) {
 }
 
 
-function multipleString(amount: number, thing: string, apostrophe: boolean = false): string {
-    return amount + " " + thing + ((apostrophe && amount > 1) ? "'" : "") + (amount > 1 ? "s" : "")
+function nounMultiple(amount: number, noun: string, apostrophe: boolean = false): string {
+    return amount + " " + noun + ((apostrophe && amount > 1) ? "'" : "") + (amount > 1 ? "s" : "")
 }
