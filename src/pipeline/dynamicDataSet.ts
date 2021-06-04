@@ -73,16 +73,67 @@ export class DataSetDiff<A> {
         }
     }
 
+    applySet(set: Set<ID>) {
+        for (const {id} of this.insertions) {
+            set.add(id)
+        }
+        for (const {id} of this.deletions) {
+            set.delete(id)
+        }
+    }
+
+    applyInsertions(dataset: DataSet<A>) {
+        for (const {id, value} of this.insertions)
+            dataset[id] = value
+    }
+    applyUpdates(dataset: DataSet<A>) {
+        for (const {id, value} of this.updates)
+            dataset[id] = value
+    }
+    applyDeletions(dataset: DataSet<A>) {
+        for (const {id} of this.deletions)
+            delete dataset[id]
+    }
+
+    applySetInsertions(set: Set<ID>) {
+        for (const {id} of this.insertions)
+            set.add(id)
+    }
+
+    applySetDeletions(set: Set<ID>) {
+        for (const {id} of this.deletions) 
+            set.delete(id)
+    }
+
     get isEmpty(): boolean { 
         return this.insertions.length === 0 && this.updates.length === 0 && this.deletions.length === 0 
     }
+
+    static applyGroupInsertions<A>(diff: DataSetDiff<DataSetDiff<A>>, dataGroups: DataSet<DataSet<A>>) {
+        for (const {id, value} of diff.insertions) {
+            dataGroups[id] = {}
+            value.apply(dataGroups[id])
+        }
+        
+    }
+    static applyGroupUpdates<A>(diff: DataSetDiff<DataSetDiff<A>>, dataGroups: DataSet<DataSet<A>>) {
+        for (const {id, value} of diff.updates) {
+            value.apply(dataGroups[id])
+        }
+    }
+    static applyGroupDeletions<A>(diff: DataSetDiff<DataSetDiff<A>>, dataGroups: DataSet<DataSet<A>>) {
+        for (const {id} of diff.deletions) {
+            delete dataGroups[id]
+        }
+    }
+    
 }
 
 /**
  * Represents changes to a set of numbers
  */
 // NOTE: This is a lazy and dumb way to do this
-export type NumberSetDiff = DataSetDiff<any>
+export type IDSetDiff = DataSetDiff<any>
 
 
 /**

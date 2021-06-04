@@ -16,7 +16,7 @@ export function groupDiffBy<A, Item, B>(getDiff: (a:A) => DataSetDiff<Item>, sel
 
                 const groupDiff = new DataSetDiff<DataSetDiff<Item>>()
 
-                let updates: DataSet<DataSetDiff<Item>> = {}
+                const updates: DataSet<DataSetDiff<Item>> = {}
 
                 function addUpdate(groupId: ID, itemId: ID, item: Item) {
                     if (!(groupId in updates)) updates[groupId] = new DataSetDiff()

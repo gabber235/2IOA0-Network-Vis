@@ -1,10 +1,10 @@
 import "vis/dist/vis.min.css"
 import { AdjacencyMatrix } from "./visualizations/adjacency-matrix";
-import { visualizeNodeLinkDiagram, getVisNodeSeletions, createLegend } from "./visualizations/node-link/node-link";
+import { createLegend, NodeLinkVisualisation } from './visualizations/node-link/node-link';
 import { Email, getCorrespondants, parseData, Person } from "./data"
-import { combineLatest, fromEvent, merge, Observable, of, Subject, timer } from "rxjs";
-import { debounce, map, scan, share, shareReplay, startWith, switchMap } from "rxjs/operators";
-import { DataSet, DataSetDiff, diffDataSet, foldDataSet, NumberSetDiff } from "./pipeline/dynamicDataSet";
+import { combineLatest, fromEvent, merge, Subject, timer } from "rxjs";
+import { debounce, map, scan, share, shareReplay, startWith } from "rxjs/operators";
+import { DataSet, DataSetDiff, diffDataSet, foldDataSet, IDSetDiff } from "./pipeline/dynamicDataSet";
 import { getDynamicCorrespondants } from "./pipeline/getDynamicCorrespondants";
 import { binarySearch, ConstArray, millisInDay, pair, pairMap2, tripple } from "./utils";
 import { prettifyFileInput, TimeSliders } from "./looks";
@@ -31,9 +31,9 @@ window.addEventListener("load", async () => {
 
     // This subject is used to represent selected correspondants and emails respectivly
     // They are represented by their id's
-    const selectionSubject = new Subject<[NumberSetDiff, NumberSetDiff]>()
+    const selectionSubject = new Subject<[IDSetDiff, IDSetDiff]>()
 
-    selectionSubject.subscribe(console.log)
+    // selectionSubject.subscribe(console.log)
 
     const baseEmailObservable = fileInputObservable(fileSelector).pipe(
         map(parseData),
@@ -104,21 +104,21 @@ window.addEventListener("load", async () => {
     )
 
 
-    new AdjacencyMatrix().visualize(dataWithAllNodes.pipe(map(([_, diffs]) => diffs)))
+    new AdjacencyMatrix().visualize(dataWithAllNodes.pipe(map(([_, diffs]) => diffs)), selectionSubject)
 
 
     const nodeLinkOptions = merge(
         checkBoxObserable(document.getElementById('physics')).pipe(
-            map((b): NodeLinkOptions => { return { physics: b } })
+            map((b): NodeLinkOptions => ({ physics: b }))
         ),
         checkBoxObserable(document.getElementById('hierarchical')).pipe(
-            map((b): NodeLinkOptions => { return { hierarchical: b } })
+            map((b): NodeLinkOptions => ({ hierarchical: b }))
         ),
         checkBoxObserable(document.getElementById('group-nodes')).pipe(
-            map((b): NodeLinkOptions => { return { groupNodes: b } })
+            map((b): NodeLinkOptions => ({ groupNodes: b }))
         ),
         checkBoxObserable(document.getElementById('group-edges')).pipe(
-            map((b): NodeLinkOptions => { return { groupEdges: b } })
+            map((b): NodeLinkOptions => ({ groupEdges: b }))
         ),
     )
 
@@ -142,10 +142,8 @@ window.addEventListener("load", async () => {
     )
     createLegend(document.getElementById("node-link-legend"))
 
-    const nodeLinkDiagram = await visualizeNodeLinkDiagram(document.getElementById("node-links"), maybeShowAllNodes, nodeLinkOptions, 150)
-    getVisNodeSeletions(nodeLinkDiagram).subscribe(selectionSubject)
-
-    allNodes
+    const nodeLinkDiagram = new NodeLinkVisualisation(document.getElementById("node-links"), maybeShowAllNodes, selectionSubject, nodeLinkOptions, 150)
+    nodeLinkDiagram.getVisNodeSeletions().subscribe(selectionSubject)
 })
 
 

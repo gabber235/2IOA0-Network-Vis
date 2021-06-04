@@ -160,7 +160,9 @@ nav {
     }
 
 
-    #adj-matrix {}
+    #adj-matrix {
+        overflow: hidden;
+    }
 
     #node-link {}
 }

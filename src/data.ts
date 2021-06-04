@@ -42,7 +42,7 @@ export function parseData(text: string): Email[] {
     .slice(1) // ignore first list because it contains the titles
     .filter(i => i !== "") // ignore empty lines
     .map(line => {
-      let d = line.split(/ *, */) // split on comma's
+      const d = line.split(/ *, */) // split on comma's
       return {
         id: idCounter++,
         date: d[0],
@@ -81,9 +81,9 @@ export function getCorrespondantsFromSingleEmail(email: Email): [Person, Person]
  * Takes a list of emails and returns a dictionary of the correspondants
  */
 export function getCorrespondants(dataset: Email[]): Correspondants {
-  let personDict: Correspondants = {};
+  const personDict: Correspondants = {};
 
-  for (let email of dataset) {
+  for (const email of dataset) {
     const [from, to] = getCorrespondantsFromSingleEmail(email)
     personDict[email.fromId] = from;
     personDict[email.toId] = to;
