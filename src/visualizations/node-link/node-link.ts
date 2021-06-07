@@ -48,17 +48,17 @@ export class NodeLinkVisualisation {
 
         data.pipe(
             groupDiffBy(
-                ([peopleDiff, _]) => peopleDiff,
+                ([peopleDiff]) => peopleDiff,
                 person => person.title,
                 ([peopleDiff, emailDiff], personGroupDiff) => tripple(peopleDiff, emailDiff, personGroupDiff)
             ),
             groupDiffBy(
-                ([_, emailDiff, __]) => emailDiff,
+                ([_, emailDiff]) => emailDiff,
                 email => `${email.fromId},${email.toId}`,
                 ([peopleDiff, emailDiff, personGroupDiff], emailGroupDiff) => tuple4(peopleDiff, emailDiff, personGroupDiff, emailGroupDiff)
             ),
             groupDiffBy(
-                ([_, emailDiff, __, ____]) => emailDiff,
+                ([_, emailDiff]) => emailDiff,
                 email => `${email.fromJobtitle},${email.toJobtitle}`,
                 ([peopleDiff, emailDiff, personGroupDiff, emailGroupByPersonDiff], emailGroupByTitleDiff) => tuple5(peopleDiff, emailDiff, personGroupDiff, emailGroupByPersonDiff, emailGroupByTitleDiff)
             )
@@ -393,5 +393,5 @@ function hueGradient(v: number) {
 
 
 function nounMultiple(amount: number, noun: string, apostrophe: boolean = false): string {
-    return amount + " " + noun + ((apostrophe && amount > 1) ? "'" : "") + (amount > 1 ? "s" : "")
+    return `${amount} ${noun}${(apostrophe && amount > 1) ? "'" : ""}${amount > 1 ? "s" : ""}`
 }

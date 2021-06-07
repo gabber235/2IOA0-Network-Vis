@@ -15,7 +15,7 @@ describe("pipeline.groupDiffBy.groupDiffBy", () => {
         const stream = of(...diffs)
 
         const x = stream.pipe(
-            groupDiffBy(identity, ([i, _]) => `${i}`, (a, diff) => pair(a, diff))
+            groupDiffBy(identity, ([i]) => `${i}`, (a, diff) => pair(a, diff))
         )
 
         expect(observableToArray(x)).toEqual(zipArrays(diffs, [
@@ -32,7 +32,7 @@ describe("pipeline.groupDiffBy.groupDiffBy", () => {
         const stream = of(...diffs)
 
         const x = stream.pipe(
-            groupDiffBy(identity, ([i, _]) => `${i}`, (a, diff) => pair(a, diff))
+            groupDiffBy(identity, ([i]) => `${i}`, (a, diff) => pair(a, diff))
         )
 
         expect(observableToArray(x)).toEqual(zipArrays(diffs, [
@@ -53,7 +53,7 @@ describe("pipeline.groupDiffBy.groupDiffBy", () => {
         const stream = of(...diffs)
 
         const x = stream.pipe(
-            groupDiffBy(identity, ([i, _]) => `${i}`, (a, diff) => pair(a, diff))
+            groupDiffBy(identity, ([i]) => `${i}`, (a, diff) => pair(a, diff))
         )
 
         expect(observableToArray(x)).toEqual(zipArrays(diffs, [
@@ -80,7 +80,7 @@ describe("pipeline.groupDiffBy.groupDiffBy", () => {
         const stream = of(...diffs)
 
         const x = stream.pipe(
-            groupDiffBy(identity, ([i, _]) => `${i}`, (a, diff) => pair(a, diff))
+            groupDiffBy(identity, ([i]) => `${i}`, (a, diff) => pair(a, diff))
         )
 
         expect(observableToArray(x)).toEqual(zipArrays(diffs, [
@@ -117,7 +117,7 @@ describe("pipeline.groupDiffBy.groupDiffBy", () => {
         const stream = of(...diffs)
 
         const x = stream.pipe(
-            groupDiffBy(identity, ([i, _]) => `${i}`, (a, diff) => pair(a, diff))
+            groupDiffBy(identity, ([i]) => `${i}`, (a, diff) => pair(a, diff))
         )
 
         expect(observableToArray(x)).toEqual(zipArrays(diffs, [
@@ -160,7 +160,7 @@ describe("pipeline.groupDiffBy.groupDiffBy", () => {
         const stream = of(...diffs)
 
         const x = stream.pipe(
-            groupDiffBy(identity, ([i, _]) => `${i}`, (a, diff) => pair(a, diff))
+            groupDiffBy(identity, ([i]) => `${i}`, (a, diff) => pair(a, diff))
         )
 
         const arr = observableToArray(x)
@@ -211,7 +211,7 @@ describe("pipeline.groupDiffBy.groupDiffBy", () => {
         const stream = of(...diffs)
 
         const x = stream.pipe(
-            groupDiffBy(identity, ([i, _]) => `${i}`, (a, diff) => pair(a, diff))
+            groupDiffBy(identity, ([i]) => `${i}`, (a, diff) => pair(a, diff))
         )
 
         const arr = observableToArray(x)
@@ -267,7 +267,7 @@ describe("pipeline.groupDiffBy.groupDiffBy", () => {
         const stream = of(...diffs)
 
         const x = stream.pipe(
-            groupDiffBy(identity, ([i, _]) => `${i}`, (a, diff) => pair(a, diff))
+            groupDiffBy(identity, ([i]) => `${i}`, (a, diff) => pair(a, diff))
         )
 
         const arr = observableToArray(x)

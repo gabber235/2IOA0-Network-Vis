@@ -99,7 +99,7 @@ export class AdjacencyMatrix {
           .attr("id", "AM-SVG")
           // .style("margin-left", -margin.left + "px")
           .append("g")
-          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+          .attr("transform", `translate(${margin.left}, ${margin.top})`);
       } else {
         d3.select("#AM-SVG").remove();
         d3.select("#adj-matrix").append("svg")
@@ -108,7 +108,7 @@ export class AdjacencyMatrix {
           .attr("id", "AM-SVG")
           // .style("margin-left", -margin.left + "px")
           .append("g")
-          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+          .attr("transform", `translate(${margin.left}, ${margin.top})`);
       }
       const svg = d3.select("#AM-SVG");
 
@@ -464,7 +464,7 @@ function edgeHash(emails: Email[], nodes: Node[], selEmIDs: number[]) {
 
 // takes a sender, receiver and dataset and returns all datapoints with that sender/receiver combination in the dataset
 function getMatchingEmailIDs(senderID: number, receiverID: number, emails: Email[]) {
-  let IDs: number[] = [];
+  const IDs: number[] = [];
 
   emails.forEach((e) => {
     if (e.fromId === senderID && e.toId === receiverID) {

@@ -52,7 +52,7 @@ window.addEventListener("load", async () => {
             const firstDate = new Date(emails[0].date).getTime()
             const lastDate = new Date(emails[emails.length - 1].date).getTime()
 
-            const constEmails: ConstArray<[string, Email]> = { getItem: i => pair(emails[i].id + "", emails[i]), length: emails.length }
+            const constEmails: ConstArray<[string, Email]> = { getItem: i => pair(`${emails[i].id}`, emails[i]), length: emails.length }
             const people = getCorrespondants(emails)
 
             function dayToIndex(day: number): number {
@@ -67,7 +67,7 @@ window.addEventListener("load", async () => {
 
             return dynamicSlice(constEmails, indices).pipe(
                 scan( // Get full email dataset and people
-                    ([_, emails, __], emailDiff) => tripple(people, foldDataSet(emails, emailDiff), emailDiff),
+                    ([_, emails], emailDiff) => tripple(people, foldDataSet(emails, emailDiff), emailDiff),
                     tripple({} as DataSet<Person>, {} as DataSet<Email>, new DataSetDiff<Email>())
                 ),
             )
