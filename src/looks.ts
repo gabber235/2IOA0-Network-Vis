@@ -1,5 +1,4 @@
 import { Observable, Subject } from "rxjs";
-import { startWith } from "rxjs/operators";
 import { millisInDay } from "./utils";
 
 /**

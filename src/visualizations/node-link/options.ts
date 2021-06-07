@@ -1,5 +1,3 @@
-import { Person } from "../../data"
-import { DataSet } from "../../pipeline/dynamicDataSet"
 import { nodeSize, titleColors } from "../constants"
 
 
@@ -42,7 +40,7 @@ export const initialVisOptions = {
         },
         // stabilizations:false
     },
-    interaction: { multiselect: true},
+    interaction: { multiselect: true },
     groups: titleColors
 }
 

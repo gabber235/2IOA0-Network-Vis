@@ -1,4 +1,3 @@
-
 /**
  * Checks if two things are equal, not by reference but by value
  */
@@ -22,11 +21,6 @@ export function deepEquals(left: any, right: any): boolean {
 
     return left === right
 }
-
-
-
-
-
 
 
 var idCounter: number = 0;
@@ -115,9 +109,6 @@ function swapRemove<T>(list: T[], index: number): T {
 
 
 
-
-
-
 /**
  * Returns the first index at which 'target' should be inserted into the sorted array represented by 'items' such that it remains sorted.
  */
@@ -144,13 +135,13 @@ export function swap<X, Y>([x, y]: [X, Y]): [Y, X] {
 /**
  * Turns an array into an object with keys defined by getKey
  */
-export function arrayToObject<A>(data: A[], getKey: (item: A) => number|string): {[key in number|string]: A} {
+export function arrayToObject<A>(data: A[], getKey: (item: A) => number | string): { [key in number | string]: A } {
     return Object.assign({}, ...data.map(item => ({ [getKey(item)]: item })))
 }
 
 
-export function objectMap<A, B>(f: (a:A) => B, obj: {[key:number]: A}): {[key:number]: B} {
-    const newObj: {[key:number]: B} = {}
+export function objectMap<A, B>(f: (a: A) => B, obj: { [key: number]: A }): { [key: number]: B } {
+    const newObj: { [key: number]: B } = {}
 
     for (const id in obj) {
         newObj[id] = f(obj[id])
@@ -162,59 +153,59 @@ export function objectMap<A, B>(f: (a:A) => B, obj: {[key:number]: A}): {[key:nu
 /**
  * Represents an immutable array
  */
-export type ConstArray<A> = {getItem: (index: number) => A, length: number}
+export type ConstArray<A> = { getItem: (index: number) => A, length: number }
 
 
-export function pair<A,B>(a: A, b: B): [A, B] {
+export function pair<A, B>(a: A, b: B): [A, B] {
     return [a, b]
 }
-export function tripple<A,B,C>(a: A, b: B, c: C): [A, B, C] {
+export function tripple<A, B, C>(a: A, b: B, c: C): [A, B, C] {
     return [a, b, c]
 }
-export function tuple4<A,B,C,D>(a: A, b: B, c: C, d: D): [A, B, C, D] {
+export function tuple4<A, B, C, D>(a: A, b: B, c: C, d: D): [A, B, C, D] {
     return [a, b, c, d]
 }
-export function tuple5<A,B,C,D,E>(a: A, b: B, c: C, d: D, e: E): [A, B, C, D, E] {
+export function tuple5<A, B, C, D, E>(a: A, b: B, c: C, d: D, e: E): [A, B, C, D, E] {
     return [a, b, c, d, e]
 }
 
 
-export function pairMap<A,B,C,D>(f1: (a: A) => B, f2: (a: C) => D) {
+export function pairMap<A, B, C, D>(f1: (a: A) => B, f2: (a: C) => D) {
     return (tuple: [A, C]): [B, D] => [f1(tuple[0]), f2(tuple[1])]
 }
 
 
-export function pairMap2<A,B,C,D,E,F>(f1: (a: A, b: B) => C, f2: (d: D, e: E) => F) {
-    return (tuple1: [A, D], tuple2: [B, E]): [C, F] => 
+export function pairMap2<A, B, C, D, E, F>(f1: (a: A, b: B) => C, f2: (d: D, e: E) => F) {
+    return (tuple1: [A, D], tuple2: [B, E]): [C, F] =>
         [f1(tuple1[0], tuple2[0]), f2(tuple1[1], tuple2[1])]
 }
 
-export function trippleMap<A,B,C,D,E,F>(f1: (a: A) => B, f2: (a: C) => D, f3: (a: E) => F) {
+export function trippleMap<A, B, C, D, E, F>(f1: (a: A) => B, f2: (a: C) => D, f3: (a: E) => F) {
     return (tuple: [A, C, E]): [B, D, F] => [f1(tuple[0]), f2(tuple[1]), f3(tuple[2])]
 }
 
 
-export function trippleMap2<A,B,C,D,E,F,G,H,I>(
-    f1: (a: A, b: B) => C, 
-    f2: (d: D, e: E) => F, 
+export function trippleMap2<A, B, C, D, E, F, G, H, I>(
+    f1: (a: A, b: B) => C,
+    f2: (d: D, e: E) => F,
     f3: (d: G, e: H) => I
 ) {
-    return (tuple1: [A, D, G], tuple2: [B, E, H]): [C, F, I] => 
+    return (tuple1: [A, D, G], tuple2: [B, E, H]): [C, F, I] =>
         [f1(tuple1[0], tuple2[0]), f2(tuple1[1], tuple2[1]), f3(tuple1[2], tuple2[2])]
 }
 
-export function tuple4Map<A,B,C,D,E,F,G,H>(f1: (a: A) => B, f2: (a: C) => D, f3: (a: E) => F, f4: (a: G) => H) {
+export function tuple4Map<A, B, C, D, E, F, G, H>(f1: (a: A) => B, f2: (a: C) => D, f3: (a: E) => F, f4: (a: G) => H) {
     return (tuple: [A, C, E, G]): [B, D, F, H] => [f1(tuple[0]), f2(tuple[1]), f3(tuple[2]), f4(tuple[3])]
 }
 
 
-export function tuple4Map2<A,B,C,D,E,F,G,H,I,J,K,L>(
-    f1: (a: A, b: B) => C, 
-    f2: (d: D, e: E) => F, 
+export function tuple4Map2<A, B, C, D, E, F, G, H, I, J, K, L>(
+    f1: (a: A, b: B) => C,
+    f2: (d: D, e: E) => F,
     f3: (d: G, e: H) => I,
     f4: (d: J, e: K) => L,
 ) {
-    return (tuple1: [A, D, G, J], tuple2: [B, E, H, K]): [C, F, I, L] => 
+    return (tuple1: [A, D, G, J], tuple2: [B, E, H, K]): [C, F, I, L] =>
         [f1(tuple1[0], tuple2[0]), f2(tuple1[1], tuple2[1]), f3(tuple1[2], tuple2[2]), f4(tuple1[3], tuple2[3])]
 }
 
@@ -227,7 +218,7 @@ export function copyObject<A>(x: A): A {
 
 
 
-export const millisInDay = 24 * 60 * 60 * 1000 
+export const millisInDay = 24 * 60 * 60 * 1000
 
 
 

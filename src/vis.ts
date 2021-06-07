@@ -33,8 +33,6 @@ window.addEventListener("load", async () => {
     // They are represented by their id's
     const selectionSubject = new Subject<[IDSetDiff, IDSetDiff]>()
 
-    // selectionSubject.subscribe(console.log)
-
     const baseEmailObservable = fileInputObservable(fileSelector).pipe(
         map(parseData),
         map(emails => {
@@ -45,7 +43,7 @@ window.addEventListener("load", async () => {
     )
 
     combineLatest([baseEmailObservable, fromEvent(window, 'resize').pipe(startWith(0))])
-        .pipe(map(([emails, _]) => groupEmailsToCount(emails)))
+        .pipe(map(([emails]) => groupEmailsToCount(emails)))
         .subscribe(loadTimelineGraph)
 
     const dataWithAllNodes = baseEmailObservable.pipe(
@@ -61,10 +59,6 @@ window.addEventListener("load", async () => {
                 return binarySearch(i => new Date(emails[i].date).getTime(), firstDate + millisInDay * day, 0, emails.length, (i, j) => i - j)
             }
             const indices = timeSliders.timerange.pipe(
-                map((v) => {
-                    console.log("Updating time range", v)
-                    return v
-                }),
                 debounce(() => timer(60)),
                 map(([begin, end]) => pair(dayToIndex(begin), dayToIndex(end))),
             )
@@ -81,10 +75,10 @@ window.addEventListener("load", async () => {
         diffSwitchAll( // merge the stream of streams
             () => ({} as DataSet<Email>),
             diffDataSet,
-            ([_, emails, __]) => emails,
+            ([_, emails]) => emails,
             ([_, __, emailDiff]) => emailDiff,
         ),
-        map(([[people, emails, __], emailDiff]) => pair(pair(people, emails), pair(people, emailDiff))), // rearange data
+        map(([[people, emails], emailDiff]) => pair(pair(people, emails), pair(people, emailDiff))), // rearange data
         diffStream( // diff person dataset
             pair(pair({} as DataSet<Person>, {} as DataSet<Email>), pair({} as DataSet<Person>, new DataSetDiff())),
             pairMap2((_, x) => x, pairMap2(diffDataSet, (_, x) => x))
@@ -96,7 +90,7 @@ window.addEventListener("load", async () => {
         map(([[_, emails], [__, emailDiff]]) => pair(emails, emailDiff)), // forget about people
         getDynamicCorrespondants(([_, diff]) => diff, ([emails, emailDiff], personDiff) => pair(emails, pair(personDiff, emailDiff))),
         scan( // get full people dataset
-            ([[people, _], __], [emails, [personDiff, emailDiff]]) =>
+            ([[people]], [emails, [personDiff, emailDiff]]) =>
                 pair(pair(foldDataSet(people, personDiff), emails), pair(personDiff, emailDiff)),
             pair(pair({} as DataSet<Person>, {} as DataSet<Email>), pair(new DataSetDiff<Person>(), new DataSetDiff<Email>()))
         ),
@@ -104,7 +98,7 @@ window.addEventListener("load", async () => {
     )
 
 
-    new AdjacencyMatrix().visualize(dataWithAllNodes.pipe(map(([_, diffs]) => diffs)), selectionSubject)
+    new AdjacencyMatrix().visualize(dataWithAllNodes.pipe(map(([_, diffs]) => diffs)), selectionSubject).catch(e => console.error(e))
 
 
     const nodeLinkOptions = merge(
@@ -134,7 +128,7 @@ window.addEventListener("load", async () => {
         diffSwitchAll(
             () => pair({} as DataSet<Person>, {} as DataSet<Email>),
             pairMap2(diffDataSet, diffDataSet),
-            ([data, _]) => data,
+            ([data]) => data,
             ([_, diffs]) => diffs
         ),
         map(([_, [peopleDiff, emailDiff]]) => pair(peopleDiff, emailDiff)),
@@ -145,23 +139,3 @@ window.addEventListener("load", async () => {
     const nodeLinkDiagram = new NodeLinkVisualisation(document.getElementById("node-links"), maybeShowAllNodes, selectionSubject, nodeLinkOptions, 150)
     nodeLinkDiagram.getVisNodeSeletions().subscribe(selectionSubject)
 })
-
-
-
-// type DataSetDiff<A> = {type:'add', id: number, content: A[]}|{type:'remove', id: number, content: A[]}
-
-// type FinalDataSetDiff = DataSetDiff<[EmailData, VisualData]>
-
-// type DynamicDataSet<A> = Observable<DataSetDiff<A>>
-
-// map : (A -> B) -> DynamicDataSet<A> -> DynamicDataSet<B>
-
-// base.filter(range).filter(title).orderBy(cluster).map().interaction(selected)
-
-
-// filter :  Observable<[A -> bool, DataSetDiff<A>]> ->  DynamicDataSet<A>
-
-// filter : Observable<[]>
-
-
-// filter :  Observable<[A -> bool, A[]]> ->  Observable<A[]>

@@ -7,19 +7,19 @@ const adjacencyRiv = require('../resources/static/adjacency-matrix.riv')
 handleDefaultScroll()
 handleScrollAnimaton(document.getElementById("nodeLinkCanvas"), 50, (el) => {
     if (el instanceof HTMLCanvasElement) {
-        runRive(el, nodeRiv.default)
+        runRive(el, nodeRiv.default).catch(e => console.error(e))
     }
 })
 
 handleScrollAnimaton(document.getElementById("adjacencyCanvas"), 50, (el) => {
     if (el instanceof HTMLCanvasElement) {
-        runRive(el, adjacencyRiv.default)
+        runRive(el, adjacencyRiv.default).catch(e => console.error(e))
     }
 })
 
 async function loadRivFile(filePath: string): Promise<[RiveCanvas, File]> {
     const req = new Request(filePath);
-    const loadRive = Rive({ locateFile: (file) => 'file://' + file });
+    const loadRive = Rive({ locateFile: (file) => `file://${file}` });
     const loadFile = fetch(req).then((res) => res.arrayBuffer()).then((buf) => new Uint8Array(buf));
     const [rive, file] = await Promise.all([loadRive, loadFile]);
     return [rive, rive.load(file)];

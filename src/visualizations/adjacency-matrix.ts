@@ -1,4 +1,3 @@
-import { Visualization } from './visualization'
 import { Email, Person, Title, getCorrespondants } from "../data";
 import * as d3 from "d3";
 import { Observable, Subject } from 'rxjs';
@@ -32,8 +31,8 @@ export class AdjacencyMatrix {
     const emails: DataSet<Email> = {};
 
     // datasets that hold IDs of selected persons and emails
-    const selectedPersons: DataSet<Number> = {};
-    const selectedEmails: DataSet<Number> = {};
+    const selectedPersons: DataSet<number> = {};
+    const selectedEmails: DataSet<number> = {};
 
     // make updates work
     data.subscribe(event => {
@@ -86,12 +85,10 @@ export class AdjacencyMatrix {
       const width = 750;
       const height = 750;
 
-      // @ts-expect-error
-      const x = d3.scale.ordinal().rangeBands([0, width]);
-      // @ts-expect-error
-      const z = d3.scale.linear().domain([0, 4]).clamp(true);
-      // @ts-expect-error
-      const c = d3.scale.category10().domain(d3.range(10));
+
+      const x = (<any>d3).scale.ordinal().rangeBands([0, width]);
+      const z = (<any>d3).scale.linear().domain([0, 4]).clamp(true);
+      const c = (<any>d3).scale.category10().domain(d3.range(10));
 
       const existingSVG = document.getElementById("AM-SVG");
       if (!existingSVG) {
@@ -201,13 +198,6 @@ export class AdjacencyMatrix {
       rows.append("line")
         .attr("x2", width);
 
-      // rows.append("text")
-      //   .attr("x", -6)
-      //   .attr("y", x.rangeBand() / 2)
-      //   .attr("dy", ".32em")
-      //   .attr("text-anchor", "end")
-      //   .text(function (d, i) { return nodes[i].name; });
-
       const column = svg.selectAll(".column")
         .data(matrix)
         .enter().append("g")
@@ -217,15 +207,8 @@ export class AdjacencyMatrix {
       column.append("line")
         .attr("x1", -width);
 
-      // column.append("text")
-      //   .attr("x", 6)
-      //   .attr("y", x.rangeBand() / 2)
-      //   .attr("dy", ".32em")
-      //   .attr("text-anchor", "start")
-      //   .text(function (d, i) { return nodes[i].name; });
-
       function row(row: Cell[]) {
-        const cell = d3.select(this).selectAll(".cell")
+        d3.select(this).selectAll(".cell")
           .data(row.filter(function (d) { return d.z; }))
           .enter().append("rect")
           .attr("class", "cell")
@@ -240,8 +223,7 @@ export class AdjacencyMatrix {
           .on("mousemove", (d: Cell) => {
             return tooltip
               // this works but doesn't handle scaling
-              // @ts-expect-error
-              .style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 525) + "px")
+              .style("left", (`${(<any>d3).event.pageX}px`)).style("top", `${(<any>d3).event.pageY - 525}px`)
               .html(tooltipHTML(d));
           })
           .on("mouseout", () => {
@@ -277,16 +259,16 @@ export class AdjacencyMatrix {
         const receiver = c.to;
 
         // sender
-        html += "From: <br>" + sender.name + ", " + sender.group + "<br>";
+        html += `From: <br>${sender.name}, ${sender.group}<br>`;
 
         // receiver
-        html += "To: <br>" + receiver.name + ", " + receiver.group + "<br>";
+        html += `To: <br>${receiver.name}, ${receiver.group}<br>`;
 
         // num of emails
-        html += "n.o. emails: " + c.z + "<br>";
+        html += `n.o. emails: ${c.z}<br>`;
 
         // total sentiment
-        html += "Sum sentiment: " + c.sentiment.toFixed(3);
+        html += `Sum sentiment: ${c.sentiment.toFixed(3)}`;
 
         return html;
       }
@@ -322,14 +304,12 @@ export class AdjacencyMatrix {
       }
 
       d3.select("#order").on("change", function () {
-        // @ts-expect-error
         // can be fixed by declaring a var for this as any
-        order(this.value);
+        order((<any>this).value);
       });
 
       function order(value: string) {
-        // @ts-expect-error
-        x.domain(orders[value]);
+        x.domain((<any>orders)[value]);
 
         const t = svg.transition().duration(2500);
 
@@ -364,9 +344,6 @@ export class AdjacencyMatrix {
       } else {
         nodes = peopleToNodes(persons);
       }
-
-    //   console.log(selPerIDs);
-
 
       // get edges
       const links = edgeHash(emails, nodes, selEmIDs);

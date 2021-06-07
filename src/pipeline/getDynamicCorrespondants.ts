@@ -1,7 +1,6 @@
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
 import { Email, getCorrespondantsFromSingleEmail, Person } from "../data";
-import { pair } from "../utils";
 import { DataSetDiff, DataSet, ID } from "./dynamicDataSet";
 
 /**
@@ -42,8 +41,8 @@ export function getDynamicCorrespondants<A, B>(
                 for (const change of emailDiff.insertions) {
                     const [from, to] = getCorrespondantsFromSingleEmail(change.value);
 
-                    incr(from.id + "", from, diff);
-                    incr(to.id + "", to, diff);
+                    incr(`${from.id}`, from, diff);
+                    incr(`${to.id}`, to, diff);
 
                     emailsSet[change.id] = change.value;
                 }
@@ -52,17 +51,17 @@ export function getDynamicCorrespondants<A, B>(
                     const [curFrom, curTo] = getCorrespondantsFromSingleEmail(change.value);
 
                     if (prevFrom.id === curFrom.id) {
-                        diff.update(curFrom.id + "", curFrom);
+                        diff.update(`${curFrom.id}`, curFrom);
                     } else {
-                        decr(prevFrom.id + "", diff);
-                        incr(curFrom.id + "", curFrom, diff);
+                        decr(`${prevFrom.id}`, diff);
+                        incr(`${curFrom.id}`, curFrom, diff);
                     }
 
                     if (prevTo.id === curTo.id) {
-                        diff.update(curTo.id + "", curTo);
+                        diff.update(`${curTo.id}`, curTo);
                     } else {
-                        decr(prevTo.id + "", diff);
-                        incr(curTo.id + "", curTo, diff);
+                        decr(`${prevTo.id}`, diff);
+                        incr(`${curTo.id}`, curTo, diff);
                     }
 
                     emailsSet[change.id] = change.value;
@@ -70,8 +69,8 @@ export function getDynamicCorrespondants<A, B>(
                 for (const change of emailDiff.deletions) {
                     const [from, to] = getCorrespondantsFromSingleEmail(emailsSet[change.id]);
 
-                    decr(from.id + "", diff);
-                    decr(to.id + "", diff);
+                    decr(`${from.id}`, diff);
+                    decr(`${to.id}`, diff);
 
                     delete emailsSet[change.id];
                 }

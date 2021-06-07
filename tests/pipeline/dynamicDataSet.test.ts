@@ -2,9 +2,9 @@ import { identity, Observable, of } from "rxjs"
 import { map, scan } from "rxjs/operators"
 import { Email, Person } from "../../src/data"
 import { diffStream, observableToArray } from "../../src/pipeline/basics"
-import { DataSet, diffDataSet, DataSetDiff, foldDataSet } from "../../src/pipeline/dynamicDataSet"
+import { DataSet, diffDataSet, foldDataSet } from "../../src/pipeline/dynamicDataSet"
 import { getDynamicCorrespondants } from "../../src/pipeline/getDynamicCorrespondants"
-import { copyObject, pair, pairMap, pairMap2, tripple, trippleMap, trippleMap2 } from "../../src/utils"
+import { copyObject, pair, pairMap2, tripple, trippleMap, trippleMap2 } from "../../src/utils"
 
 function dummyEmail(id: number, from: number, to: number): Email {
     return {
@@ -81,7 +81,7 @@ describe("pipeline.dynamicDataSet.getDynamicCorrespondants", () => {
         const x = stream.pipe(
             diffStream(pair({} as DataSet<Email>, 0), pairMap2(diffDataSet, (_, x) => x)),
             getDynamicCorrespondants(([email, _]) => email, (x, y) => pair(y, x)),
-            map(([a,[b,c]]) => tripple(a,b,c)),
+            map(([a, [b, c]]) => tripple(a, b, c)),
             scan(trippleMap2(foldDataSet, foldDataSet, (_, x) => x), tripple({}, {}, 0)),
             map(trippleMap(copyObject, copyObject, identity))
         )

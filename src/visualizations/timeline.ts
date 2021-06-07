@@ -110,7 +110,7 @@ const clamp = (num: number): number => Math.max(0, Math.min(1, num))
 
 async function loadRivFile(filePath: string): Promise<[RiveCanvas, File]> {
     const req = new Request(filePath);
-    const loadRive = Rive({ locateFile: (file) => 'file://' + file });
+    const loadRive = Rive({ locateFile: (file) => `file://${file}` });
     const loadFile = fetch(req).then((res) => res.arrayBuffer()).then((buf) => new Uint8Array(buf));
     const [rive, file] = await Promise.all([loadRive, loadFile]);
     return [rive, rive.load(file)];
@@ -209,14 +209,11 @@ export function loadTimelineGraph(counts: number[]) {
         }
     }
 
-    // @ts-expect-error
-    var x = d3.scale.linear().domain([0, counts.length]).range([0, width]);
-    // @ts-expect-error
-    var y = d3.scale.linear().domain([0, max]).range([height, 0]);
+    const x = (<any>d3).scale.linear().domain([0, counts.length]).range([0, width]);
+    const y = (<any>d3).scale.linear().domain([0, max]).range([height, 0]);
 
     // create a line function that can convert data[] into x and y points
-    // @ts-expect-error
-    var line = d3.svg.line()
+    const line = (<any>d3).svg.line()
         .interpolate("basis")
         .x((d: any, i: any) => x(i))
         .y((d: any) => y(d))
