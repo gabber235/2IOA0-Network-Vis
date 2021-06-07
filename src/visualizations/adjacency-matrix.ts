@@ -1,102 +1,116 @@
-import { Visualization } from './visualization'
-import { Email, Person, Title, parseData, getCorrespondants } from "../data";
+import { Email, Person, Title, getCorrespondants } from "../data";
 import * as d3 from "d3";
-import { Observable } from 'rxjs';
-import { DataSetDiff } from '../pipeline/dynamicDataSet';
+import { Observable, Subject } from 'rxjs';
+import { DataSetDiff, DataSet, IDSetDiff } from '../pipeline/dynamicDataSet';
+import { titleRanks } from './constants';
 
-
-// get used data
-const dataFile = require("../../resources/static/enron-v1.csv");
 
 type Node = {
   name: string,
   id: number,
-  group: string,  // used for titles in our dataset
+  group: Title,  // used for titles in our dataset
   index?: number, // used in adjacency matrix
   count?: number, // used in adjacency matrix
+  sentiment?: number, // total sentiment
 }
 
 type Edge = {
   source: number,
   target: number,
   value: number,
+  sentiment: number,
+  selected: boolean,
 }
 
-export class AdjacencyMatrix implements Visualization {
-  async visualize(data: Observable<[DataSetDiff<Person>, DataSetDiff<Email>]>): Promise<void> {
+export class AdjacencyMatrix {
+  async visualize(data: Observable<[DataSetDiff<Person>, DataSetDiff<Email>]>, selSub: Subject<[IDSetDiff, IDSetDiff]>): Promise<void> {
     // document.body.appendChild(div({}, [text("Adjacency-matrix")]));
 
+    // datasets that hold the data
+    const persons: DataSet<Person> = {};
+    const emails: DataSet<Email> = {};
+
+    // datasets that hold IDs of selected persons and emails
+    const selectedPersons: DataSet<number> = {};
+    const selectedEmails: DataSet<number> = {};
+
+    // make updates work
     data.subscribe(event => {
-      let personDiff = event[0].insertions;
-      let emailsDiff = event[1].insertions;
+      // console.log(event)
 
-      // this is an extremely hacky temporary solution
-      const emails: Email[] = [];
-      emailsDiff.forEach(e => {
-        emails.push(e.value);
-      });
+      // implement the changes given by the diffs
+      const personDiff = event[0];
+      personDiff.apply(persons)
+      const emailsDiff = event[1];
+      emailsDiff.apply(emails);
 
-      // const persons: Person[] = [];
-      // personDiff.forEach(p => {
-      //   // @ts-expect-error
-      //   persons.push(p.value)
-      // });
+      // get arrays from dataset objects
+      const personList = Object.values(persons);
+      const emailList = Object.values(emails);
+      const selectedPersonIDs = Object.values(selectedPersons).map(i => Number(i));
+      const selectedEmailIDs = Object.values(selectedEmails).map(i => Number(i));
 
-      // Creating array with person object
-      const correspondants = getCorrespondants(emails); //dictionary with persons
-      let persons = Object.values(correspondants);
-      
-
-      // // Get data
-      // let file = await fetch(dataFile.default);
-      // let emails = parseData(await file.text());
-
-
-      // // Testing filtering
-      // let filteredCorrespondants = filterCorrespondants(
-      //   ["CEO", "Trader", "Employee"],
-      //   correspondantList
-      // );
-
-      // // get nodes from people list
-      // const nodes = peopleToNodes(filteredCorrespondants);
-      const nodes = peopleToNodes(persons);
-
-      // // get edges
-      // const filteredEmail = filterEmail(filteredCorrespondants, emails);
-      // const links = edgeHash(filteredEmail, nodes);
-      const links = edgeHash(emails, nodes);
-
-      // call adjacency matrix  
-      // createAdjacencyMatrix(filteredCorrespondants, emailsToEdges(emails), svg);
-      createAdjacencyMatrix(nodes, links);
+      updateAM(personList, emailList, selectedPersonIDs, selectedEmailIDs);
     });
 
+    // make selections works
+    selSub.subscribe(event => {
+      // console.log(event)
+
+      // implement the changes given by the diffs
+      const personDiff = event[0];
+      personDiff.apply(selectedPersons)
+      const emailsDiff = event[1];
+      emailsDiff.apply(selectedEmails);
+
+      // get arrays from dataset objects
+      const personList = Object.values(persons);
+      const emailList = Object.values(emails);
+      const selectedPersonIDs = Object.values(selectedPersons).map(i => Number(i));
+      const selectedEmailIDs = Object.values(selectedEmails).map(i => Number(i));
+
+      // console.log(persons, emails)
+      updateAM(personList, emailList, selectedPersonIDs, selectedEmailIDs);
+    })
 
 
     function createAdjacencyMatrix(nodes: Node[], links: Edge[]) {
-      let margin = {
-        top: 150,
+      const margin = {
+        top: 0,
         right: 0,
-        bottom: 10,
+        bottom: 0,
         left: 0
-      };
-      let width = 750;
-      let height = 750;
+      }
 
-      // @ts-expect-error
-      let x = d3.scale.ordinal().rangeBands([0, width]);
-      // @ts-expect-error
-      let z = d3.scale.linear().domain([0, 4]).clamp(true);
-      // @ts-expect-error
-      let c = d3.scale.category10().domain(d3.range(10));
+      const width = 750;
+      const height = 750;
 
-      let svg = d3.select("#adj-matrix").append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        // .style("margin-left", -margin.left + "px")
-        .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      const x = (<any>d3).scale.ordinal().rangeBands([0, width]);
+      const z = (<any>d3).scale.linear().domain([0, 4]).clamp(true);
+      const c = (<any>d3).scale.category10().domain(d3.range(10));
+
+      const existingSVG = document.getElementById("AM-SVG");
+      if (!existingSVG) {
+        // SVG does not exist already, create it
+        d3.select("#adj-matrix").append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+          .attr("id", "AM-SVG")
+          // .style("margin-left", -margin.left + "px")
+          .append("g")
+          .attr("transform", `translate(${margin.left}, ${margin.top})`);
+      } else {
+        d3.select("#AM-SVG").remove();
+        d3.select("#adj-matrix").append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+          .attr("id", "AM-SVG")
+          // .style("margin-left", -margin.left + "px")
+          .append("g")
+          .attr("transform", `translate(${margin.left}, ${margin.top})`);
+      }
+      const svg = d3.select("#AM-SVG");
 
 
       type Cell = {
@@ -104,54 +118,77 @@ export class AdjacencyMatrix implements Visualization {
         y: number,
         z: number,
         selected?: boolean,
+        from: Node,
+        to: Node,
+        sentiment: number, // total sentiment
       }
 
       // declare variable to store the matrix values
       const matrix: Cell[][] = []
 
-      // variable to keep number of nodes
-      let n = nodes.length
+      // variable to keep current number of nodes
+      const n = nodes.length
 
 
-      // Compute index per node.
-      nodes.forEach(function (node, i) {
+      // Compute most importantly index but also other values for each node.
+      nodes.forEach(function (node: Node, i) {
         node.index = i;
         node.count = 0;
-        matrix[i] = d3.range(n).map(function (j) { return { x: j, y: i, z: 0, selected: false }; });
+        matrix[i] = d3.range(n).map(function (j) {
+          return {
+            x: j,
+            y: i,
+            z: 0,
+            selected: false,
+            from: node,
+            to: nodes[j],
+            sentiment: 0,
+          };
+        });
       });
 
 
-
-      // Convert links to matrix; count character occurrences.
+      // Convert links to matrix, add values where appropriate
       links.forEach(function (link) {
-        // we have a directional dataset
+        // add amount
         matrix[link.source][link.target].z += link.value;
-        // these would be for undirected-graphs
-        // matrix[link.target][link.source].z += link.value;
-        // matrix[link.source][link.source].z += link.value;
-        // matrix[link.target][link.target].z += link.value;
+
+        // add sentiment to node
+        matrix[link.source][link.target].sentiment += link.sentiment;
+
+        // add count and sentiment to nodes
         nodes[link.source].count += link.value;
         nodes[link.target].count += link.value;
+        nodes[link.source].sentiment += link.sentiment;
+        nodes[link.target].sentiment += link.sentiment;
+
+        // set selected
+        matrix[link.source][link.target].selected = link.selected;
       });
 
       // Precompute the sorting orders
-      let orders = {
+      const orders = {
         name: d3.range(n).sort(function (a, b) { return d3.ascending(nodes[a].name, nodes[b].name); }),
         count: d3.range(n).sort(function (a, b) { return nodes[b].count - nodes[a].count; }),
-        group: d3.range(n).sort(function (a, b) { return nodes[a].group.localeCompare(nodes[b].group); }),
+        group: d3.range(n).sort(function (a, b) { return titleRanks[nodes[a].group] - titleRanks[nodes[b].group]; }),
+        sentiment: d3.range(n).sort(function (a, b) { return nodes[b].count - nodes[a].count; }),
       };
 
-      //   console.log(nodes)
+
+      // get sort order from page
+      const dropDown: any = document.getElementById("order")
+      const sorter: "name" | "count" | "group" | "sentiment" = dropDown.value;
+
 
       // The default sort order.
-      x.domain(orders.name);
+      x.domain(orders[sorter]);
 
       svg.append("rect")
         .attr("class", "background")
         .attr("width", width)
         .attr("height", height);
 
-      let rows = svg.selectAll(".row")
+      const rows = svg.selectAll(".row")
         .data(matrix)
         .enter().append("g")
         .attr("class", "row")
@@ -161,14 +198,7 @@ export class AdjacencyMatrix implements Visualization {
       rows.append("line")
         .attr("x2", width);
 
-      // rows.append("text")
-      //   .attr("x", -6)
-      //   .attr("y", x.rangeBand() / 2)
-      //   .attr("dy", ".32em")
-      //   .attr("text-anchor", "end")
-      //   .text(function (d, i) { return nodes[i].name; });
-
-      let column = svg.selectAll(".column")
+      const column = svg.selectAll(".column")
         .data(matrix)
         .enter().append("g")
         .attr("class", "column")
@@ -177,15 +207,8 @@ export class AdjacencyMatrix implements Visualization {
       column.append("line")
         .attr("x1", -width);
 
-      // column.append("text")
-      //   .attr("x", 6)
-      //   .attr("y", x.rangeBand() / 2)
-      //   .attr("dy", ".32em")
-      //   .attr("text-anchor", "start")
-      //   .text(function (d, i) { return nodes[i].name; });
-
       function row(row: Cell[]) {
-        let cell = d3.select(this).selectAll(".cell")
+        d3.select(this).selectAll(".cell")
           .data(row.filter(function (d) { return d.z; }))
           .enter().append("rect")
           .attr("class", "cell")
@@ -193,13 +216,61 @@ export class AdjacencyMatrix implements Visualization {
           .attr("width", x.rangeBand())
           .attr("height", x.rangeBand())
           .style("fill-opacity", function (d) { return z(d.z); })
-          // coloring based on title
           .style("fill", selectColor)
-          // coloring based on ? (testing)
-          // .style("fill", function (d) { console.log(d); return c(d.z)})
-          .on("mouseover", mouseover)
-          .on("mouseout", mouseout)
+          .on("mouseover", () => {
+            return tooltip.style("visibility", "visible");
+          })
+          .on("mousemove", (d: Cell) => {
+            return tooltip
+              // this works but doesn't handle scaling
+              .style("left", (`${(<any>d3).event.pageX}px`)).style("top", `${(<any>d3).event.pageY - 525}px`)
+              .html(tooltipHTML(d));
+          })
+          .on("mouseout", () => {
+            return tooltip.style("visibility", "hidden");
+          })
           .on("click", clickCell);
+      }
+
+      // create tooltip
+      let tooltip: d3.Selection<HTMLDivElement, unknown, any, any>;
+      if (document.getElementsByClassName("tooltip").length === 0) {
+        tooltip = d3.select("#adj-matrix")
+          .append("div")
+          .style("position", "absolute")
+          .style("visibility", "hidden")
+          .attr("class", "tooltip")
+          .attr("id", "AM-tooltip")
+          .style("background-color", "white")
+          .style("border", "solid")
+          .style("border-width", "1px")
+          .style("border-radius", "3px")
+          .style("padding", "4px")
+          .style("font-size", "12px")
+          .style("left", "10px").style("top", "10px")
+          .style("text-align", "left")
+      }
+      tooltip = d3.select("#AM-tooltip");
+
+
+      function tooltipHTML(c: Cell): string {
+        let html = "";
+        const sender = c.from;
+        const receiver = c.to;
+
+        // sender
+        html += `From: <br>${sender.name}, ${sender.group}<br>`;
+
+        // receiver
+        html += `To: <br>${receiver.name}, ${receiver.group}<br>`;
+
+        // num of emails
+        html += `n.o. emails: ${c.z}<br>`;
+
+        // total sentiment
+        html += `Sum sentiment: ${c.sentiment.toFixed(3)}`;
+
+        return html;
       }
 
       function selectColor(d: Cell) {
@@ -210,34 +281,37 @@ export class AdjacencyMatrix implements Visualization {
         }
       }
 
-      function mouseover(p: Cell) {
-        d3.selectAll(".row text").classed("active", function (d, i) { return i == p.y; });
-        d3.selectAll(".column text").classed("active", function (d, i) { return i == p.x; });
-      }
-
-      function mouseout() {
-        d3.selectAll("text").classed("active", false);
-      }
-
       function clickCell(cell: Cell) {
-        cell.selected = !cell.selected;
-        d3.select(document).selectAll(".cell")
-          .style("fill", selectColor);
-
-        // console.log("I've been clicked! my original coordinates are: " + cell.x + ", " + cell.y);
+        if (cell.selected) {
+          // cell is selected -> unselect
+          pushToSelectionSubject(
+            [],
+            [],
+            getMatchingEmailIDs(cell.from.id, cell.to.id, Object.values(emails)
+            ),
+            [],
+          )
+        } else {
+          // cell is not selected -> select
+          pushToSelectionSubject(
+            getMatchingEmailIDs(cell.from.id, cell.to.id, Object.values(emails)
+            ),
+            [],
+            [],
+            [],
+          )
+        }
       }
 
       d3.select("#order").on("change", function () {
-        // clearTimeout(timeout);
-        // @ts-expect-error
-        order(this.value);
+        // can be fixed by declaring a var for this as any
+        order((<any>this).value);
       });
 
       function order(value: string) {
-        // @ts-expect-error
-        x.domain(orders[value]);
+        x.domain((<any>orders)[value]);
 
-        let t = svg.transition().duration(2500);
+        const t = svg.transition().duration(2500);
 
         t.selectAll(".row")
           .delay(function (d, i) { return x(i) * 4; })
@@ -250,12 +324,49 @@ export class AdjacencyMatrix implements Visualization {
           .delay(function (d, i) { return x(i) * 4; })
           .attr("transform", function (d, i) { return "translate(" + x(i) + ")rotate(-90)"; });
       }
+    }
 
-      //   let timeout = setTimeout(function () {
-      //     order("group");
-      //     // @ts-expect-error
-      //     d3.select("#order").property("selectedIndex", 2).node().focus();
-      //   }, 1000);
+    // takes persons, emails and selections and update the on-screen matrix accordingly
+    function updateAM(persons: Person[], emails: Email[], selPerIDs: number[], selEmIDs: number[]) {
+
+      // get if user wants to see all nodes
+      const showAllNodes: any = document.getElementById("show-all-nodes");
+      const boolShowAllNodes: boolean = showAllNodes.checked;
+
+      let nodes: Node[];
+
+      //depending on if the user wants to see all nodes, calc what nodes we want
+      if (!boolShowAllNodes) {
+        // Creating array with person object
+        const correspondants = Object.values(getCorrespondants(emails)); //dictionary with persons
+        // turn personlist into nodes for adjacency matrix
+        nodes = peopleToNodes(correspondants);
+      } else {
+        nodes = peopleToNodes(persons);
+      }
+
+      // get edges
+      const links = edgeHash(emails, nodes, selEmIDs);
+
+      // call adjacency matrix  
+      // createAdjacencyMatrix(filteredCorrespondants, emailsToEdges(emails), svg);
+      createAdjacencyMatrix(nodes, links);
+    }
+
+    // takes email IDs and sends them to selectionSubject (by first also calculating the persons involved)
+    function pushToSelectionSubject(addEmailIDs: number[], addPersonIDs: number[], delEmailIDs: number[], delPersonIDs: number[]) {
+      const emailDiff = new DataSetDiff;
+      addEmailIDs.forEach((e) => {
+        emailDiff.add(e.toString(), e)
+      });
+      delEmailIDs.forEach((e) => {
+        emailDiff.remove(e.toString())
+      });
+
+      const personDiff = new DataSetDiff;
+
+      selSub.next([personDiff, emailDiff]);
+      // console.log(emailsDiff, personDiff)
     }
   }
 }
@@ -281,10 +392,10 @@ export function emailToName(email: string) {
   let name: string = "";
 
   // remove everything behind @ and replace space with dot for next step
-  let withoutAt = email.split('@')[0].replace(" ", ".")
+  const withoutAt = email.split('@')[0].replace(" ", ".")
 
   // split string at dots for each name part
-  let parts: string[] = withoutAt.split(".");
+  const parts: string[] = withoutAt.split(".");
 
   // capitalise first letter of each part
   for (let i = 0; i < parts.length; i++) {
@@ -300,11 +411,12 @@ export function emailToName(email: string) {
     }
   });
 
-  return name;
+  // remove last space and return
+  return name.slice(0, -1);
 }
 
-// takes emails and turns them into edges for the adjacency matrix
-function edgeHash(emails: Email[], nodes: Node[]) {
+// takes emails and turns them into edges for the adjacency matrix, also account for selections
+function edgeHash(emails: Email[], nodes: Node[], selEmIDs: number[]) {
   const edges: Edge[] = [];
 
   // for each email check if it is already in the edge list
@@ -325,10 +437,19 @@ function edgeHash(emails: Email[], nodes: Node[]) {
 
     if (indexInEdges === -1) {
       // new edge
-      let edge: Edge = {
+
+      // account for selected property
+      let selected = false;
+      if (selEmIDs.find((e) => { return e === email.id })) {
+        selected = true;
+      }
+
+      const edge: Edge = {
         source: source,
         target: target,
         value: 1,
+        sentiment: email.sentiment,
+        selected: selected,
       }
       edges.push(edge);
     } else {
@@ -341,36 +462,15 @@ function edgeHash(emails: Email[], nodes: Node[]) {
   return edges;
 }
 
-// Returns a filtered array with the persons who have one of the jobtitles that is given as an array (jobTitleList) in the input.
-function filterCorrespondants(
-  jobTitleList: Title[],
-  correspondants: Person[]
-) {
-  let filtered: Person[] = [];
-  for (let person in correspondants) {
-    for (let job in jobTitleList) {
-      if (jobTitleList[job] === correspondants[person].title) {
-        filtered.push(correspondants[person]);
-        break;
-      }
-    }
-  }
-  return filtered;
-}
+// takes a sender, receiver and dataset and returns all datapoints with that sender/receiver combination in the dataset
+function getMatchingEmailIDs(senderID: number, receiverID: number, emails: Email[]) {
+  const IDs: number[] = [];
 
-// Returns filtered email array based on correspondant list and emails
-function filterEmail(correspondants: Person[], emails: Email[]) {
-  const filtered: Email[] = [];
-
-  // for each email check if the sender and receiver are both in the correspondants
-  emails.forEach((email) => {
-    if (
-      correspondants.some((x) => x.id === email.fromId) &&
-      correspondants.some((x) => x.id === email.toId)
-    ) {
-      filtered.push(email);
+  emails.forEach((e) => {
+    if (e.fromId === senderID && e.toId === receiverID) {
+      IDs.push(e.id);
     }
   });
 
-  return filtered;
+  return IDs;
 }

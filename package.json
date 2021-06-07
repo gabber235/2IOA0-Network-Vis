@@ -58,7 +58,9 @@
     "webpack-encoding-plugin": "^0.3.1"
   },
   "dependencies": {
+    "array-blur": "^1.1.0",
     "d3": "^3.5.17",
+    "rive-canvas": "^0.7.5",
     "rxjs": "^7.0.1",
     "vis": "^4.21.0-EOL"
   }
