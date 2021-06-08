@@ -1,4 +1,4 @@
-import { Observable, Subject } from "rxjs";
+import { Observable, ReplaySubject, Subject } from "rxjs";
 import { millisInDay } from "./utils";
 
 /**
@@ -27,7 +27,7 @@ export class TimeSliders {
     private readonly endElm: HTMLElement
     private readonly durationElm: HTMLElement
 
-    readonly timerange: Subject<[number, number]> = new Subject()
+    readonly timerange: Subject<[number, number]> = new ReplaySubject(1)
     private start: number = 0
     private end: number = 1
 
