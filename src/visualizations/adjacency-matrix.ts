@@ -297,7 +297,12 @@ export class AdjacencyMatrix {
       }
 
       function sentimentColor(d: Cell) {
-        return "green";
+        // take sentiment and map to spectrum from red to green using tanh
+        const tanhVal = Math.tanh(d.sentiment*10);
+        const hue =  60 * tanhVal + 60 // tanh returns number in (-1, 1), scale to (0, 120)
+        let sat = 10000 * Math.abs(tanhVal);
+        if (sat > 100){ sat = 100}
+        return "hsl("+ hue.toString() + ", "+ sat +"%, 50%)"
       }
 
       function clickCell(cell: Cell): void {
