@@ -2,13 +2,13 @@ import "vis/dist/vis.min.css"
 import { AdjacencyMatrix } from "./visualizations/adjacency-matrix";
 import { createLegend, NodeLinkVisualisation } from './visualizations/node-link/node-link';
 import { Email, getCorrespondants, parseData, Person } from "./data"
-import { combineLatest, fromEvent, merge, Subject, timer } from "rxjs";
+import { combineLatest, fromEvent, merge, of, Subject, timer } from "rxjs";
 import { debounce, map, scan, share, shareReplay, startWith } from "rxjs/operators";
 import { DataSet, DataSetDiff, diffDataSet, foldDataSet, IDSetDiff } from "./pipeline/dynamicDataSet";
 import { getDynamicCorrespondants } from "./pipeline/getDynamicCorrespondants";
-import { binarySearch, ConstArray, millisInDay, pair, pairMap2, tripple } from "./utils";
+import { arrayToObject, binarySearch, ConstArray, millisInDay, pair, pairMap2, tripple } from "./utils";
 import { prettifyFileInput, TimeSliders } from "./looks";
-import { checkBoxObserable, diffStream, fileInputObservable } from "./pipeline/basics";
+import { checkBoxObserable, diffStream, fileInputObservable, selectorObserable, textAreaObserable } from "./pipeline/basics";
 import { dynamicSlice } from "./pipeline/dynamicSlice";
 import { diffSwitchAll } from "./pipeline/diffSwitchAll";
 import { NodeLinkOptions } from "./visualizations/node-link/options";
@@ -27,6 +27,30 @@ window.addEventListener("load", async () => {
         document.getElementById('duration'),
     )
 
+    const filterFunction = combineLatest([
+        selectorObserable(document.getElementById('filter-menu')),
+        textAreaObserable(document.getElementById('filter-function'))
+    ]).pipe(
+        map(([option, functionCode]) => {
+            const filterFunctionWrapper = document.getElementById('filter-function-wrapper')
+
+            if (option === 'custom') {
+                filterFunctionWrapper.style.display = 'grid'
+
+                try {
+                    return eval("(email, people, emails) => " + functionCode)
+                } catch {
+                    return () => true
+                }
+            } else {
+                filterFunctionWrapper.style.display = 'none'
+
+                return () => true
+            }
+        })
+    )
+
+
     prettifyFileInput(fileSelector)
 
     // This subject is used to represent selected correspondants and emails respectivly
@@ -42,35 +66,50 @@ window.addEventListener("load", async () => {
         shareReplay(1),
     )
 
-    combineLatest([baseEmailObservable, fromEvent(window, 'resize').pipe(startWith(0))])
+    const filteredEmails = combineLatest([
+        baseEmailObservable,
+        filterFunction
+    ]).pipe(
+        map(([emails, filterFunc]) => {
+            const emailMap = arrayToObject(emails, email => email.id)
+            const people = getCorrespondants(emails)
+
+            return emails.filter(email => filterFunc(email, people, emailMap))
+        })
+    )//.subscribe(emails => console.table(emails.slice(0, 200)))
+
+    combineLatest([filteredEmails, fromEvent(window, 'resize').pipe(startWith(0))])
         .pipe(map(([emails]) => groupEmailsToCount(emails)))
         .subscribe(loadTimelineGraph)
 
-    const dataWithAllNodes = baseEmailObservable.pipe(
+    const dataWithAllNodes = filteredEmails.pipe(
         map(emails => {
+            if (emails.length > 0) {
+                const firstDate = new Date(emails[0].date).getTime()
+                const lastDate = new Date(emails[emails.length - 1].date).getTime()
 
-            const firstDate = new Date(emails[0].date).getTime()
-            const lastDate = new Date(emails[emails.length - 1].date).getTime()
+                const constEmails: ConstArray<[string, Email]> = { getItem: i => pair(`${emails[i].id}`, emails[i]), length: emails.length }
+                const people = getCorrespondants(emails)
 
-            const constEmails: ConstArray<[string, Email]> = { getItem: i => pair(`${emails[i].id}`, emails[i]), length: emails.length }
-            const people = getCorrespondants(emails)
+                function dayToIndex(day: number): number {
+                    return binarySearch(i => new Date(emails[i].date).getTime(), firstDate + millisInDay * day, 0, emails.length, (i, j) => i - j)
+                }
+                const indices = timeSliders.timerange.pipe(
+                    debounce(() => timer(60)),
+                    map(([begin, end]) => pair(dayToIndex(begin), dayToIndex(end))),
+                )
 
-            function dayToIndex(day: number): number {
-                return binarySearch(i => new Date(emails[i].date).getTime(), firstDate + millisInDay * day, 0, emails.length, (i, j) => i - j)
+                timeSliders.setFirstAndLastDate(firstDate, lastDate)
+
+                return dynamicSlice(constEmails, indices).pipe(
+                    scan( // Get full email dataset and people
+                        ([_, emails], emailDiff) => tripple(people, foldDataSet(emails, emailDiff), emailDiff),
+                        tripple({} as DataSet<Person>, {} as DataSet<Email>, new DataSetDiff<Email>())
+                    ),
+                )
+            } else {
+                return of(tripple({} as DataSet<Person>, {} as DataSet<Email>, new DataSetDiff<Email>()))
             }
-            const indices = timeSliders.timerange.pipe(
-                debounce(() => timer(60)),
-                map(([begin, end]) => pair(dayToIndex(begin), dayToIndex(end))),
-            )
-
-            timeSliders.setFirstAndLastDate(firstDate, lastDate)
-
-            return dynamicSlice(constEmails, indices).pipe(
-                scan( // Get full email dataset and people
-                    ([_, emails], emailDiff) => tripple(people, foldDataSet(emails, emailDiff), emailDiff),
-                    tripple({} as DataSet<Person>, {} as DataSet<Email>, new DataSetDiff<Email>())
-                ),
-            )
         }),
         diffSwitchAll( // merge the stream of streams
             () => ({} as DataSet<Email>),
