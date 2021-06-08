@@ -24,8 +24,6 @@ type Edge = {
 
 export class AdjacencyMatrix {
   async visualize(data: Observable<[DataSetDiff<Person>, DataSetDiff<Email>]>, selSub: Subject<[IDSetDiff, IDSetDiff]>): Promise<void> {
-    // document.body.appendChild(div({}, [text("Adjacency-matrix")]));
-
     // datasets that hold the data
     const persons: DataSet<Person> = {};
     const emails: DataSet<Email> = {};
@@ -304,7 +302,6 @@ export class AdjacencyMatrix {
       }
 
       d3.select("#order").on("change", function () {
-        // can be fixed by declaring a var for this as any
         order((<any>this).value);
       });
 
