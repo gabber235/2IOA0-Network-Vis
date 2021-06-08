@@ -2,7 +2,7 @@ import "vis/dist/vis.min.css"
 import { AdjacencyMatrix } from "./visualizations/adjacency-matrix";
 import { createLegend, NodeLinkVisualisation } from './visualizations/node-link/node-link';
 import { Email, getCorrespondants, parseData, Person } from "./data"
-import { combineLatest, fromEvent, merge, of, Subject, timer } from "rxjs";
+import { combineLatest, fromEvent, merge, Observable, of, Subject, timer } from "rxjs";
 import { debounce, map, scan, share, shareReplay, startWith } from "rxjs/operators";
 import { DataSet, DataSetDiff, diffDataSet, foldDataSet, IDSetDiff } from "./pipeline/dynamicDataSet";
 import { getDynamicCorrespondants } from "./pipeline/getDynamicCorrespondants";
@@ -27,30 +27,34 @@ window.addEventListener("load", async () => {
         document.getElementById('duration'),
     )
 
-    const filterFunction = combineLatest([
-        selectorObserable(document.getElementById('filter-menu')),
-        textAreaObserable(document.getElementById('filter-function'))
-    ]).pipe(
-        map(([option, functionCode]) => {
-            const filterFunctionWrapper = document.getElementById('filter-function-wrapper')
+    const filterFunctionError = document.getElementById('filter-function-error')
 
+    const filterFunction = new Observable<(email: Email, people: DataSet<Person>, emails: DataSet<Email>) => boolean>(sub => {
+        const filterFunctionWrapper = document.getElementById('filter-function-wrapper')
+        const filterMenu: any = document.getElementById('filter-menu')
+        const applyFilterButton = document.getElementById('apply-filter-button')
+
+        selectorObserable(filterMenu).subscribe(option => {
             if (option === 'custom') {
                 filterFunctionWrapper.style.display = 'grid'
-
-                try {
-                    return eval("(email, people, emails) => " + functionCode)
-                } catch {
-                    return () => true
-                }
+                applyFilterButton.style.visibility = 'visible'
             } else {
+                sub.next(() => true)
                 filterFunctionWrapper.style.display = 'none'
-
-                return () => true
+                applyFilterButton.style.visibility = 'hidden'
             }
         })
-    )
-
-
+        applyFilterButton.addEventListener('click', () => {
+            if (filterMenu.value === "custom") {
+                try {
+                    sub.next(eval("(email, people, emails) => " + (document.getElementById('filter-function') as any).value))
+                } catch(e) {
+                    filterFunctionError.textContent = e.message
+                }
+            }
+        })
+    })
+    
     prettifyFileInput(fileSelector)
 
     // This subject is used to represent selected correspondants and emails respectivly
@@ -66,17 +70,23 @@ window.addEventListener("load", async () => {
         shareReplay(1),
     )
 
-    const filteredEmails = combineLatest([
-        baseEmailObservable,
-        filterFunction
-    ]).pipe(
-        map(([emails, filterFunc]) => {
+    const filteredEmails = new Observable<Email[]>(sub => {
+        combineLatest([
+            baseEmailObservable,
+            filterFunction
+        ]).subscribe(([emails, filterFunc]) => {
             const emailMap = arrayToObject(emails, email => email.id)
             const people = getCorrespondants(emails)
 
-            return emails.filter(email => filterFunc(email, people, emailMap))
+            try {
+                sub.next(emails.filter(email => filterFunc(email, people, emailMap)))
+                filterFunctionError.textContent = ""
+            } catch (e) {
+                console.log(1)
+                filterFunctionError.textContent = e.message
+            }
         })
-    )//.subscribe(emails => console.table(emails.slice(0, 200)))
+    })
 
     combineLatest([filteredEmails, fromEvent(window, 'resize').pipe(startWith(0))])
         .pipe(map(([emails]) => groupEmailsToCount(emails)))

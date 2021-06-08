@@ -102,13 +102,19 @@ nav {
 
         #filter-options {
             display: grid;
-            grid-template-rows: auto auto;
+            grid-template-columns: auto auto;
+            align-self: flex-start;
+
+
+            #apply-filter-button {
+                width: 100%;
+            }
 
             #filter-function-wrapper {
                 display: grid;
                 grid-template-rows: auto auto;
                 background-color: #ccc;
-                padding: 0.5em;
+                // padding: 0.5em;
                 color: black;
                 font-size: 10px;
                 font-family: JetBrains Mono, monospace;
@@ -129,6 +135,12 @@ nav {
                     background-color: transparent;
                     color: inherit;
                     outline: none;
+                    width: 300px;
+                }
+
+                #filter-function-error {
+                    background-color: #fcc;
+                    color: #a00;
                 }
             }
         }
