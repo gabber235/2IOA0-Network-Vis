@@ -48,7 +48,8 @@ export async function startTimeline(minDistance = 0.015, maxDistance = 0.05, thi
             const box = elm.getBoundingClientRect()
             const per = (event.x - box.left) / box.width
             if (lastDrag < 0) {
-                if (Math.abs(start - per) < thickness) document.body.style.cursor = "e-resize"
+                if (box.top > event.y || event.y > box.bottom) document.body.style.cursor = "default"
+                else if (Math.abs(start - per) < thickness) document.body.style.cursor = "e-resize"
                 else if (Math.abs(end - per) < thickness) document.body.style.cursor = "e-resize"
                 else if (start < per && per < end) document.body.style.cursor = "move"
                 else document.body.style.cursor = "default"
