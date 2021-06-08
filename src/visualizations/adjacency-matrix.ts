@@ -271,7 +271,24 @@ export class AdjacencyMatrix {
         return html;
       }
 
-      function selectColor(d: Cell) {
+      function selectColor(d: Cell): any {
+        switch (sorter) {
+          case "count":
+            // use title colring
+            return titleColor(d);
+          case "group":
+            // use title colring
+            return titleColor(d);
+          case "name":
+            // use sentiment coloring
+            return sentimentColor(d);
+          case "sentiment":
+            // use sentiment coloring
+            return sentimentColor(d);
+        }
+      }
+
+      function titleColor(d: Cell): String {
         if (d.selected === true) {
           return "#FF0000";
         } else {
@@ -279,7 +296,11 @@ export class AdjacencyMatrix {
         }
       }
 
-      function clickCell(cell: Cell) {
+      function sentimentColor(d: Cell) {
+        return "green";
+      }
+
+      function clickCell(cell: Cell): void {
         if (cell.selected) {
           // cell is selected -> unselect
           pushToSelectionSubject(
@@ -305,7 +326,7 @@ export class AdjacencyMatrix {
         order((<any>this).value);
       });
 
-      function order(value: string) {
+      function order(value: string): void {
         x.domain((<any>orders)[value]);
 
         const t = svg.transition().duration(2500);
