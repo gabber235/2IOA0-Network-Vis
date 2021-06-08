@@ -272,28 +272,28 @@ export class AdjacencyMatrix {
       }
 
       function selectColor(d: Cell, sorting: String): any {
-        switch (sorting) {
-          case "count":
-            // use title colring
-            return titleColor(d);
-          case "group":
-            // use title colring
-            return titleColor(d);
-          case "name":
-            // use sentiment coloring
-            return sentimentColor(d);
-          case "sentiment":
-            // use sentiment coloring
-            return sentimentColor(d);
+        if (d.selected) {
+          return "#FF00FF"
+        } else {
+          switch (sorting) {
+            case "count":
+              // use title colring
+              return titleColor(d);
+            case "group":
+              // use title colring
+              return titleColor(d);
+            case "name":
+              // use sentiment coloring
+              return sentimentColor(d);
+            case "sentiment":
+              // use sentiment coloring
+              return sentimentColor(d);
+          }
         }
       }
 
       function titleColor(d: Cell): String {
-        if (d.selected === true) {
-          return "#FF0000";
-        } else {
-          return nodes[d.x].group == nodes[d.y].group ? c(nodes[d.x].group) : null;
-        }
+        return nodes[d.x].group == nodes[d.y].group ? c(nodes[d.x].group) : null;
       }
 
       function sentimentColor(d: Cell) {
@@ -319,6 +319,7 @@ export class AdjacencyMatrix {
         // if (sat > 100){ sat = 100}
         // return "hsl("+ hue.toString() + ", "+ sat +"%, 50%)"
       }
+
 
       function clickCell(cell: Cell): void {
         if (cell.selected) {
