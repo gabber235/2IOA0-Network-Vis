@@ -297,12 +297,28 @@ export class AdjacencyMatrix {
       }
 
       function sentimentColor(d: Cell) {
-        // take sentiment and map to spectrum from red to green using tanh
-        const tanhVal = Math.tanh(d.sentiment*10);
-        const hue =  60 * tanhVal + 60 // tanh returns number in (-1, 1), scale to (0, 120)
-        let sat = 10000 * Math.abs(tanhVal);
-        if (sat > 100){ sat = 100}
-        return "hsl("+ hue.toString() + ", "+ sat +"%, 50%)"
+        // take sentiment and map to spectrum from red to green
+
+        // pos enough when sentiment > 0.01
+        if (d.sentiment > 0.01){
+          const hue = d.sentiment > 0.05 ? 120 : 90 + (d.sentiment -0.01) * 750;
+          return "hsl("+ hue.toString() + ", 100%, 45%)"
+        }
+
+        // neg enough when sentiment < -0.01
+        if (d.sentiment < -0.01){
+          const hue = d.sentiment < -0.05 ? 0 : 30-+ (d.sentiment +0.01) * 750;
+          console.log(d.sentiment, hue)
+          return "hsl("+ hue.toString() + ", 100%, 45%)"
+        }
+
+        // not pos or negative
+        return null
+        // const tanhVal = Math.tanh(d.sentiment*10);
+        // const hue =  60 * tanhVal + 60 // tanh returns number in (-1, 1), scale to (0, 120)
+        // let sat = 10000 * Math.abs(tanhVal);
+        // if (sat > 100){ sat = 100}
+        // return "hsl("+ hue.toString() + ", "+ sat +"%, 50%)"
       }
 
       function clickCell(cell: Cell): void {
