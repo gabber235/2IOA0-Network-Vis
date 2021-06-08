@@ -174,8 +174,8 @@ export class AdjacencyMatrix {
 
 
       // get sort order from page
-      const dropDown: any = document.getElementById("order")
-      const sorter: "name" | "count" | "group" | "sentiment" = dropDown.value;
+      let dropDown: any = document.getElementById("order")
+      let sorter: "name" | "count" | "group" | "sentiment" = dropDown.value;
 
 
       // The default sort order.
@@ -214,7 +214,7 @@ export class AdjacencyMatrix {
           .attr("width", x.rangeBand())
           .attr("height", x.rangeBand())
           .style("fill-opacity", function (d) { return z(d.z); })
-          .style("fill", selectColor)
+          .style("fill", function (d) { return selectColor(d, sorter) })
           .on("mouseover", () => {
             return tooltip.style("visibility", "visible");
           })
@@ -271,8 +271,8 @@ export class AdjacencyMatrix {
         return html;
       }
 
-      function selectColor(d: Cell): any {
-        switch (sorter) {
+      function selectColor(d: Cell, sorting: String): any {
+        switch (sorting) {
           case "count":
             // use title colring
             return titleColor(d);
@@ -300,16 +300,15 @@ export class AdjacencyMatrix {
         // take sentiment and map to spectrum from red to green
 
         // pos enough when sentiment > 0.01
-        if (d.sentiment > 0.01){
-          const hue = d.sentiment > 0.05 ? 120 : 90 + (d.sentiment -0.01) * 750;
-          return "hsl("+ hue.toString() + ", 100%, 45%)"
+        if (d.sentiment > 0.01) {
+          const hue = d.sentiment > 0.05 ? 120 : 90 + (d.sentiment - 0.01) * 750;
+          return "hsl(" + hue.toString() + ", 100%, 45%)"
         }
 
         // neg enough when sentiment < -0.01
-        if (d.sentiment < -0.01){
-          const hue = d.sentiment < -0.05 ? 0 : 30-+ (d.sentiment +0.01) * 750;
-          console.log(d.sentiment, hue)
-          return "hsl("+ hue.toString() + ", 100%, 45%)"
+        if (d.sentiment < -0.01) {
+          const hue = d.sentiment < -0.05 ? 0 : 30 - + (d.sentiment + 0.01) * 750;
+          return "hsl(" + hue.toString() + ", 100%, 45%)"
         }
 
         // not pos or negative
@@ -352,12 +351,17 @@ export class AdjacencyMatrix {
 
         const t = svg.transition().duration(2500);
 
+        // get sort order from page for coloring
+        const dropDown: any = document.getElementById("order")
+        const sorter: "name" | "count" | "group" | "sentiment" = dropDown.value;
+
         t.selectAll(".row")
           .delay(function (d, i) { return x(i) * 4; })
           .attr("transform", function (d, i) { return "translate(0," + x(i) + ")"; })
           .selectAll(".cell")
           .delay(function (d: Cell) { return x(d.x) * 4; })
-          .attr("x", function (d: Cell) { return x(d.x); });
+          .attr("x", function (d: Cell) { return x(d.x); })
+          .style("fill", function (d: any) { return selectColor(d, sorter) });
 
         t.selectAll(".column")
           .delay(function (d, i) { return x(i) * 4; })
