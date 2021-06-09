@@ -3,7 +3,6 @@ import * as d3 from "d3";
 import { Observable, Subject } from 'rxjs';
 import { DataSetDiff, DataSet, IDSetDiff } from '../pipeline/dynamicDataSet';
 import { titleRanks } from './constants';
-import { color } from "d3";
 
 
 type Node = {
@@ -311,14 +310,14 @@ export class AdjacencyMatrix {
         } else {
           switch (sorting) {
             case "count":
-              // use title colring
-              return titleColor(d);
+              // use sentiment coloring
+              return sentimentColor(d);
             case "group":
               // use title colring
               return titleColor(d);
             case "name":
-              // use sentiment coloring
-              return sentimentColor(d);
+              // use title colring
+              return titleColor(d);
             case "sentiment":
               // use sentiment coloring
               return sentimentColor(d);
