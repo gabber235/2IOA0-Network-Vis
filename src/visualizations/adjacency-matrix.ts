@@ -24,8 +24,6 @@ type Edge = {
 
 export class AdjacencyMatrix {
   async visualize(data: Observable<[DataSetDiff<Person>, DataSetDiff<Email>]>, selSub: Subject<[IDSetDiff, IDSetDiff]>): Promise<void> {
-    // document.body.appendChild(div({}, [text("Adjacency-matrix")]));
-
     // datasets that hold the data
     const persons: DataSet<Person> = {};
     const emails: DataSet<Email> = {};
@@ -176,8 +174,8 @@ export class AdjacencyMatrix {
 
 
       // get sort order from page
-      const dropDown: any = document.getElementById("order")
-      const sorter: "name" | "count" | "group" | "sentiment" = dropDown.value;
+      let dropDown: any = document.getElementById("order")
+      let sorter: "name" | "count" | "group" | "sentiment" = dropDown.value;
 
 
       // The default sort order.
@@ -216,7 +214,7 @@ export class AdjacencyMatrix {
           .attr("width", x.rangeBand())
           .attr("height", x.rangeBand())
           .style("fill-opacity", function (d) { return z(d.z); })
-          .style("fill", selectColor)
+          .style("fill", function (d) { return selectColor(d, sorter) })
           .on("mouseover", () => {
             return tooltip.style("visibility", "visible");
           })
@@ -273,15 +271,57 @@ export class AdjacencyMatrix {
         return html;
       }
 
-      function selectColor(d: Cell) {
-        if (d.selected === true) {
-          return "#FF0000";
+      function selectColor(d: Cell, sorting: String): any {
+        if (d.selected) {
+          return "#FF00FF"
         } else {
-          return nodes[d.x].group == nodes[d.y].group ? c(nodes[d.x].group) : null;
+          switch (sorting) {
+            case "count":
+              // use title colring
+              return titleColor(d);
+            case "group":
+              // use title colring
+              return titleColor(d);
+            case "name":
+              // use sentiment coloring
+              return sentimentColor(d);
+            case "sentiment":
+              // use sentiment coloring
+              return sentimentColor(d);
+          }
         }
       }
 
-      function clickCell(cell: Cell) {
+      function titleColor(d: Cell): String {
+        return nodes[d.x].group == nodes[d.y].group ? c(nodes[d.x].group) : null;
+      }
+
+      function sentimentColor(d: Cell) {
+        // take sentiment and map to spectrum from red to green
+
+        // pos enough when sentiment > 0.01
+        if (d.sentiment > 0.01) {
+          const hue = d.sentiment > 0.05 ? 120 : 90 + (d.sentiment - 0.01) * 750;
+          return "hsl(" + hue.toString() + ", 100%, 45%)"
+        }
+
+        // neg enough when sentiment < -0.01
+        if (d.sentiment < -0.01) {
+          const hue = d.sentiment < -0.05 ? 0 : 30 - + (d.sentiment + 0.01) * 750;
+          return "hsl(" + hue.toString() + ", 100%, 45%)"
+        }
+
+        // not pos or negative
+        return null
+        // const tanhVal = Math.tanh(d.sentiment*10);
+        // const hue =  60 * tanhVal + 60 // tanh returns number in (-1, 1), scale to (0, 120)
+        // let sat = 10000 * Math.abs(tanhVal);
+        // if (sat > 100){ sat = 100}
+        // return "hsl("+ hue.toString() + ", "+ sat +"%, 50%)"
+      }
+
+
+      function clickCell(cell: Cell): void {
         if (cell.selected) {
           // cell is selected -> unselect
           pushToSelectionSubject(
@@ -304,21 +344,25 @@ export class AdjacencyMatrix {
       }
 
       d3.select("#order").on("change", function () {
-        // can be fixed by declaring a var for this as any
         order((<any>this).value);
       });
 
-      function order(value: string) {
+      function order(value: string): void {
         x.domain((<any>orders)[value]);
 
         const t = svg.transition().duration(2500);
+
+        // get sort order from page for coloring
+        const dropDown: any = document.getElementById("order")
+        const sorter: "name" | "count" | "group" | "sentiment" = dropDown.value;
 
         t.selectAll(".row")
           .delay(function (d, i) { return x(i) * 4; })
           .attr("transform", function (d, i) { return "translate(0," + x(i) + ")"; })
           .selectAll(".cell")
           .delay(function (d: Cell) { return x(d.x) * 4; })
-          .attr("x", function (d: Cell) { return x(d.x); });
+          .attr("x", function (d: Cell) { return x(d.x); })
+          .style("fill", function (d: any) { return selectColor(d, sorter) });
 
         t.selectAll(".column")
           .delay(function (d, i) { return x(i) * 4; })

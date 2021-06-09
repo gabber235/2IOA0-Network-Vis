@@ -43,13 +43,34 @@
         <label for="file-selector">Choose a dataset</label>
 
         <div id="selectors">
+            <div id="filter-options">
+                <div>
+                    <div>
+                        <label for="filter-menu">Filter </label>
+                        <select name="filter-menu" id="filter-menu">
+                            <option value="none"> None </option>
+                            <option value="custom"> Custom </option>
+                        </select>
+                    </div>
+                    <div>
+                        <button id="apply-filter-button">Apply filter</button>
+                    </div>
+                </div>
+                <div id="filter-function-wrapper">
+                    <div id="filter-function-signature">(email, people, emails) =></div>
+                    <textarea id="filter-function">
+    // return a boolean
+                    </textarea>
+                    <div id="filter-function-error"></div>
+                </div>
+            </div>
             <div id="split-options">
                 <div id="matrix-options">
                     <label for="order">Order:</label>
                     <select id="order" name="order">
                         <option value="name">by Name</option>
                         <option value="count">by Frequency</option>
-                        <option value="group">by Title</option>
+                        <option value="group" selected>by Title</option>
                         <option value="sentiment">by Sentiment</option>
                     </select>
                 </div>
