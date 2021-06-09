@@ -3,6 +3,7 @@ import * as d3 from "d3";
 import { Observable, Subject } from 'rxjs';
 import { DataSetDiff, DataSet, IDSetDiff } from '../pipeline/dynamicDataSet';
 import { titleRanks } from './constants';
+import { color } from "d3";
 
 
 type Node = {
@@ -83,10 +84,11 @@ export class AdjacencyMatrix {
       const width = 750;
       const height = 750;
 
+      // scale dispalying the right cell at the right place
+      const xScale = (<any>d3).scale.ordinal().rangeBands([0, width]);
 
-      const x = (<any>d3).scale.ordinal().rangeBands([0, width]);
-      const z = (<any>d3).scale.linear().domain([0, 4]).clamp(true);
-      const c = (<any>d3).scale.category10().domain(d3.range(10));
+      //temp
+      const colorScale = (<any>d3).scale.category10().domain(d3.range(10));
 
       const existingSVG = document.getElementById("AM-SVG");
       if (!existingSVG) {
@@ -164,6 +166,11 @@ export class AdjacencyMatrix {
         matrix[link.source][link.target].selected = link.selected;
       });
 
+      //
+
+
+      const opacityScaler = (<any>d3).scale.linear().domain([0, 4]).clamp(true);
+
       // Precompute the sorting orders
       const orders = {
         name: d3.range(n).sort(function (a, b) { return d3.ascending(nodes[a].name, nodes[b].name); }),
@@ -179,7 +186,7 @@ export class AdjacencyMatrix {
 
 
       // The default sort order.
-      x.domain(orders[sorter]);
+      xScale.domain(orders[sorter]);
 
       svg.append("rect")
         .attr("class", "background")
@@ -190,7 +197,7 @@ export class AdjacencyMatrix {
         .data(matrix)
         .enter().append("g")
         .attr("class", "row")
-        .attr("transform", function (d, i) { return "translate(0," + x(i) + ")"; })
+        .attr("transform", function (d, i) { return "translate(0," + xScale(i) + ")"; })
         .each(row);
 
       rows.append("line")
@@ -200,7 +207,7 @@ export class AdjacencyMatrix {
         .data(matrix)
         .enter().append("g")
         .attr("class", "column")
-        .attr("transform", function (d, i) { return "translate(" + x(i) + ")rotate(-90)"; });
+        .attr("transform", function (d, i) { return "translate(" + xScale(i) + ")rotate(-90)"; });
 
       column.append("line")
         .attr("x1", -width);
@@ -210,10 +217,10 @@ export class AdjacencyMatrix {
           .data(row.filter(function (d) { return d.z; }))
           .enter().append("rect")
           .attr("class", "cell")
-          .attr("x", function (d) { return x(d.x); })
-          .attr("width", x.rangeBand())
-          .attr("height", x.rangeBand())
-          .style("fill-opacity", function (d) { return z(d.z); })
+          .attr("x", function (d) { return xScale(d.x); })
+          .attr("width", xScale.rangeBand())
+          .attr("height", xScale.rangeBand())
+          .style("fill-opacity", function (d) { return opacityScaler(d.z); })
           .style("fill", function (d) { return selectColor(d, sorter) })
           .on("mouseover", () => {
             return tooltip.style("visibility", "visible");
@@ -293,7 +300,7 @@ export class AdjacencyMatrix {
       }
 
       function titleColor(d: Cell): String {
-        return nodes[d.x].group == nodes[d.y].group ? c(nodes[d.x].group) : null;
+        return nodes[d.x].group == nodes[d.y].group ? colorScale(nodes[d.x].group) : null;
       }
 
       function sentimentColor(d: Cell) {
@@ -348,7 +355,7 @@ export class AdjacencyMatrix {
       });
 
       function order(value: string): void {
-        x.domain((<any>orders)[value]);
+        xScale.domain((<any>orders)[value]);
 
         const t = svg.transition().duration(2500);
 
@@ -357,16 +364,16 @@ export class AdjacencyMatrix {
         const sorter: "name" | "count" | "group" | "sentiment" = dropDown.value;
 
         t.selectAll(".row")
-          .delay(function (d, i) { return x(i) * 4; })
-          .attr("transform", function (d, i) { return "translate(0," + x(i) + ")"; })
+          .delay(function (d, i) { return xScale(i) * 4; })
+          .attr("transform", function (d, i) { return "translate(0," + xScale(i) + ")"; })
           .selectAll(".cell")
-          .delay(function (d: Cell) { return x(d.x) * 4; })
-          .attr("x", function (d: Cell) { return x(d.x); })
+          .delay(function (d: Cell) { return xScale(d.x) * 4; })
+          .attr("x", function (d: Cell) { return xScale(d.x); })
           .style("fill", function (d: any) { return selectColor(d, sorter) });
 
         t.selectAll(".column")
-          .delay(function (d, i) { return x(i) * 4; })
-          .attr("transform", function (d, i) { return "translate(" + x(i) + ")rotate(-90)"; });
+          .delay(function (d, i) { return xScale(i) * 4; })
+          .attr("transform", function (d, i) { return "translate(" + xScale(i) + ")rotate(-90)"; });
       }
     }
 
