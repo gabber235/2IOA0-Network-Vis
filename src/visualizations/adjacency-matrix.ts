@@ -166,10 +166,37 @@ export class AdjacencyMatrix {
         matrix[link.source][link.target].selected = link.selected;
       });
 
-      //
-
-
-      const opacityScaler = (<any>d3).scale.linear().domain([0, 4]).clamp(true);
+      // use a threshold as bound on 0 to 100% opacity scale, so everything more than the threshold is 100% opacity
+      // start by collecting all values
+      let countValues: number[] = []; // index indicated value, value on that index is count (ignore 0's)
+      for (let i = 0; i < matrix.length; i++) {
+        for (let j = 0; j < matrix.length; j++) {
+          const val = matrix[i][j].z;
+          if (val) {
+            if (countValues[val] !== undefined) {
+              countValues[val]++;
+            } else {
+              countValues[val] = 1;
+            }
+          }
+        }
+      }
+      // calc threshold
+      let totalLeft = 0;
+      for (let i = 0; i < countValues.length; i++){
+        if (countValues[i]){
+          totalLeft += i * countValues[i];
+        }        
+      }
+      totalLeft = Math.floor(totalLeft/2);
+      let counter = 1;
+      while (totalLeft > counter * countValues[counter]){
+        totalLeft = totalLeft - counter * countValues[counter];
+        counter++;
+      }
+      // if counter is more than 4, use that as threshold, else use 4
+      const threshold = counter > 4 ? counter : 4;
+      const opacityScaler = (<any>d3).scale.linear().domain([0, threshold]).clamp(true);
 
       // Precompute the sorting orders
       const orders = {
