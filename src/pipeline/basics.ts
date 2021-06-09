@@ -61,6 +61,28 @@ export function checkBoxObserable(elm: HTMLElement): Observable<boolean> {
     })
 }
 
+ export function selectorObserable(elm: HTMLElement): Observable<string> {
+    return new Observable(sub => {
+        sub.next((elm as any).value)
+
+        elm.addEventListener("change", (e: any) => {
+            sub.next(e.target.value)
+        })
+    })
+}
+
+
+ export function textAreaObserable(elm: HTMLElement): Observable<string> {
+    return new Observable(sub => {
+        sub.next((elm as any).value)
+
+        elm.addEventListener("change", (e: any) => {
+            sub.next(e.target.value)
+        })
+    })
+}
+
+
 /**
  * Collects the values send by an observable into an array
  */
