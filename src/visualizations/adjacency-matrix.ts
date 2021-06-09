@@ -221,7 +221,7 @@ export class AdjacencyMatrix {
           .on("mousemove", (d: Cell) => {
             return tooltip
               // this works but doesn't handle scaling
-              .style("left", (`${(<any>d3).event.pageX}px`)).style("top", `${(<any>d3).event.pageY - 525}px`)
+              .style("left", (`${(<any>d3).event.pageX}px`)).style("top", `${(<any>d3).event.pageY - 650}px`)
               .html(tooltipHTML(d));
           })
           .on("mouseout", () => {
