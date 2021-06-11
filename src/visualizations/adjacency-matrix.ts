@@ -182,6 +182,7 @@ export class AdjacencyMatrix {
           }
         }
       }
+
       // calc threshold
       let totalLeft = 0;
       for (let i = 0; i < countValues.length; i++) {
@@ -207,7 +208,7 @@ export class AdjacencyMatrix {
         sentiment: d3.range(n).sort(function (a, b) { return nodes[b].count - nodes[a].count; }),
       };
 
-      type sortingSetting = "name" | "count" | "group" | "sentiment"
+      type sortingSetting = "name" | "count" | "group" | "sentiment";
 
       // get sort order from page
       let dropDown: any = document.getElementById("order")
@@ -299,8 +300,6 @@ export class AdjacencyMatrix {
         .attr('stroke', "black")
         .attr('fill', "blue")
         .attr('id', 'sidebar-background');
-
-
       let leftWrapper = svg.append('g')
         .attr('class', 'sidebar')
         .attr('id', "top-bar-wrapper")
@@ -316,7 +315,7 @@ export class AdjacencyMatrix {
 
       fillSidebars(sorter);
 
-      // puts the right content in the sidebars based on sorting setting
+      // puts the right content in the sidebars based on current data and sorting settings 
       function fillSidebars(sorting: sortingSetting): void {
         let topWrapper = d3.select('#top-bar-wrapper');
         let leftWrapper = d3.select('#left-bar-wrapper');
@@ -330,23 +329,32 @@ export class AdjacencyMatrix {
           case "count":
             break;
           case "group":
+            // get which groups are currently used and tally the number of each
+            console.log(nodes);
+            const groupTally: {[group: string]: number} = {};
+            nodes.forEach((n) => {
+              if (groupTally[n.group] === undefined){
+                groupTally[n.group] = 1;
+              } else {
+                groupTally[n.group]++;
+              }              
+            });
+            console.log(groupTally)
+
+            topWrapper.insert('rect')
+              .attr('x', 0)
+              .attr('y', 0)
+              .attr('width', 50)
+              .attr('height', 50)
+              .attr('stroke', "black")
+              .attr('fill', "red")
+              .attr('id', "SB-content");
             break;
           case "name":
             break;
           case "sentiment":
             break;
         }
-
-        topWrapper.insert('rect')
-          .attr('x', 0)
-          .attr('y', 0)
-          .attr('width', 50)
-          .attr('height', 50)
-          .attr('stroke', "black")
-          .attr('fill', "red")
-          .attr('id', "SB-content");
-
-
       }
 
       function tooltipHTML(c: Cell): string {
@@ -453,6 +461,8 @@ export class AdjacencyMatrix {
         // get sort order from page for coloring
         const dropDown: any = document.getElementById("order")
         const sorter: sortingSetting = dropDown.value;
+        // redo sidebars
+        fillSidebars(sorter);
 
         t.selectAll(".row")
           .delay(function (d, i) { return xScale(i) * 4; })
