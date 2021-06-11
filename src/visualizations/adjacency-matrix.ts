@@ -285,6 +285,27 @@ export class AdjacencyMatrix {
       }
       tooltip = d3.select("#AM-tooltip");
 
+      // add sidebars
+      svg.append('rect')
+      .attr('x', sideBarWidth)
+      .attr('y', 0)
+      .attr('width', width - sideBarWidth)
+      .attr('height', sideBarWidth)
+      .attr('stroke', "black")
+    //   .attr('fill', "blue")
+      .attr('class', 'sidebar')
+      .attr('id', "top-bar");
+
+      svg.append('rect')
+      .attr('x', 0)
+      .attr('y', sideBarWidth)
+      .attr('width', sideBarWidth)
+      .attr('height', height - sideBarWidth)
+      .attr('stroke', "black")
+    //   .attr('fill', "red")
+      .attr('class', 'sidebar')
+      .attr('id', "left-bar");
+
 
       function tooltipHTML(c: Cell): string {
         let html = "";
