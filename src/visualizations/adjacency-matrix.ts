@@ -2,7 +2,7 @@ import { Email, Person, Title, getCorrespondants } from "../data";
 import * as d3 from "d3";
 import { Observable, Subject } from 'rxjs';
 import { DataSetDiff, DataSet, IDSetDiff } from '../pipeline/dynamicDataSet';
-import { titleRanks } from './constants';
+import { titleRanks, titleColors } from './constants';
 
 
 type Node = {
@@ -88,8 +88,6 @@ export class AdjacencyMatrix {
       // scale dispalying the right cell at the right place
       const xScale = (<any>d3).scale.ordinal().rangeBands([sideBarWidth, width]);
 
-      //temporary color scale, needs to be replaced by the colors used in NL-diagram
-      const colorScale = (<any>d3).scale.category10().domain(d3.range(10));
 
       const existingSVG = document.getElementById("AM-SVG");
       if (!existingSVG) {
@@ -330,14 +328,13 @@ export class AdjacencyMatrix {
             break;
           case "group":
             // get which groups are currently used and tally the number of each
-            console.log(nodes);
-            const groupTally: {[group: string]: number} = {};
+            const groupTally: { [group: string]: number } = {};
             nodes.forEach((n) => {
-              if (groupTally[n.group] === undefined){
+              if (groupTally[n.group] === undefined) {
                 groupTally[n.group] = 1;
               } else {
                 groupTally[n.group]++;
-              }              
+              }
             });
             console.log(groupTally)
 
@@ -384,25 +381,28 @@ export class AdjacencyMatrix {
           switch (sorting) {
             case "count":
               // use sentiment coloring
-              return sentimentColor(d);
+              return sentimentColoring(d);
             case "group":
               // use title coloring
-              return titleColor(d);
+              return titleColoring(d);
             case "name":
               // use title coloring
-              return titleColor(d);
+              return titleColoring(d);
             case "sentiment":
               // use sentiment coloring
-              return sentimentColor(d);
+              return sentimentColoring(d);
           }
         }
       }
 
-      function titleColor(d: Cell): String {
+      //temporary color scale, needs to be replaced by the colors used in NL-diagram
+      const colorScale = (<any>d3).scale.category10().domain(d3.range(10));
+      console.log(titleColors)
+      function titleColoring(d: Cell): String {
         return nodes[d.x].group == nodes[d.y].group ? colorScale(nodes[d.x].group) : null;
       }
 
-      function sentimentColor(d: Cell) {
+      function sentimentColoring(d: Cell) {
         // take sentiment and map to spectrum from red to green
 
         // pos enough when sentiment > 0.01
