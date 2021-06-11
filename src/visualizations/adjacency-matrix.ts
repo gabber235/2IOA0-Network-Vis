@@ -290,7 +290,7 @@ export class AdjacencyMatrix {
       let topWrapper = svg.append('g')
         .attr('class', 'sidebar')
         .attr('id', "top-bar-wrapper")
-        .attr('transform', "translate("+sideBarWidth.toString()+",0)");
+        .attr('transform', "translate(" + sideBarWidth.toString() + ",0)");
       topWrapper.append('rect')
         .attr('x', 0)
         .attr('y', 0)
@@ -304,7 +304,7 @@ export class AdjacencyMatrix {
       let leftWrapper = svg.append('g')
         .attr('class', 'sidebar')
         .attr('id', "top-bar-wrapper")
-        .attr('transform', "translate(0, "+sideBarWidth.toString()+")");
+        .attr('transform', "translate(0, " + sideBarWidth.toString() + ")");
       leftWrapper.append('rect')
         .attr('x', 0)
         .attr('y', 0)
@@ -322,7 +322,8 @@ export class AdjacencyMatrix {
         let leftWrapper = d3.select('#left-bar-wrapper');
 
         // start by clearing content of sidebars
-        //TODO
+        topWrapper.selectAll('#SB-content').remove();
+        leftWrapper.selectAll('#SB-content').remove();
 
         // add content to sidebars based on sorting setting
         switch (sorting) {
@@ -342,9 +343,10 @@ export class AdjacencyMatrix {
           .attr('width', 50)
           .attr('height', 50)
           .attr('stroke', "black")
-          .attr('fill', "red");
+          .attr('fill', "red")
+          .attr('id', "SB-content");
 
-        
+
       }
 
       function tooltipHTML(c: Cell): string {
