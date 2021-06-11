@@ -287,29 +287,49 @@ export class AdjacencyMatrix {
       tooltip = d3.select("#AM-tooltip");
 
       // add sidebars
-      svg.append('rect')
+      let topWrapper = svg.append('g')
+        .attr('class', 'sidebar')
+        .attr('id', "top-bar-wrapper");
+      topWrapper.append('rect')
         .attr('x', sideBarWidth)
         .attr('y', 0)
         .attr('width', width - sideBarWidth)
         .attr('height', sideBarWidth)
         .attr('stroke', "black")
-        //.attr('fill', "blue")
-        .attr('class', 'sidebar')
-        .attr('id', "top-bar");
+        .attr('fill', "blue")
+        .attr('id', 'sidebar-background');
 
-      svg.append('rect')
+
+      let leftWrapper = svg.append('g')
+        .attr('class', 'sidebar')
+        .attr('id', "top-bar-wrapper");
+      leftWrapper.append('rect')
         .attr('x', 0)
         .attr('y', sideBarWidth)
         .attr('width', sideBarWidth)
         .attr('height', height - sideBarWidth)
         .attr('stroke', "black")
-        //.attr('fill', "red")
-        .attr('class', 'sidebar')
-        .attr('id', "left-bar");
+        .attr('fill', "red")
+        .attr('id', 'sidebar-background');
+
+      // fillSidebars(sorter);
 
       // puts the right content in the sidebars based on sorting setting
       function fillSidebars(sorting: sortingSetting): void {
-        
+        let topbar = d3.select('#top-bar');
+        let leftbar = d3.select('#left-bar');
+
+        // start by clearing content of sidebars
+
+        topbar.insert('rect')
+          .attr('x', 100)
+          .attr('y', 100)
+          .attr('width', 50)
+          .attr('height', 50)
+          .attr('stroke', "black")
+          .attr('fill', "red");
+
+        console.log(topbar)
       }
 
       function tooltipHTML(c: Cell): string {
