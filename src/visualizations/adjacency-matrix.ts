@@ -289,9 +289,10 @@ export class AdjacencyMatrix {
       // add sidebars
       let topWrapper = svg.append('g')
         .attr('class', 'sidebar')
-        .attr('id', "top-bar-wrapper");
+        .attr('id', "top-bar-wrapper")
+        .attr('transform', "translate("+sideBarWidth.toString()+",0)");
       topWrapper.append('rect')
-        .attr('x', sideBarWidth)
+        .attr('x', 0)
         .attr('y', 0)
         .attr('width', width - sideBarWidth)
         .attr('height', sideBarWidth)
@@ -302,10 +303,11 @@ export class AdjacencyMatrix {
 
       let leftWrapper = svg.append('g')
         .attr('class', 'sidebar')
-        .attr('id', "top-bar-wrapper");
+        .attr('id', "top-bar-wrapper")
+        .attr('transform', "translate(0, "+sideBarWidth.toString()+")");
       leftWrapper.append('rect')
         .attr('x', 0)
-        .attr('y', sideBarWidth)
+        .attr('y', 0)
         .attr('width', sideBarWidth)
         .attr('height', height - sideBarWidth)
         .attr('stroke', "black")
