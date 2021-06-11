@@ -82,11 +82,13 @@ export class AdjacencyMatrix {
 
       const width = 750;
       const height = 750;
+      const sideBarWidth = 50;
+
 
       // scale dispalying the right cell at the right place
-      const xScale = (<any>d3).scale.ordinal().rangeBands([0, width]);
+      const xScale = (<any>d3).scale.ordinal().rangeBands([sideBarWidth, width]);
 
-      //temp
+      //temporary color scale, needs to be replaced by the colors used in NL-diagram
       const colorScale = (<any>d3).scale.category10().domain(d3.range(10));
 
       const existingSVG = document.getElementById("AM-SVG");
