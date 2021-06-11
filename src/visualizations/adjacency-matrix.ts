@@ -314,16 +314,16 @@ export class AdjacencyMatrix {
         .attr('fill', "red")
         .attr('id', 'sidebar-background');
 
-      // fillSidebars(sorter);
+      fillSidebars(sorter);
 
       // puts the right content in the sidebars based on sorting setting
       function fillSidebars(sorting: sortingSetting): void {
-        let topbar = d3.select('#top-bar');
-        let leftbar = d3.select('#left-bar');
+        let topWrapper = d3.select('#top-bar-wrapper');
+        let leftWrapper = d3.select('#left-bar-wrapper');
 
         // start by clearing content of sidebars
 
-        topbar.insert('rect')
+        topWrapper.insert('rect')
           .attr('x', 100)
           .attr('y', 100)
           .attr('width', 50)
@@ -331,7 +331,7 @@ export class AdjacencyMatrix {
           .attr('stroke', "black")
           .attr('fill', "red");
 
-        console.log(topbar)
+        
       }
 
       function tooltipHTML(c: Cell): string {
