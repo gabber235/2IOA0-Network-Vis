@@ -184,14 +184,14 @@ export class AdjacencyMatrix {
       }
       // calc threshold
       let totalLeft = 0;
-      for (let i = 0; i < countValues.length; i++){
-        if (countValues[i]){
+      for (let i = 0; i < countValues.length; i++) {
+        if (countValues[i]) {
           totalLeft += i * countValues[i];
-        }        
+        }
       }
-      totalLeft = Math.floor(totalLeft/2);
+      totalLeft = Math.floor(totalLeft / 2);
       let counter = 1;
-      while (totalLeft > counter * countValues[counter]){
+      while (totalLeft > counter * countValues[counter]) {
         totalLeft = totalLeft - counter * countValues[counter];
         counter++;
       }
@@ -207,10 +207,11 @@ export class AdjacencyMatrix {
         sentiment: d3.range(n).sort(function (a, b) { return nodes[b].count - nodes[a].count; }),
       };
 
+      type sortingSetting = "name" | "count" | "group" | "sentiment"
 
       // get sort order from page
       let dropDown: any = document.getElementById("order")
-      let sorter: "name" | "count" | "group" | "sentiment" = dropDown.value;
+      let sorter: sortingSetting = dropDown.value;
 
 
       // The default sort order.
@@ -287,25 +288,29 @@ export class AdjacencyMatrix {
 
       // add sidebars
       svg.append('rect')
-      .attr('x', sideBarWidth)
-      .attr('y', 0)
-      .attr('width', width - sideBarWidth)
-      .attr('height', sideBarWidth)
-      .attr('stroke', "black")
-    //   .attr('fill', "blue")
-      .attr('class', 'sidebar')
-      .attr('id', "top-bar");
+        .attr('x', sideBarWidth)
+        .attr('y', 0)
+        .attr('width', width - sideBarWidth)
+        .attr('height', sideBarWidth)
+        .attr('stroke', "black")
+        //.attr('fill', "blue")
+        .attr('class', 'sidebar')
+        .attr('id', "top-bar");
 
       svg.append('rect')
-      .attr('x', 0)
-      .attr('y', sideBarWidth)
-      .attr('width', sideBarWidth)
-      .attr('height', height - sideBarWidth)
-      .attr('stroke', "black")
-    //   .attr('fill', "red")
-      .attr('class', 'sidebar')
-      .attr('id', "left-bar");
+        .attr('x', 0)
+        .attr('y', sideBarWidth)
+        .attr('width', sideBarWidth)
+        .attr('height', height - sideBarWidth)
+        .attr('stroke', "black")
+        //.attr('fill', "red")
+        .attr('class', 'sidebar')
+        .attr('id', "left-bar");
 
+      // puts the right content in the sidebars based on sorting setting
+      function fillSidebars(sorting: sortingSetting): void {
+        
+      }
 
       function tooltipHTML(c: Cell): string {
         let html = "";
@@ -410,7 +415,7 @@ export class AdjacencyMatrix {
 
         // get sort order from page for coloring
         const dropDown: any = document.getElementById("order")
-        const sorter: "name" | "count" | "group" | "sentiment" = dropDown.value;
+        const sorter: sortingSetting = dropDown.value;
 
         t.selectAll(".row")
           .delay(function (d, i) { return xScale(i) * 4; })
