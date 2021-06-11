@@ -397,11 +397,7 @@ export class AdjacencyMatrix {
 
 
       function titleColoring(d: Cell): String {
-        //temporary color scale, needs to be replaced by the colors used in NL-diagram
-        const colorScale = (<any>d3).scale.category10().domain(d3.range(10));
-        console.log(titleColors)
-
-        return nodes[d.x].group == nodes[d.y].group ? colorScale(nodes[d.x].group) : null;
+        return nodes[d.x].group == nodes[d.y].group ? titleColors[nodes[d.x].group].color.border : null;
       }
 
       function sentimentColoring(d: Cell) {
