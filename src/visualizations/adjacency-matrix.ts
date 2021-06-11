@@ -322,10 +322,23 @@ export class AdjacencyMatrix {
         let leftWrapper = d3.select('#left-bar-wrapper');
 
         // start by clearing content of sidebars
+        //TODO
+
+        // add content to sidebars based on sorting setting
+        switch (sorting) {
+          case "count":
+            break;
+          case "group":
+            break;
+          case "name":
+            break;
+          case "sentiment":
+            break;
+        }
 
         topWrapper.insert('rect')
-          .attr('x', 100)
-          .attr('y', 100)
+          .attr('x', 0)
+          .attr('y', 0)
           .attr('width', 50)
           .attr('height', 50)
           .attr('stroke', "black")
@@ -363,10 +376,10 @@ export class AdjacencyMatrix {
               // use sentiment coloring
               return sentimentColor(d);
             case "group":
-              // use title colring
+              // use title coloring
               return titleColor(d);
             case "name":
-              // use title colring
+              // use title coloring
               return titleColor(d);
             case "sentiment":
               // use sentiment coloring
