@@ -82,7 +82,7 @@ export class AdjacencyMatrix {
 
       const width = 750;
       const height = 750;
-      const sideBarWidth = 50;
+      const sideBarWidth = 25;
 
 
       // scale dispalying the right cell at the right place
@@ -295,20 +295,20 @@ export class AdjacencyMatrix {
         .attr('y', 0)
         .attr('width', width - sideBarWidth)
         .attr('height', sideBarWidth)
-        .attr('stroke', "black")
-        .attr('fill', "blue")
+        // .attr('stroke', "black")
+        .attr('fill', "#eee")
         .attr('id', 'sidebar-background');
       let leftWrapper = svg.append('g')
         .attr('class', 'sidebar')
-        .attr('id', "top-bar-wrapper")
+        .attr('id', "left-bar-wrapper")
         .attr('transform', "translate(0, " + sideBarWidth.toString() + ")");
       leftWrapper.append('rect')
         .attr('x', 0)
         .attr('y', 0)
         .attr('width', sideBarWidth)
         .attr('height', height - sideBarWidth)
-        .attr('stroke', "black")
-        .attr('fill', "red")
+        // .attr('stroke', "black")
+        .attr('fill', "#eee")
         .attr('id', 'sidebar-background');
 
       fillSidebars(sorter);
@@ -336,16 +336,40 @@ export class AdjacencyMatrix {
                 groupTally[n.group]++;
               }
             });
-            console.log(groupTally)
 
-            topWrapper.insert('rect')
-              .attr('x', 0)
+            // sort the tally so it uses the same ordering as the titles
+            let sortedOnTitle = Object.entries(groupTally).sort(function (a: [Title, number], b: [Title, number]) { 
+              return titleRanks[a[0]] - titleRanks[b[0]]; 
+            });
+
+            //
+            let before = 0; // used to know how many cells there were before the current
+            const size = xScale.rangeBand();
+            for (let i = 0; i < sortedOnTitle.length; i++){
+              const amount = sortedOnTitle[i][1]; // get how many cells there are in this group
+
+              // do top bar
+              topWrapper.insert('rect')
+              .attr('x', before * size) // start at the right spot
               .attr('y', 0)
-              .attr('width', 50)
-              .attr('height', 50)
+              .attr('width', sortedOnTitle[i][1] * size) // make sure each box is wide enough for the number of cells
+              .attr('height', sideBarWidth)
               .attr('stroke', "black")
-              .attr('fill', "red")
+              .attr('fill', titleColors[sortedOnTitle[i][0]].color.border)
               .attr('id', "SB-content");
+              // do left bar
+              leftWrapper.insert('rect')
+              .attr('x', 0) 
+              .attr('y', before * size) // start at the right spot
+              .attr('width', sideBarWidth) 
+              .attr('height', sortedOnTitle[i][1] * size) // make sure each box is wide enough for the number of cells
+              .attr('stroke', "black")
+              .attr('fill', titleColors[sortedOnTitle[i][0]].color.border)
+              .attr('id', "SB-content");
+
+              before += amount;
+            }           
+            
             break;
           case "name":
             break;
