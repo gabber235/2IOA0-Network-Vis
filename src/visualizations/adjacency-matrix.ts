@@ -24,6 +24,7 @@ type Edge = {
 
 export class AdjacencyMatrix {
   async visualize(data: Observable<[DataSetDiff<Person>, DataSetDiff<Email>]>, selSub: Subject<[IDSetDiff, IDSetDiff]>): Promise<void> {
+
     // datasets that hold the data
     const persons: DataSet<Person> = {};
     const emails: DataSet<Email> = {};

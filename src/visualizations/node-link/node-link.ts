@@ -77,30 +77,22 @@ export class NodeLinkVisualisation {
 
     private onSelection([personDiff, emailDiff]: [IDSetDiff, IDSetDiff]) {
 
+        console.log(emailDiff);
+
         personDiff.applySet(this.selectedPeople)
         emailDiff.applySet(this.selectedEmails)
 
-        this.visualisation.selectNodes(
-            [...this.selectedPeople]
-                .map(i => getPersonVisId(this.people[i], this.options.groupNodes))
-        )
+        this.updateSelection()
 
-        this.visualisation.selectEdges(
-            [...this.selectedEmails]
-                .map(i => getEmailVisId(this.emails[i], this.options.groupNodes, this.options.groupEdges))
-        )
     }
 
     private updateSelection() {
-        this.visualisation.selectNodes(
-            [...this.selectedPeople]
-                .map(i => getPersonVisId(this.people[i], this.options.groupNodes))
-        )
-
-        this.visualisation.selectEdges(
-            [...this.selectedEmails]
-                .map(i => getEmailVisId(this.emails[i], this.options.groupNodes, this.options.groupEdges))
-        )
+        this.visualisation.setSelection({
+            nodes: [...this.selectedPeople].map(i => getPersonVisId(this.people[i], this.options.groupNodes)),
+            edges: [...this.selectedEmails].map(i => getEmailVisId(this.emails[i], this.options.groupNodes, this.options.groupEdges))
+        }, {
+            highlightEdges: false    
+        })
     }
 
 
@@ -221,6 +213,8 @@ export class NodeLinkVisualisation {
                 }
             }
         }
+
+        console.log(111);
 
         const emails: string[] = []
 
@@ -375,9 +369,11 @@ function emailGroupByTitleToEdge(g: EmailGroup): vis.Edge {
 }
 
 function edgeColor(sentiment: number): any {
+    const hue = Math.tanh(sentiment * edgeColorContrast) / 2 + 0.5
     return {
-        color: hueGradient(Math.tanh(sentiment * edgeColorContrast) / 2 + 0.5, 1, 0.5, 0.1), 
-        highlight: hueGradient(Math.tanh(sentiment * edgeColorContrast) / 2 + 0.5, 1, 0.5, 1), 
+        color:     hueGradient(hue, 1, 0.5, 0.1), 
+        hover:     hueGradient(hue, 1, 0.5, 0.5), 
+        highlight: hueGradient(hue, 1, 0.5, 1), 
         inherit: false
     }
 }

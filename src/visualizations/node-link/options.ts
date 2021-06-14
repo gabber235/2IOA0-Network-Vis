@@ -40,7 +40,12 @@ export const initialVisOptions = {
         },
         // stabilizations:false
     },
-    interaction: { multiselect: true },
+    interaction: { 
+        multiselect: true,
+        hover: true,
+        tooltipDelay: 0,
+        // selectConnectedEdges: false,
+    },
     groups: titleColors
 }
 
