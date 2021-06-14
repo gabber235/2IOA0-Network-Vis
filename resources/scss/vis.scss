@@ -193,30 +193,38 @@ nav {
         display: grid;
         grid-template-columns: auto auto;
         padding: 0.5em;
-    }
-    .filter-function-wrapper {
-        font-size: 10px;
-        font-family: JetBrains mono, mono;
 
-        .filter-function-sig {
-            font-style: italic;
-            color: #666;
-            background-color: #ccc;
+        .filter-button {
+            display: block;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            text-align: center;
         }
 
-        .filter-function-body {
-            font-size: inherit;
-            font-family: inherit;
-            border: none;
-            color: inherit;
-            outline: none;
-            width: 300px;
-            background-color: #ccc;
-        }
-
-        .filter-function-error {
-            background-color: #fcc;
-            color: #a00;
+        .filter-function-wrapper {
+            font-size: 10px;
+            font-family: JetBrains mono, mono;
+    
+            .filter-function-sig {
+                font-style: italic;
+                color: #666;
+                background-color: #ccc;
+            }
+    
+            .filter-function-body {
+                font-size: inherit;
+                font-family: inherit;
+                border: none;
+                color: inherit;
+                outline: none;
+                width: 300px;
+                background-color: #ccc;
+            }
+    
+            .filter-function-error {
+                background-color: #fcc;
+                color: #a00;
+            }
         }
     }
 }

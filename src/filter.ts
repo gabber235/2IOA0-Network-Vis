@@ -40,17 +40,17 @@ export class FilterOptions {
         this.errorElm = div({class: "filter-function-error"}, [])
 
         this.textWrapper = div({class: "filter-function-wrapper"}, [
-            div({class: "filter-function-sig"}, [text("(email, ..) =>")]),
+            div({class: "filter-function-sig"}, [text("(email) =>")]),
             this.text,
             this.errorElm
         ])
 
-        this.applyButton = newElm("button", {}, [text("Apply")])
+        this.applyButton = newElm("button", {class: "filter-button"}, [text("Apply")])
 
         div({class: "filter-container"}, [
             div({class: "filter-title"}, [text("Filter")]),
             div({class: "filter-left-right-split"}, [
-                div({}, [
+                div({class: "filter-left-panel"}, [
                     div({}, [
                         newElm("label", {}, [text("Presets")]),
                         this.menu,
