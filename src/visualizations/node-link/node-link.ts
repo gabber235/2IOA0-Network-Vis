@@ -318,9 +318,6 @@ function personGroupToNode(id: ID, g: PersonGroup): vis.Node {
 function emailTitle(e: Email): string {
     return `${e.messageType}, ${e.date}, Sentiment: ${Math.round(e.sentiment * 1000) / 10}%`
 }
-function emailColor(e: Email): { color: string, inherit?: boolean } {
-    return { color: hueGradient(Math.tanh(e.sentiment * edgeColorContrast) / 2 + 0.5), inherit: false }
-}
 
 function emailToEdge(e: Email): vis.Edge {
     return {
@@ -328,7 +325,7 @@ function emailToEdge(e: Email): vis.Edge {
         from: `s${e.fromId}`,
         to: `s${e.toId}`,
         title: emailTitle(e),
-        color: emailColor(e),
+        color: edgeColor(e.sentiment),
     }
 }
 function emailToEdgeGroupedNodes(e: Email): vis.Edge {
@@ -337,7 +334,7 @@ function emailToEdgeGroupedNodes(e: Email): vis.Edge {
         from: `g${e.fromJobtitle}`,
         to: `g${e.toJobtitle}`,
         title: emailTitle(e),
-        color: emailColor(e),
+        color: edgeColor(e.sentiment),
     }
 }
 
@@ -356,7 +353,7 @@ function emailGroupByPersonToEdge(g: EmailGroup): vis.Edge {
         to: `s${someEmail.toId}`,
         width: Math.log(emailList.length) * 2,
         title: `${nounMultiple(toCount, 'Direct')}, ${nounMultiple(ccCount, 'CC', true)}, Av Sentiment: ${Math.round(avSent * 1000) / 10}%`,
-        color: { color: hueGradient(Math.tanh(avSent * edgeColorContrast) / 2 + 0.5), inherit: false },
+        color: edgeColor(avSent),
     }
 }
 
@@ -373,7 +370,15 @@ function emailGroupByTitleToEdge(g: EmailGroup): vis.Edge {
         to: `g${someEmail.toJobtitle}`,
         width: Math.log(emailList.length) * 2,
         title: `${nounMultiple(toCount, 'Direct')}, ${nounMultiple(ccCount, 'CC', true)}, Av Sentiment: ${Math.round(avSent * 1000) / 10}%`,
-        color: { color: hueGradient(Math.tanh(avSent * edgeColorContrast) / 2 + 0.5), inherit: false },
+        color: edgeColor(avSent),
+    }
+}
+
+function edgeColor(sentiment: number): any {
+    return {
+        color: hueGradient(Math.tanh(sentiment * edgeColorContrast) / 2 + 0.5, 1, 0.5, 0.1), 
+        highlight: hueGradient(Math.tanh(sentiment * edgeColorContrast) / 2 + 0.5, 1, 0.5, 1), 
+        inherit: false
     }
 }
 
@@ -382,13 +387,13 @@ function lerpMod(min: number, max: number, mod: number, val: number) {
     else return ((mod - min + max) * val + min) % mod
 }
 
-function hueGradient(v: number) {
+function hueGradient(v: number, s: number, l: number, a: number) {
     const min = 226
     const max = 33
 
     const angle = lerpMod(min, max, 360, v)
 
-    return `hsl(${angle},80%,50%)`
+    return `hsla(${angle},${s*100}%,${l*100}%,${a})`
 }
 
 
