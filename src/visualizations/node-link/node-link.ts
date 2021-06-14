@@ -76,9 +76,6 @@ export class NodeLinkVisualisation {
     }
 
     private onSelection([personDiff, emailDiff]: [IDSetDiff, IDSetDiff]) {
-
-        console.log(emailDiff);
-
         personDiff.applySet(this.selectedPeople)
         emailDiff.applySet(this.selectedEmails)
 
@@ -97,9 +94,6 @@ export class NodeLinkVisualisation {
 
 
     private onOptions(options: NodeLinkOptions) {
-
-        console.log(options)
-
         const shouldResetNodes =
             ('hierarchical' in options && this.options.hierarchical !== options.hierarchical)
             || ('groupNodes' in options)
@@ -218,8 +212,6 @@ export class NodeLinkVisualisation {
                 }
             }
         }
-
-        console.log(111);
 
         const emails: string[] = []
 
