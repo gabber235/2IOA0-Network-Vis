@@ -70,7 +70,7 @@ export const initialVisOptions = {
         tooltipDelay: 0,
         // selectConnectedEdges: false,
     },
-    // groups: titleColors
+    groups: titleColors
 }
 
 
