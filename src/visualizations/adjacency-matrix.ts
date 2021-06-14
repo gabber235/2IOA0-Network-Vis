@@ -338,38 +338,50 @@ export class AdjacencyMatrix {
             });
 
             // sort the tally so it uses the same ordering as the titles
-            let sortedOnTitle = Object.entries(groupTally).sort(function (a: [Title, number], b: [Title, number]) { 
-              return titleRanks[a[0]] - titleRanks[b[0]]; 
+            let sortedOnTitle = Object.entries(groupTally).sort(function (a: [Title, number], b: [Title, number]) {
+              return titleRanks[a[0]] - titleRanks[b[0]];
             });
 
             //
             let before = 0; // used to know how many cells there were before the current
             const size = xScale.rangeBand();
-            for (let i = 0; i < sortedOnTitle.length; i++){
+            for (let i = 0; i < sortedOnTitle.length; i++) {
               const amount = sortedOnTitle[i][1]; // get how many cells there are in this group
 
               // do top bar
-              topWrapper.insert('rect')
-              .attr('x', before * size) // start at the right spot
-              .attr('y', 0)
-              .attr('width', sortedOnTitle[i][1] * size) // make sure each box is wide enough for the number of cells
-              .attr('height', sideBarWidth)
-              .attr('stroke', "black")
-              .attr('fill', titleColors[sortedOnTitle[i][0]].color.border)
-              .attr('id', "SB-content");
+              let topTitlePart = topWrapper.append("g")
+                .attr("class", "title-part")
+                .attr('transform', "translate(" + before * size + ", 0)");  //placement at the right spot
+              topTitlePart.insert('rect')
+                .attr('width', sortedOnTitle[i][1] * size) // make sure each box is wide enough for the number of cells
+                .attr('height', sideBarWidth)
+                .attr('stroke', "black")
+                .attr('fill', titleColors[sortedOnTitle[i][0]].color.border)
+                .attr('id', "SB-content");
+              topTitlePart.insert('text')
+                .text(sortedOnTitle[i][0])
+                .attr("transform", "translate(0," + sideBarWidth / 2 + ")")
               // do left bar
-              leftWrapper.insert('rect')
-              .attr('x', 0) 
-              .attr('y', before * size) // start at the right spot
-              .attr('width', sideBarWidth) 
-              .attr('height', sortedOnTitle[i][1] * size) // make sure each box is wide enough for the number of cells
-              .attr('stroke', "black")
-              .attr('fill', titleColors[sortedOnTitle[i][0]].color.border)
-              .attr('id', "SB-content");
+              let leftTitlePart = leftWrapper.append("g")
+                .attr("class", "title-part")
+                .attr('transform', "translate(0, " + before * size + ")");  //placement at the right spot
+              leftTitlePart.insert('rect')
+                .attr('x', 0)
+                .attr('y', 0) // start at the right spot
+                .attr('width', sideBarWidth)
+                .attr('height', sortedOnTitle[i][1] * size) // make sure each box is wide enough for the number of cells
+                .attr('stroke', "black")
+                .attr('fill', titleColors[sortedOnTitle[i][0]].color.border)
+                .attr('id', "SB-content");
+              leftTitlePart.insert('text')
+                .text(sortedOnTitle[i][0])
+                .attr("transform", "translate(10," + 0 + ")rotate(-90)")
+                .attr("text-anchor", "end")
+    
 
               before += amount;
-            }           
-            
+            }
+
             break;
           case "name":
             break;
