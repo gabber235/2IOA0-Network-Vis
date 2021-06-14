@@ -67,7 +67,7 @@
                     </select>
                 </div>
                 <div id="node-link-options">
-                    <label for="hierarchical">Hierarchical layout</label>
+                    <label for="hierarchical">Layered layout</label>
                     <input type="checkbox" id="hierarchical" name="hierarchical">
 
                     <label for="physics">Physics</label>
@@ -81,6 +81,12 @@
 
                     <label for="group-edges">Combine Edges</label>
                     <input type="checkbox" id="group-edges" name="group-edges" checked>
+
+                    <label for="solver">Physics solver</label>
+                    <select name="solver" id="solver">
+                        <option value="barnesHut">Fast</option>
+                        <option value="forceAtlas2Based">Pretty</option>
+                    </select>
                 </div>
             </div>
         </div>

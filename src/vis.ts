@@ -125,6 +125,9 @@ window.addEventListener("load", async () => {
         checkBoxObserable(document.getElementById('group-edges')).pipe(
             map((b): NodeLinkOptions => ({ groupEdges: b }))
         ),
+        selectorObserable(document.getElementById('solver')).pipe(
+            map((v: any): NodeLinkOptions => ({ solver: v }))
+        )
     )
 
     const allNodes = dataWithAllNodes.pipe(shareReplay(1))

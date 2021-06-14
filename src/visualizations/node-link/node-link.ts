@@ -98,6 +98,8 @@ export class NodeLinkVisualisation {
 
     private onOptions(options: NodeLinkOptions) {
 
+        console.log(options)
+
         const shouldResetNodes =
             ('hierarchical' in options && this.options.hierarchical !== options.hierarchical)
             || ('groupNodes' in options)
@@ -371,7 +373,7 @@ function emailGroupByTitleToEdge(g: EmailGroup): vis.Edge {
 function edgeColor(sentiment: number): any {
     const hue = Math.tanh(sentiment * edgeColorContrast) / 2 + 0.5
     return {
-        color:     hueGradient(hue, 1, 0.5, 0.1), 
+        color:     hueGradient(hue, 1, 0.5, 0.2), 
         hover:     hueGradient(hue, 1, 0.5, 0.5), 
         highlight: hueGradient(hue, 1, 0.5, 1), 
         inherit: false
