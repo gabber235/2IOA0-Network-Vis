@@ -159,7 +159,10 @@ export class NodeLinkVisualisation {
         // update vis datasets
         let nodeDiff
         if (!this.options.groupNodes) {
-            nodeDiff = peopleDiff.map((person) => Object.assign({}, personToNode(person), this.getInitialNodeLocation(person)), id => "s" + id)
+            if (this.options.hierarchical)
+                nodeDiff = peopleDiff.map((person) => personToNode(person), id => "s" + id)
+            else
+                nodeDiff = peopleDiff.map((person) => Object.assign({}, personToNode(person), this.getInitialNodeLocation(person)), id => "s" + id)
         } else {
             nodeDiff = personGroupByTitleDiff.map((_, id) => personGroupToNode(id, this.personGroupsByTitle[id]), id => "g" + id)
         }
