@@ -56,7 +56,6 @@ export const initialVisOptions = {
             damping: 0.7,
             avoidOverlap: 0,
         },
-        stabilizations: false
     },
     interaction: { 
         multiselect: true,
