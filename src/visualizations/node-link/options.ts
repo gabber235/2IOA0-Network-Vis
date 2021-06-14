@@ -30,7 +30,7 @@ export const initialVisOptions = {
     layout: {
         hierarchical: {
             enabled: defaultNodeLinkOptions.hierarchical,
-            nodeSpacing: 20,
+            nodeSpacing: 70,
             treeSpacing: 10,
         },
         // improvedLayout: false
@@ -39,6 +39,7 @@ export const initialVisOptions = {
         enabled: defaultNodeLinkOptions.physics,
         timestep: 0.5,
         solver: defaultNodeLinkOptions.solver,
+
         forceAtlas2Based: {
             springLength: 10,
             springConstant: 0.1,
@@ -56,6 +57,12 @@ export const initialVisOptions = {
             damping: 0.7,
             avoidOverlap: 0,
         },
+        hierarchicalRepulsion: {
+            damping: 0.2,
+            nodeDistance: 100,
+            springLength: 200,
+            springConstant: 0.001,
+        }
     },
     interaction: { 
         multiselect: true,

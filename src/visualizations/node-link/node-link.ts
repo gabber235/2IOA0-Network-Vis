@@ -44,6 +44,9 @@ export class NodeLinkVisualisation {
 
         this.visualisation = new vis.Network(container, { nodes: this.nodes, edges: this.edges }, initialVisOptions)
 
+        this.visualisation.moveTo({scale: 0.4})
+
+
         options.subscribe(this.onOptions.bind(this))
 
         data.pipe(
@@ -72,6 +75,8 @@ export class NodeLinkVisualisation {
         return {
             x: circleLayoutRadius * Math.cos(2 * Math.PI * person.id / this.maxNodes),
             y: circleLayoutRadius * Math.sin(2 * Math.PI * person.id / this.maxNodes),
+            // x: Math.random() * 1000 - 500,
+            // y: Math.random() * 1000 - 500
         }
     }
 
