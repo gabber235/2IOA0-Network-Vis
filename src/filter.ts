@@ -21,7 +21,7 @@ export class FilterOptions {
     private presets: {[val:string]: [string, string]} = {
         none: ["None", "true"],
         sent: ["Sentiment", "Math.abs(email.sentiment) > 0.069"],
-        title: ["Title", "email.fromJobtitle == 'CEO' ||\nemail.toJobtitle == 'CEO'"],
+        title: ["Title", "email.fromJobtitle == 'CEO' || email.toJobtitle == 'CEO'"],
         type: ["Type", "email.messageType == 'TO'"],
     }
 
@@ -35,12 +35,12 @@ export class FilterOptions {
             Object.entries(this.presets).map(([value, [name]]) => 
                 newElm("option", {value: value}, [text(name)]))
         )
-        this.text = newElm("textArea", {class: "filter-function-body"}, []) as HTMLTextAreaElement
+        this.text = newElm("textArea", {class: "filter-function-body", spellcheck:"false"}, []) as HTMLTextAreaElement
 
         this.errorElm = div({class: "filter-function-error"}, [])
 
         this.textWrapper = div({class: "filter-function-wrapper"}, [
-            div({class: "filter-function-sig"}, [text("(email) =>")]),
+            div({class: "filter-function-sig"}, [text("(email) => ")]),
             this.text,
             this.errorElm
         ])
@@ -51,13 +51,11 @@ export class FilterOptions {
             div({class: "filter-title"}, [text("Filter")]),
             div({class: "filter-left-right-split"}, [
                 div({class: "filter-left-panel"}, [
-                    div({}, [
-                        newElm("label", {}, [text("Presets")]),
-                        this.menu,
-                    ]),
-                    this.applyButton
+                    newElm("label", {}, [text("Presets")]),
+                    this.menu,
                 ]),
-                this.textWrapper
+                this.textWrapper,
+                div({class:"filter-button-container"}, [this.applyButton])
             ])
         ], this.container)
 
@@ -71,13 +69,17 @@ export class FilterOptions {
                 sub.next(this.getFilterFunction())
             })    
         }).pipe(share())
+
+        this.noError()
     }
 
     private getFilterFunction(): FilterFunction {
         try {
+            this.noError()
             return eval("(email) => " + this.text.value)
         } catch (e) {
-            this.errorElm.textContent = e.message
+            // this.errorElm.textContent = e.message
+            this.error(e.message)
         }
     }
 
@@ -92,11 +94,19 @@ export class FilterOptions {
     
                 try {
                     sub.next(emails.filter(email => filterFunc(email, people, emailMap)))
-                    this.errorElm.textContent = ""
+                    this.noError()
                 } catch (e) {
-                    this.errorElm.textContent = e.message
+                    this.error(e.message)
                 }
             })
         }).pipe(share())
+    }
+
+    error(msg: string) {
+        this.errorElm.style.display = "block"
+        this.errorElm.textContent = msg
+    }
+    noError() {
+        this.errorElm.style.display = "none"
     }
 }

@@ -43,18 +43,23 @@
         <label for="file-selector">Choose a dataset</label>
 
         <div id="selectors">
-            <div id="filter-options"></div>
             
+
             <div id="universal-options">
+                <div id="time-frame">
+                    <span id="duration">---</span>
+                    <spam class="deemphasise">from</spam>
+                    <span id="first-day">---</span>
+                    <span class="deemphasise">til</span>
+                    <span id="last-day">---</span>
+                </div>
 
-                <span id="duration">---</span>
-
-                From
-                <span id="first-day">---</span>
-                til
-                <span id="last-day">---</span>
+                <div id="filter-options"></div>
             </div>
+
+
             <div id="timeline"><canvas id="timelineCanvas" width="1000" height="60"></canvas></div>
+
 
             <div id="split-options">
                 <div id="matrix-options">
@@ -89,6 +94,8 @@
                     </select>
                 </div>
             </div>
+
+
         </div>
     </div>
 
