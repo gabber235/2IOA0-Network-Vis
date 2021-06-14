@@ -203,7 +203,7 @@ export class AdjacencyMatrix {
         name: d3.range(n).sort(function (a, b) { return d3.ascending(nodes[a].name, nodes[b].name); }),
         count: d3.range(n).sort(function (a, b) { return nodes[b].count - nodes[a].count; }),
         group: d3.range(n).sort(function (a, b) { return titleRanks[nodes[a].group] - titleRanks[nodes[b].group]; }),
-        sentiment: d3.range(n).sort(function (a, b) { return nodes[b].count - nodes[a].count; }),
+        sentiment: d3.range(n).sort(function (a, b) { console.log(nodes[a],nodes[b], nodes[b].sentiment - nodes[a].sentiment); return nodes[b].sentiment - nodes[a].sentiment; }),
       };
 
       type sortingSetting = "name" | "count" | "group" | "sentiment";
@@ -351,19 +351,20 @@ export class AdjacencyMatrix {
               // do top bar
               let topTitlePart = topWrapper.append("g")
                 .attr("class", "title-part")
+                .attr('id', "SB-content")
                 .attr('transform', "translate(" + before * size + ", 0)");  //placement at the right spot
               topTitlePart.insert('rect')
                 .attr('width', sortedOnTitle[i][1] * size) // make sure each box is wide enough for the number of cells
                 .attr('height', sideBarWidth)
                 .attr('stroke', "black")
-                .attr('fill', titleColors[sortedOnTitle[i][0]].color.border)
-                .attr('id', "SB-content");
+                .attr('fill', titleColors[sortedOnTitle[i][0]].color.border)   ;             
               topTitlePart.insert('text')
                 .text(sortedOnTitle[i][0])
                 .attr("transform", "translate(0," + sideBarWidth / 2 + ")")
               // do left bar
               let leftTitlePart = leftWrapper.append("g")
                 .attr("class", "title-part")
+                .attr('id', "SB-content")
                 .attr('transform', "translate(0, " + before * size + ")");  //placement at the right spot
               leftTitlePart.insert('rect')
                 .attr('x', 0)
@@ -371,13 +372,11 @@ export class AdjacencyMatrix {
                 .attr('width', sideBarWidth)
                 .attr('height', sortedOnTitle[i][1] * size) // make sure each box is wide enough for the number of cells
                 .attr('stroke', "black")
-                .attr('fill', titleColors[sortedOnTitle[i][0]].color.border)
-                .attr('id', "SB-content");
+                .attr('fill', titleColors[sortedOnTitle[i][0]].color.border);                
               leftTitlePart.insert('text')
                 .text(sortedOnTitle[i][0])
                 .attr("transform", "translate(10," + 0 + ")rotate(-90)")
-                .attr("text-anchor", "end")
-    
+                .attr("text-anchor", "end");    
 
               before += amount;
             }
@@ -566,6 +565,7 @@ function peopleToNodes(people: Person[]) {
       name: emailToName(person.emailAdress),
       id: person.id,
       group: person.title,
+      sentiment: 0,
     };
     nodes.push(newNode);
   })
