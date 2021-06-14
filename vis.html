@@ -43,27 +43,19 @@
         <label for="file-selector">Choose a dataset</label>
 
         <div id="selectors">
-            <div id="filter-options">
-                <div>
-                    <div>
-                        <label for="filter-menu">Filter </label>
-                        <select name="filter-menu" id="filter-menu">
-                            <option value="none"> None </option>
-                            <option value="custom"> Custom </option>
-                        </select>
-                    </div>
-                    <div>
-                        <button id="apply-filter-button">Apply filter</button>
-                    </div>
-                </div>
-                <div id="filter-function-wrapper">
-                    <div id="filter-function-signature">(email, people, emails) =></div>
-                    <textarea id="filter-function">
-    // return a boolean
-                    </textarea>
-                    <div id="filter-function-error"></div>
-                </div>
+            <div id="filter-options"></div>
+            
+            <div id="universal-options">
+
+                <span id="duration">---</span>
+
+                From
+                <span id="first-day">---</span>
+                til
+                <span id="last-day">---</span>
             </div>
+            <div id="timeline"><canvas id="timelineCanvas" width="1000" height="60"></canvas></div>
+
             <div id="split-options">
                 <div id="matrix-options">
                     <label for="order">Order:</label>
@@ -91,16 +83,6 @@
                     <input type="checkbox" id="group-edges" name="group-edges" checked>
                 </div>
             </div>
-            <div id="universal-options">
-
-                <span id="duration">---</span>
-
-                From
-                <span id="first-day">---</span>
-                til
-                <span id="last-day">---</span>
-            </div>
-            <div id="timeline"><canvas id="timelineCanvas" width="1000" height="60"></canvas></div>
         </div>
     </div>
 

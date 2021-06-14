@@ -14,6 +14,7 @@ import { diffSwitchAll } from "./pipeline/diffSwitchAll";
 import { NodeLinkOptions } from "./visualizations/node-link/options";
 import { loadTimelineGraph, startTimeline } from "./visualizations/timeline";
 import { groupEmailsToCount } from "./pipeline/timeline";
+import { FilterOptions } from "./filter";
 
 window.addEventListener("load", async () => {
     const fileSelector = document.getElementById('file-selector');
@@ -27,34 +28,10 @@ window.addEventListener("load", async () => {
         document.getElementById('duration'),
     )
 
-    const filterFunctionError = document.getElementById('filter-function-error')
+    const filterOptions = new FilterOptions(
+        document.getElementById('filter-options'),
+    )
 
-    const filterFunction = new Observable<(email: Email, people: DataSet<Person>, emails: DataSet<Email>) => boolean>(sub => {
-        const filterFunctionWrapper = document.getElementById('filter-function-wrapper')
-        const filterMenu: any = document.getElementById('filter-menu')
-        const applyFilterButton = document.getElementById('apply-filter-button')
-
-        selectorObserable(filterMenu).subscribe(option => {
-            if (option === 'custom') {
-                filterFunctionWrapper.style.display = 'grid'
-                applyFilterButton.style.visibility = 'visible'
-            } else {
-                sub.next(() => true)
-                filterFunctionWrapper.style.display = 'none'
-                applyFilterButton.style.visibility = 'hidden'
-            }
-        })
-        applyFilterButton.addEventListener('click', () => {
-            if (filterMenu.value === "custom") {
-                try {
-                    sub.next(eval("(email, people, emails) => " + (document.getElementById('filter-function') as any).value))
-                } catch(e) {
-                    filterFunctionError.textContent = e.message
-                }
-            }
-        })
-    })
-    
     prettifyFileInput(fileSelector)
 
     // This subject is used to represent selected correspondants and emails respectivly
@@ -70,23 +47,7 @@ window.addEventListener("load", async () => {
         shareReplay(1),
     )
 
-    const filteredEmails = new Observable<Email[]>(sub => {
-        combineLatest([
-            baseEmailObservable,
-            filterFunction
-        ]).subscribe(([emails, filterFunc]) => {
-            const emailMap = arrayToObject(emails, email => email.id)
-            const people = getCorrespondants(emails)
-
-            try {
-                sub.next(emails.filter(email => filterFunc(email, people, emailMap)))
-                filterFunctionError.textContent = ""
-            } catch (e) {
-                console.log(1)
-                filterFunctionError.textContent = e.message
-            }
-        })
-    })
+    const filteredEmails = filterOptions.filterEmails(baseEmailObservable)
 
     combineLatest([filteredEmails, fromEvent(window, 'resize').pipe(startWith(0))])
         .pipe(map(([emails]) => groupEmailsToCount(emails)))
@@ -95,6 +56,7 @@ window.addEventListener("load", async () => {
     const dataWithAllNodes = filteredEmails.pipe(
         map(emails => {
             if (emails.length > 0) {
+
                 const firstDate = new Date(emails[0].date).getTime()
                 const lastDate = new Date(emails[emails.length - 1].date).getTime()
 

@@ -100,51 +100,6 @@ nav {
             margin: 0px 10px;
         }
 
-        #filter-options {
-            display: grid;
-            grid-template-columns: auto auto;
-            align-self: flex-start;
-
-
-            #apply-filter-button {
-                width: 100%;
-            }
-
-            #filter-function-wrapper {
-                display: grid;
-                grid-template-rows: auto auto;
-                background-color: #ccc;
-                // padding: 0.5em;
-                color: black;
-                font-size: 10px;
-                font-family: JetBrains Mono, monospace;
-
-                * {
-                    margin: 0;
-                }
-
-                #filter-function-signature {
-                    font-style: italic;
-                    color: #666
-                }
-
-                #filter-function {
-                    font-size: inherit;
-                    font-family: inherit;
-                    border: none;
-                    background-color: transparent;
-                    color: inherit;
-                    outline: none;
-                    width: 300px;
-                }
-
-                #filter-function-error {
-                    background-color: #fcc;
-                    color: #a00;
-                }
-            }
-        }
-
         #split-options {
             display       : flex;
             flex-direction: row;
@@ -227,4 +182,41 @@ nav {
 
 .footer {
     grid-area: footer;
+}
+
+
+.filter-container { 
+    .filter-title {
+        border-bottom: 1px solid $shadow;
+    }
+    .filter-left-right-split {  
+        display: grid;
+        grid-template-columns: auto auto;
+        padding: 0.5em;
+    }
+    .filter-function-wrapper {
+        font-size: 10px;
+        font-family: JetBrains mono, mono;
+
+        .filter-function-sig {
+            font-style: italic;
+            color: #666;
+            background-color: #ccc;
+        }
+
+        .filter-function-body {
+            font-size: inherit;
+            font-family: inherit;
+            border: none;
+            color: inherit;
+            outline: none;
+            width: 300px;
+            background-color: #ccc;
+        }
+
+        .filter-function-error {
+            background-color: #fcc;
+            color: #a00;
+        }
+    }
 }
