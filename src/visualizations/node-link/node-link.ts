@@ -160,8 +160,13 @@ export class NodeLinkVisualisation {
         if (!this.options.groupNodes) {
             if (this.options.hierarchical)
                 nodeDiff = peopleDiff.map((person) => personToNode(person), id => "s" + id)
-            else
-                nodeDiff = peopleDiff.map((person) => Object.assign({}, personToNode(person), this.getInitialNodeLocation(person)), id => "s" + id)
+            else {
+                nodeDiff = new DataSetDiff(
+                    peopleDiff.insertions.map(({id, value: person}) => ({id: "s" + id, value: Object.assign({}, personToNode(person), this.getInitialNodeLocation(person))})),
+                    peopleDiff.updates.map(({id, value: person}) => ({id: "s" + id, value: personToNode(person)})),
+                    peopleDiff.deletions.map(({id}) => ({id: "s" + id})),
+                )
+            }
         } else {
             nodeDiff = personGroupByTitleDiff.map((_, id) => personGroupToNode(id, this.personGroupsByTitle[id]), id => "g" + id)
         }

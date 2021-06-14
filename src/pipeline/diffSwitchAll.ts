@@ -24,6 +24,8 @@ export function diffSwitchAll<A, Data, Diff>(
                         const curData = getData(a)
                         const dataDiff = diff(prevData, curData)
 
+                        console.log(curData, prevData, dataDiff)
+
                         sub.next(pair(a, dataDiff))
 
                         prevData = curData
