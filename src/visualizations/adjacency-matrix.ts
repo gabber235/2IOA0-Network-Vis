@@ -203,7 +203,7 @@ export class AdjacencyMatrix {
         name: d3.range(n).sort(function (a, b) { return d3.ascending(nodes[a].name, nodes[b].name); }),
         count: d3.range(n).sort(function (a, b) { return nodes[b].count - nodes[a].count; }),
         group: d3.range(n).sort(function (a, b) { return titleRanks[nodes[a].group] - titleRanks[nodes[b].group]; }),
-        sentiment: d3.range(n).sort(function (a, b) { console.log(nodes[a],nodes[b], nodes[b].sentiment - nodes[a].sentiment); return nodes[b].sentiment - nodes[a].sentiment; }),
+        sentiment: d3.range(n).sort(function (a, b) { return nodes[b].sentiment - nodes[a].sentiment; }),
       };
 
       type sortingSetting = "name" | "count" | "group" | "sentiment";
