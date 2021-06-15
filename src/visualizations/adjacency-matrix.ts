@@ -385,7 +385,7 @@ export class AdjacencyMatrix {
                 .attr('fill', titleColors[sortedOnTitle[i][0]].color.background);
               leftTitlePart.insert('text')
                 .text(sortedOnTitle[i][0])
-                .attr('transform', "translate("+ 10 +"," + boxLength/2 + ")rotate(-90)")
+                .attr('transform', "translate("+ sideBarWidth/2 +"," + boxLength/2 + ")rotate(-90)")
                 .attr('text-anchor', "middle");
 
               before += amount;
