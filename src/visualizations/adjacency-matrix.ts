@@ -354,10 +354,14 @@ export class AdjacencyMatrix {
                 .attr('id', "SB-content")
                 .attr('transform', "translate(" + before * size + ", 0)");  //placement at the right spot
               topTitlePart.insert('rect')
+                .attr('y', -10)
                 .attr('width', sortedOnTitle[i][1] * size) // make sure each box is wide enough for the number of cells
-                .attr('height', sideBarWidth)
+                .attr('height', sideBarWidth + 10)
                 .attr('stroke', "black")
-                .attr('fill', titleColors[sortedOnTitle[i][0]].color.border)   ;             
+                .attr('rx', '10px')
+                .attr('stroke-width', '2px')
+                .attr('stroke', titleColors[sortedOnTitle[i][0]].color.border)
+                .attr('fill', titleColors[sortedOnTitle[i][0]].color.background);
               topTitlePart.insert('text')
                 .text(sortedOnTitle[i][0])
                 .attr("transform", "translate(0," + sideBarWidth / 2 + ")")
@@ -367,16 +371,19 @@ export class AdjacencyMatrix {
                 .attr('id', "SB-content")
                 .attr('transform', "translate(0, " + before * size + ")");  //placement at the right spot
               leftTitlePart.insert('rect')
-                .attr('x', 0)
+                .attr('x', -10)
                 .attr('y', 0) // start at the right spot
-                .attr('width', sideBarWidth)
+                .attr('width', sideBarWidth + 10)
                 .attr('height', sortedOnTitle[i][1] * size) // make sure each box is wide enough for the number of cells
                 .attr('stroke', "black")
-                .attr('fill', titleColors[sortedOnTitle[i][0]].color.border);                
+                .attr('rx', '10px')
+                .attr('stroke-width', '2px')
+                .attr('stroke', titleColors[sortedOnTitle[i][0]].color.border)
+                .attr('fill', titleColors[sortedOnTitle[i][0]].color.background);
               leftTitlePart.insert('text')
                 .text(sortedOnTitle[i][0])
                 .attr("transform", "translate(10," + 0 + ")rotate(-90)")
-                .attr("text-anchor", "end");    
+                .attr("text-anchor", "end");
 
               before += amount;
             }
