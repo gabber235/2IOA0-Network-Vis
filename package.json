@@ -58,8 +58,10 @@
     "webpack-encoding-plugin": "^0.3.1"
   },
   "dependencies": {
+    "@types/prismjs": "^1.16.5",
     "array-blur": "^1.1.0",
     "d3": "^3.5.17",
+    "prismjs": "^1.23.0",
     "rive-canvas": "^0.7.5",
     "rxjs": "^7.0.1",
     "vis": "^4.21.0-EOL"

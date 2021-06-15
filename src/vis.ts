@@ -1,4 +1,6 @@
 import "vis/dist/vis.min.css"
+import "prismjs/themes/prism.css"
+
 import { AdjacencyMatrix } from "./visualizations/adjacency-matrix";
 import { createLegend, NodeLinkVisualisation } from './visualizations/node-link/node-link';
 import { Email, getCorrespondants, parseData, Person } from "./data"
@@ -15,8 +17,10 @@ import { NodeLinkOptions } from "./visualizations/node-link/options";
 import { loadTimelineGraph, startTimeline } from "./visualizations/timeline";
 import { groupEmailsToCount } from "./pipeline/timeline";
 import { FilterOptions } from "./filter";
+import { highlightElement } from "prismjs";
 
 window.addEventListener("load", async () => {
+
     const fileSelector = document.getElementById('file-selector');
 
     const timeLine = await startTimeline()

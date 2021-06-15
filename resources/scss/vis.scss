@@ -209,8 +209,7 @@ nav {
         border-bottom: 1px solid $shadow;
     }
     .filter-left-right-split {  
-        display: grid;
-        grid-template-columns: auto 1fr auto;
+        display: flex;
         padding: 0.5em;
 
         .filter-left-panel {
@@ -227,32 +226,65 @@ nav {
         }
 
         .filter-function-wrapper {
+            position: relative;
             font-size: 10px;
-            font-family: JetBrains mono, mono;
+            font-family: JetBrains mono, Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
             display: grid;
             grid-template-columns: auto 1fr;
             grid-template-rows: auto auto;
-            background-color: #ccc;
+            // background-color: #ccc;
             margin: 0 1em;
+            // line-height: 1.5;
     
             .filter-function-sig {
-                font-style: italic;
-                color: #666;
-                background-color: #ccc;
                 padding-right: 0.5em;
+                font-family: JetBrains mono, Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+                user-select: none;
             }
     
-            .filter-function-body {
-                font-size: inherit;
-                font-family: inherit;
-                border: none;
-                color: inherit;
-                outline: none;
-                // width: 300px;
-                background-color: #ccc;
-                padding: 0;
-                margin: 0;
+            .filter-function-body-wrapper {
+                position: relative;
+                display: inline-block;
+                place-self: start;
+
+                .filter-highlighted-text {
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    width: 100%;
+                    height: 100%;
+                    margin: 0;
+                    padding: 0;
+                    z-index: -10;
+                    overflow: hidden;
+
+                    code {
+                        font-family: JetBrains mono, Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+                    }
+                }   
+
+                .filter-function-body-input {
+                    font-size: inherit;
+                    font-family: inherit;
+                    border: none;
+                    color: inherit;
+                    outline: none;
+                    padding: 0;
+                    margin: 0;
+                    background-color: transparent;
+                    color: transparent;
+                    caret-color: black;
+                    line-height: 1.55;
+                    overflow: hidden;
+                    width: 500px;
+                }
+
+                .filter-function-body-input::selection {
+                    background-color: #b3d4fc;
+                    color: black;
+                }
             }
+            
     
             .filter-function-error {
                 background-color: #fcc;

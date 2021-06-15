@@ -1,3 +1,4 @@
+import { highlightElement } from "prismjs"
 import { combineLatest, Observable } from "rxjs"
 import { share } from "rxjs/internal/operators/share"
 import { Email, getCorrespondants, Person } from "./data"
@@ -13,7 +14,8 @@ export class FilterOptions {
 
     private container: HTMLElement
     private menu: HTMLElement
-    private text: HTMLTextAreaElement
+    private textArea: HTMLTextAreaElement
+    private text: HTMLElement
     private textWrapper: HTMLElement
     private applyButton: HTMLElement
     private errorElm: HTMLElement
@@ -35,13 +37,22 @@ export class FilterOptions {
             Object.entries(this.presets).map(([value, [name]]) => 
                 newElm("option", {value: value}, [text(name)]))
         )
-        this.text = newElm("textArea", {class: "filter-function-body", spellcheck:"false"}, []) as HTMLTextAreaElement
+        this.textArea = newElm("textArea", {class: "filter-function-body-input", spellcheck:"false"}, []) as HTMLTextAreaElement
+
+        this.text = newElm("code", {class:"language-javascript"}, [])
 
         this.errorElm = div({class: "filter-function-error"}, [])
 
+        const functionSig = newElm("code", {class: "language-javascript, filter-function-sig"}, [text("(email) => ")])
+
+
         this.textWrapper = div({class: "filter-function-wrapper"}, [
-            div({class: "filter-function-sig"}, [text("(email) => ")]),
-            this.text,
+            functionSig,
+
+            div({class: "filter-function-body-wrapper"}, [
+                newElm("pre", {class: "filter-highlighted-text"}, [this.text]),
+                this.textArea,
+            ]),
             this.errorElm
         ])
 
@@ -60,7 +71,8 @@ export class FilterOptions {
         ], this.container)
 
         selectorObserable(this.menu).subscribe(option => {
-            this.text.value = this.presets[option][1]
+            this.textArea.value = this.presets[option][1]
+            this.updateText()
         })
 
         this.filterFunction = new Observable<FilterFunction>(sub => {
@@ -71,12 +83,23 @@ export class FilterOptions {
         }).pipe(share())
 
         this.noError()
+
+        this.textArea.addEventListener("input", () => {
+            this.updateText()
+        })
+        this.updateText()
+        highlightElement(functionSig)
+    }
+
+    private updateText() {
+        this.text.textContent = this.textArea.value    
+        highlightElement(this.text)
     }
 
     private getFilterFunction(): FilterFunction {
         try {
             this.noError()
-            return eval("(email) => " + this.text.value)
+            return eval("(email) => " + this.textArea.value)
         } catch (e) {
             // this.errorElm.textContent = e.message
             this.error(e.message)
