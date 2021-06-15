@@ -347,15 +347,17 @@ export class AdjacencyMatrix {
             const size = xScale.rangeBand();
             for (let i = 0; i < sortedOnTitle.length; i++) {
               const amount = sortedOnTitle[i][1]; // get how many cells there are in this group
+              const boxLength = amount * size;
+              const spaceBefore = before * size;
 
               // do top bar
               let topTitlePart = topWrapper.append("g")
                 .attr("class", "title-part")
                 .attr('id', "SB-content")
-                .attr('transform', "translate(" + before * size + ", 0)");  //placement at the right spot
+                .attr('transform', "translate(" + spaceBefore + ", 0)");  //placement at the right spot
               topTitlePart.insert('rect')
                 .attr('y', -10)
-                .attr('width', sortedOnTitle[i][1] * size) // make sure each box is wide enough for the number of cells
+                .attr('width', boxLength) // make sure each box is wide enough for the number of cells
                 .attr('height', sideBarWidth + 10)
                 .attr('stroke', "black")
                 .attr('rx', '10px')
@@ -364,17 +366,18 @@ export class AdjacencyMatrix {
                 .attr('fill', titleColors[sortedOnTitle[i][0]].color.background);
               topTitlePart.insert('text')
                 .text(sortedOnTitle[i][0])
-                .attr("transform", "translate(0," + sideBarWidth / 2 + ")")
+                .attr('transform', "translate("+ boxLength/2 +"," + sideBarWidth / 2 + ")")
+                .attr('text-anchor', 'middle');
               // do left bar
               let leftTitlePart = leftWrapper.append("g")
                 .attr("class", "title-part")
                 .attr('id', "SB-content")
-                .attr('transform', "translate(0, " + before * size + ")");  //placement at the right spot
+                .attr('transform', "translate(0, " + spaceBefore + ")");  //placement at the right spot
               leftTitlePart.insert('rect')
                 .attr('x', -10)
                 .attr('y', 0) // start at the right spot
                 .attr('width', sideBarWidth + 10)
-                .attr('height', sortedOnTitle[i][1] * size) // make sure each box is wide enough for the number of cells
+                .attr('height', boxLength) // make sure each box is wide enough for the number of cells
                 .attr('stroke', "black")
                 .attr('rx', '10px')
                 .attr('stroke-width', '2px')
@@ -382,8 +385,8 @@ export class AdjacencyMatrix {
                 .attr('fill', titleColors[sortedOnTitle[i][0]].color.background);
               leftTitlePart.insert('text')
                 .text(sortedOnTitle[i][0])
-                .attr("transform", "translate(10," + 0 + ")rotate(-90)")
-                .attr("text-anchor", "end");
+                .attr('transform', "translate("+ 10 +"," + boxLength/2 + ")rotate(-90)")
+                .attr('text-anchor', "middle");
 
               before += amount;
             }
