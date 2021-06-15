@@ -4,20 +4,19 @@ import "prismjs/themes/prism.css"
 import { AdjacencyMatrix } from "./visualizations/adjacency-matrix";
 import { createLegend, NodeLinkVisualisation } from './visualizations/node-link/node-link';
 import { Email, getCorrespondants, parseData, Person } from "./data"
-import { combineLatest, fromEvent, merge, Observable, of, Subject, timer } from "rxjs";
+import { combineLatest, fromEvent, merge, of, Subject, timer } from "rxjs";
 import { debounce, map, scan, share, shareReplay, startWith } from "rxjs/operators";
 import { DataSet, DataSetDiff, diffDataSet, foldDataSet, IDSetDiff } from "./pipeline/dynamicDataSet";
 import { getDynamicCorrespondants } from "./pipeline/getDynamicCorrespondants";
-import { arrayToObject, binarySearch, ConstArray, millisInDay, pair, pairMap2, tripple } from "./utils";
+import { binarySearch, ConstArray, millisInDay, pair, pairMap2, tripple } from "./utils";
 import { prettifyFileInput, TimeSliders } from "./looks";
-import { checkBoxObserable, diffStream, fileInputObservable, selectorObserable, textAreaObserable } from "./pipeline/basics";
+import { checkBoxObserable, diffStream, fileInputObservable, selectorObserable } from "./pipeline/basics";
 import { dynamicSlice } from "./pipeline/dynamicSlice";
 import { diffSwitchAll } from "./pipeline/diffSwitchAll";
 import { NodeLinkOptions } from "./visualizations/node-link/options";
 import { loadTimelineGraph, startTimeline } from "./visualizations/timeline";
 import { groupEmailsToCount } from "./pipeline/timeline";
 import { FilterOptions } from "./filter";
-import { highlightElement } from "prismjs";
 
 window.addEventListener("load", async () => {
 
@@ -155,5 +154,5 @@ window.addEventListener("load", async () => {
     createLegend(document.getElementById("node-link-legend"))
 
     const nodeLinkDiagram = new NodeLinkVisualisation(document.getElementById("node-links"), maybeShowAllNodes, selectionSubject, nodeLinkOptions, 150)
-    nodeLinkDiagram.getVisNodeSeletions().subscribe(selectionSubject)
+    nodeLinkDiagram.getVisSelections().subscribe(selectionSubject)
 })

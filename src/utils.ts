@@ -125,7 +125,7 @@ export function binarySearch<A>(items: (index: number) => A, target: A, begin: n
 
 
 /**
- * Swaps the members of a tuple
+ * Swaps the members of a pair
  */
 export function swap<X, Y>([x, y]: [X, Y]): [Y, X] {
     return [y, x]
@@ -139,7 +139,9 @@ export function arrayToObject<A>(data: A[], getKey: (item: A) => number | string
     return Object.assign({}, ...data.map(item => ({ [getKey(item)]: item })))
 }
 
-
+/**
+ * Copies an object and applies the given function 'f' to its values
+ */
 export function objectMap<A, B>(f: (a: A) => B, obj: { [key: number]: A }): { [key: number]: B } {
     const newObj: { [key: number]: B } = {}
 
@@ -221,7 +223,10 @@ export function copyObject<A>(x: A): A {
 export const millisInDay = 24 * 60 * 60 * 1000
 
 
-
+/**
+ * Takes a pair of arrays and combines them into an array of pairs. 
+ * The size of the resulting array is the minimum of the sizes of the input arrays.
+ */
 export function zipArrays<A, B>(a: A[], b: B[]): [A, B][] {
     const ret: [A, B][] = []
 
@@ -229,4 +234,42 @@ export function zipArrays<A, B>(a: A[], b: B[]): [A, B][] {
         ret.push(pair(a[i], b[i]))
     }
     return ret
+}
+
+
+/**
+ * Linearly interpolates a value 'val' between 'min' and 'max', it does this mod 'mod'.
+ */
+export function lerpMod(min: number, max: number, mod: number, val: number) {
+    if (min < max) return (max - min) * val + min
+    else return ((mod - min + max) * val + min) % mod
+}
+
+/**
+ * Returns a hsla string where the hue is determined by a value 'v' from 0.0 to 1.0.
+ * If v = 0 the hue will be blue and if v = 1 the hue will be orange
+ */
+export function hueGradient(v: number, s: number, l: number, a: number) {
+    const min = 226
+    const max = 33
+
+    const angle = lerpMod(min, max, 360, v)
+
+    return `hsla(${angle},${s*100}%,${l*100}%,${a})`
+}
+
+/**
+ * Used to generate strings like '3 apples' or '1 tree'. 
+ * It makes sure the nouns are more or less properly pluralised by adding an "s" or an "'s" at the end if there is more than 1
+ */
+export function nounMultiple(amount: number, noun: string, apostrophe: boolean = false): string {
+    return `${amount} ${noun}${(apostrophe && amount > 1) ? "'" : ""}${amount > 1 ? "s" : ""}`
+}
+
+
+/**
+ * Rounds 'x' to a given number of decimals
+ */
+export function roundTo(x: number, decimals: number): number {
+    return Math.round(x * Math.pow(10,decimals)) / Math.pow(10,decimals)
 }
