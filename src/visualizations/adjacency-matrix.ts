@@ -174,13 +174,6 @@ export class AdjacencyMatrix {
       // append all the defined gradients to the SVG
       document.getElementById("AM-SVG").appendChild(defs);
 
-      //   <defs>
-      //   <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
-      //     <stop offset="0%" style="stop-color:rgb(255,255,0);stop-opacity:1" />
-      //     <stop offset="100%" style="stop-color:rgb(255,0,0);stop-opacity:1" />
-      //   </linearGradient>
-      // </defs>
-
       type Cell = {
         x: number,
         y: number,
@@ -288,7 +281,21 @@ export class AdjacencyMatrix {
       svg.append("rect")
         .attr("class", "background")
         .attr("width", width)
-        .attr("height", height);
+        .attr("height", height)
+        .on('click', () => {
+          // get IDs of selected emails
+          const selEmIDs = Object.keys(selectedEmails);
+          // get IDs of selected persons
+          const selPerIDs = Object.keys(selectedPersons);
+
+          // unselect everything
+          pushToSelectionSubject(
+            [],
+            [],
+            selEmIDs,
+            selPerIDs,
+          )
+        });
 
       const rows = svg.selectAll(".row")
         .data(matrix)
@@ -620,7 +627,7 @@ export class AdjacencyMatrix {
     }
 
     // takes email IDs and sends them to selectionSubject (by first also calculating the persons involved)
-    function pushToSelectionSubject(addEmailIDs: number[], addPersonIDs: number[], delEmailIDs: number[], delPersonIDs: number[]) {
+    function pushToSelectionSubject(addEmailIDs: any[], addPersonIDs: any[], delEmailIDs: any[], delPersonIDs: any[]) {
       const emailDiff = new DataSetDiff;
       addEmailIDs.forEach((e) => {
         emailDiff.add(e.toString(), e)
