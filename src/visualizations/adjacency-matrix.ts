@@ -124,6 +124,36 @@ export class AdjacencyMatrix {
       // make def block to put all gradient definitions in
       const defs = document.createElementNS(svgns, "defs");
 
+      // define gradients for sentiment sorting
+      const topSentGrad = document.createElementNS(svgns, "linearGradient");
+      const leftSentGrad = document.createElementNS(svgns, "linearGradient");
+      topSentGrad.setAttribute('id', "grad-sent-top");
+      topSentGrad.setAttribute('x1', '100%');
+      topSentGrad.setAttribute('y1', '0%');
+      topSentGrad.setAttribute('x2', '0%');
+      topSentGrad.setAttribute('y2', '0%');
+      leftSentGrad.setAttribute('id', "grad-sent-left");
+      leftSentGrad.setAttribute('x1', '0%');
+      leftSentGrad.setAttribute('y1', '100%');
+      leftSentGrad.setAttribute('x2', '0%');
+      leftSentGrad.setAttribute('y2', '0%');
+
+      const SentStop1 = document.createElementNS(svgns, "stop");
+      SentStop1.setAttribute('offset', "0%");
+      SentStop1.setAttribute('style', "stop-color:rgb(255,0,0);stop-opacity:1");
+
+      const SentStop2 = document.createElementNS(svgns, "stop");
+      SentStop2.setAttribute('offset', "100%");
+      SentStop2.setAttribute('style', "stop-color:rgb(0,255,0);stop-opacity:1");
+
+      // append all the elements together and add it to defs
+      topSentGrad.appendChild(SentStop1);
+      topSentGrad.appendChild(SentStop2);
+      leftSentGrad.appendChild(SentStop1.cloneNode());
+      leftSentGrad.appendChild(SentStop2.cloneNode());
+      defs.appendChild(topSentGrad);
+      defs.appendChild(leftSentGrad);
+
       // define gradients for titles for the top bar
       for (let i = 0; i < titleArr.length; i++) {
         const t: Title = titleArr[i]; // current title
@@ -399,6 +429,7 @@ export class AdjacencyMatrix {
         leftWrapper.selectAll('#SB-content').remove();
 
         // add content to sidebars based on sorting setting
+        const strokeWeight = 2;
         switch (sorting) {
           case "count":
             break;
@@ -425,7 +456,6 @@ export class AdjacencyMatrix {
               const amount = sortedOnTitle[i][1]; // get how many cells there are in this group
               const boxLength = amount * size;
               const spaceBefore = before * size;
-              const strokeWeight = 2;
 
               // do top bar
               let topTitlePart = topWrapper.append("g")
@@ -472,19 +502,17 @@ export class AdjacencyMatrix {
 
             break;
           case "name":
-            const strokeWeight = 2;
-
             // top bar
             topWrapper.insert('rect')
-            .attr('id', "SB-content")
-            .attr('y', -10)
-            .attr('width', width - sideBarWidth - strokeWeight)
-            .attr('height', sideBarWidth + 10)
-            .attr('stroke', "black")
-            .attr('rx', '10px')
-            .attr('stroke-width', '2px')
-            .attr('stroke', "black")
-            .attr('fill', "aquamarine");
+              .attr('id', "SB-content")
+              .attr('y', -10)
+              .attr('width', width - sideBarWidth - strokeWeight)
+              .attr('height', sideBarWidth + 10)
+              .attr('stroke', "black")
+              .attr('rx', '10px')
+              .attr('stroke-width', strokeWeight + "px")
+              .attr('stroke', "black")
+              .attr('fill', "aquamarine");
             // top A
             topWrapper.append('text')
               .attr('transform', "translate(10," + 2 * sideBarWidth / 3 + ")")
@@ -499,15 +527,15 @@ export class AdjacencyMatrix {
 
             // left bar
             leftWrapper.insert('rect')
-            .attr('id', "SB-content")
-            .attr('x', -10)
-            .attr('width', sideBarWidth + 10)
-            .attr('height', width - sideBarWidth - strokeWeight)
-            .attr('stroke', "black")
-            .attr('rx', '10px')
-            .attr('stroke-width', '2px')
-            .attr('stroke', "black")
-            .attr('fill', "aquamarine");
+              .attr('id', "SB-content")
+              .attr('x', -10)
+              .attr('width', sideBarWidth + 10)
+              .attr('height', width - sideBarWidth - strokeWeight)
+              .attr('stroke', "black")
+              .attr('rx', '10px')
+              .attr('stroke-width', strokeWeight + "px")
+              .attr('stroke', "black")
+              .attr('fill', "aquamarine");
             // left A
             leftWrapper.append('text')
               .attr('transform', "translate(" + 2 * sideBarWidth / 3 + ", 18)")
@@ -523,6 +551,28 @@ export class AdjacencyMatrix {
 
             break;
           case "sentiment":
+            // top bar
+            topWrapper.insert('rect')
+              .attr('id', "SB-content")
+              .attr('y', -10)
+              .attr('width', width - sideBarWidth - strokeWeight)
+              .attr('height', sideBarWidth + 10)
+              .attr('stroke', "black")
+              .attr('rx', '10px')
+              .attr('stroke-width', strokeWeight + "px")
+              .attr('stroke', "black")
+              .attr('fill', "url(#grad-sent-top");
+            // left bar
+            leftWrapper.insert('rect')
+              .attr('id', "SB-content")
+              .attr('x', -10)
+              .attr('width', sideBarWidth + 10)
+              .attr('height', width - sideBarWidth - strokeWeight)
+              .attr('stroke', "black")
+              .attr('rx', '10px')
+              .attr('stroke-width', strokeWeight + "px")
+              .attr('stroke', "black")
+              .attr('fill', "url(#grad-sent-left");
             break;
         }
       }
