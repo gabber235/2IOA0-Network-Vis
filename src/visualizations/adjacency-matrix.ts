@@ -111,32 +111,65 @@ export class AdjacencyMatrix {
       }
       const svg = d3.select("#AM-SVG");
 
+      // get used titles
+      const titleSet: any = new Set();
+      nodes.forEach((p) => {
+        titleSet.add(p.group);
+      });
+      const titleArr: Title[] = Array.from(titleSet);
 
-      // declare SVG namespace
+      // declare SVG namespace so we can create SVG elements properly
       const svgns = 'http://www.w3.org/2000/svg';
 
       // define and add gradients to be used later
       const defs = document.createElementNS(svgns, "defs");
 
-      const linearGradient = document.createElementNS(svgns, "linearGradient");
-      linearGradient.setAttribute('id', "grad");
-      linearGradient.setAttribute('x1', '0%');
-      linearGradient.setAttribute('y1', '0%');
-      linearGradient.setAttribute('x2', '100%');
-      linearGradient.setAttribute('y2', '0%');
+      // define gradients for the top bar
+      for (let i = 0; i < titleArr.length; i++) {
+        const t: Title = titleArr[i]; // current title
+        const linearGradient = document.createElementNS(svgns, "linearGradient");
+        linearGradient.setAttribute('id', "grad-" + t.toString().replace(" ", "-") + "-top");
+        linearGradient.setAttribute('x1', '0%');
+        linearGradient.setAttribute('y1', '100%');
+        linearGradient.setAttribute('x2', '0%');
+        linearGradient.setAttribute('y2', '0%');
 
-      const stop1 = document.createElementNS(svgns, "stop");
-      stop1.setAttribute('offset', "0%");
-      stop1.setAttribute('style', "stop-color:rgb(255,255,0);stop-opacity:1");
+        const stop1 = document.createElementNS(svgns, "stop");
+        stop1.setAttribute('offset', "0%");
+        stop1.setAttribute('style', "stop-color:" + titleColors[t].color.border + ";stop-opacity:1");
 
-      const stop2 = document.createElementNS(svgns, "stop");
-      stop2.setAttribute('offset', "100%");
-      stop2.setAttribute('style', "stop-color:rgb(255,0,0);stop-opacity:1");
+        const stop2 = document.createElementNS(svgns, "stop");
+        stop2.setAttribute('offset', "100%");
+        stop2.setAttribute('style', "stop-color:" + titleColors[t].color.background + ";stop-opacity:1");
 
-      // append all the elements together and add it to the svg
-      linearGradient.appendChild(stop1);
-      linearGradient.appendChild(stop2);
-      defs.appendChild(linearGradient);
+        // append all the elements together and add it to defs
+        linearGradient.appendChild(stop1);
+        linearGradient.appendChild(stop2);
+        defs.appendChild(linearGradient);
+      }
+      // define gradients for the left bar
+      for (let i = 0; i < titleArr.length; i++) {
+        const t: Title = titleArr[i]; // current title
+        const linearGradient = document.createElementNS(svgns, "linearGradient");
+        linearGradient.setAttribute('id', "grad-" + t.toString().replace(" ", "-") + "-left");
+        linearGradient.setAttribute('x1', '100%');
+        linearGradient.setAttribute('y1', '0%');
+        linearGradient.setAttribute('x2', '0%');
+        linearGradient.setAttribute('y2', '0%');
+
+        const stop1 = document.createElementNS(svgns, "stop");
+        stop1.setAttribute('offset', "0%");
+        stop1.setAttribute('style', "stop-color:" + titleColors[t].color.border + ";stop-opacity:1");
+
+        const stop2 = document.createElementNS(svgns, "stop");
+        stop2.setAttribute('offset', "100%");
+        stop2.setAttribute('style', "stop-color:" + titleColors[t].color.background + ";stop-opacity:1");
+
+        // append all the elements together and add it to defs
+        linearGradient.appendChild(stop1);
+        linearGradient.appendChild(stop2);
+        defs.appendChild(linearGradient);
+      }
 
       // append all the defined gradients to the SVG
       document.getElementById("AM-SVG").appendChild(defs);
@@ -399,8 +432,8 @@ export class AdjacencyMatrix {
                 .attr('rx', '10px')
                 .attr('stroke-width', '2px')
                 .attr('stroke', titleColors[sortedOnTitle[i][0]].color.border)
-                .attr('fill',"url(#grad)");
-                // .attr('fill', titleColors[sortedOnTitle[i][0]].color.background);
+                .attr('fill', "url(#grad-" + sortedOnTitle[i][0].replace(" ", "-") + "-top)");
+              // .attr('fill', titleColors[sortedOnTitle[i][0]].color.background);
               topTitlePart.insert('text')
                 .text(sortedOnTitle[i][0])
                 .attr('transform', "translate(" + boxLength / 2 + "," + sideBarWidth / 2 + ")")
@@ -419,7 +452,8 @@ export class AdjacencyMatrix {
                 .attr('rx', '10px')
                 .attr('stroke-width', '2px')
                 .attr('stroke', titleColors[sortedOnTitle[i][0]].color.border)
-                .attr('fill', titleColors[sortedOnTitle[i][0]].color.background);
+                .attr('fill', "url(#grad-" + sortedOnTitle[i][0].replace(" ", "-") + "-left)");
+              // .attr('fill', titleColors[sortedOnTitle[i][0]].color.background);
               leftTitlePart.insert('text')
                 .text(sortedOnTitle[i][0])
                 .attr('transform', "translate(" + sideBarWidth / 2 + "," + boxLength / 2 + ")rotate(-90)")
