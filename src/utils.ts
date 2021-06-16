@@ -35,8 +35,8 @@ export function newId() {
 /**
  * Creates an element of type, type with attributes defined by attrs and children defined by children. An optional parent may be provided
  */
-export function newElm(type: string = "div", attrs: { [name: string]: string } = {}, children: Node[] = [], parent: Node | undefined = undefined): HTMLElement {
-    const elm = document.createElement(type)
+export function newElm<E extends HTMLElement>(type: string = "div", attrs: { [name: string]: string } = {}, children: Node[] = [], parent: Node | undefined = undefined): E {
+    const elm = document.createElement(type) as E
 
     for (const name in attrs) {
         elm.setAttribute(name, attrs[name])
@@ -55,13 +55,13 @@ export function newElm(type: string = "div", attrs: { [name: string]: string } =
 /**
  * Uses newElm to create a div
  */
-export function div(attrs: { [name: string]: string } = {}, children: Node[] = [], parent: Node | undefined = undefined): HTMLElement {
+export function div(attrs: { [name: string]: string } = {}, children: Node[] = [], parent: Node | undefined = undefined): HTMLDivElement {
     return newElm("div", attrs, children, parent)
 }
 /**
  * Uses newElm to create a span
  */
-export function span(attrs: { [name: string]: string } = {}, children: Node[] = [], parent: Node | undefined = undefined): HTMLElement {
+export function span(attrs: { [name: string]: string } = {}, children: Node[] = [], parent: Node | undefined = undefined): HTMLSpanElement {
     return newElm("span", attrs, children, parent)
 }
 /**

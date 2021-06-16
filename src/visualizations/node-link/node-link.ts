@@ -1,4 +1,4 @@
-import { Observable } from 'rxjs';
+import { identity, Observable } from 'rxjs';
 import { filter, map, share } from 'rxjs/operators';
 import * as vis from 'vis';
 import { Email, Person, } from '../../data';
@@ -122,7 +122,7 @@ export class NodeLinkVisualisation {
             })
         }).pipe(
             // First we convert the lists of id's to datasets
-            map(([nodes, edges]) => pair(arrayToObject(nodes, x => x), arrayToObject(edges, x => x))),
+            map(([nodes, edges]) => pair(arrayToObject(nodes, identity), arrayToObject(edges, identity))),
             // We diff the datasets
             diffStream(pair({}, {}), pairMap2(diffPureDataSet, diffPureDataSet)),
             // And we remove empty diffs
@@ -207,6 +207,7 @@ export class NodeLinkVisualisation {
         }
 
         let edgeDiff
+
         if (!this.options.groupNodes && !this.options.groupEdges) {
             edgeDiff = emailDiff.map(emailToEdge, id => "ss" + id)
 
@@ -298,9 +299,9 @@ export class NodeLinkVisualisation {
             else if (this.options.groupNodes && !this.options.groupEdges) {
                 this.edges.add(Object.values(this.emails).map(emailToEdgeGroupedNodes))
             } else if (!this.options.groupNodes && this.options.groupEdges) {
-                this.edges.add(Object.entries(this.emailGroupsByPerson).map(([id, val]) => emailGroupByPersonToEdge(val)))
+                this.edges.add(Object.entries(this.emailGroupsByPerson).map(([_, val]) => emailGroupByPersonToEdge(val)))
             } else {
-                this.edges.add(Object.entries(this.emailGroupsByTitle).map(([id, val]) => emailGroupByTitleToEdge(val)))
+                this.edges.add(Object.entries(this.emailGroupsByTitle).map(([_, val]) => emailGroupByTitleToEdge(val)))
             }
         }
         this.updateSelection()
@@ -494,7 +495,7 @@ function edgeColor(sentiment: number): any {
     return {
         color:     hueGradient(hue, 1, 0.5, 0.2), 
         hover:     hueGradient(hue, 1, 0.5, 0.5), 
-        highlight: hueGradient(hue, 1, 0.5, 1), 
+        highlight: hueGradient(hue, 1, 0.5, 1  ), 
         inherit: false
     }
 }

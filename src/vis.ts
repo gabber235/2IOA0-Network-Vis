@@ -20,7 +20,7 @@ import { FilterOptions } from "./filter";
 
 window.addEventListener("load", async () => {
 
-    const fileSelector = document.getElementById('file-selector');
+    const fileSelector = document.getElementById('file-selector') as HTMLInputElement;
 
     const timeLine = await startTimeline()
 
@@ -116,19 +116,19 @@ window.addEventListener("load", async () => {
 
 
     const nodeLinkOptions = merge(
-        checkBoxObserable(document.getElementById('physics')).pipe(
+        checkBoxObserable(document.getElementById('physics') as HTMLInputElement).pipe(
             map((b): NodeLinkOptions => ({ physics: b }))
         ),
-        checkBoxObserable(document.getElementById('hierarchical')).pipe(
+        checkBoxObserable(document.getElementById('hierarchical') as HTMLInputElement).pipe(
             map((b): NodeLinkOptions => ({ hierarchical: b }))
         ),
-        checkBoxObserable(document.getElementById('group-nodes')).pipe(
+        checkBoxObserable(document.getElementById('group-nodes') as HTMLInputElement).pipe(
             map((b): NodeLinkOptions => ({ groupNodes: b }))
         ),
-        checkBoxObserable(document.getElementById('group-edges')).pipe(
+        checkBoxObserable(document.getElementById('group-edges') as HTMLInputElement).pipe(
             map((b): NodeLinkOptions => ({ groupEdges: b }))
         ),
-        selectorObserable(document.getElementById('solver')).pipe(
+        selectorObserable(document.getElementById('solver') as HTMLSelectElement).pipe(
             map((v: any): NodeLinkOptions => ({ solver: v }))
         )
     )
@@ -140,7 +140,7 @@ window.addEventListener("load", async () => {
     fewerNodes.subscribe()
 
 
-    const maybeShowAllNodes = checkBoxObserable(document.getElementById('show-all-nodes')).pipe(
+    const maybeShowAllNodes = checkBoxObserable(document.getElementById('show-all-nodes') as HTMLInputElement).pipe(
         map(bool => bool ? allNodes : fewerNodes),
         diffSwitchAll(
             () => pair({} as DataSet<Person>, {} as DataSet<Email>),

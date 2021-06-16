@@ -13,7 +13,7 @@ type FilterFunction = (email: Email, people: DataSet<Person>, emails: DataSet<Em
 export class FilterOptions {
 
     private container: HTMLElement
-    private menu: HTMLElement
+    private menu: HTMLSelectElement
     private textArea: HTMLTextAreaElement
     private text: HTMLElement
     private textWrapper: HTMLElement

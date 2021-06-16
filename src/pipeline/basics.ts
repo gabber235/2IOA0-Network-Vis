@@ -20,10 +20,10 @@ export function diffStream<A,B>(initial: A, diff: (x: A, y: A) => B) {
 /**
  * Returns an observable of file contents for a given file input
  */
-export function fileInputObservable(elm: HTMLElement): Observable<string> {
+export function fileInputObservable(elm: HTMLInputElement): Observable<string> {
     return new Observable(sub => {
-        elm.addEventListener('change', async (event: any) => {
-            const fileList: FileList = event.target.files;
+        elm.addEventListener('change', async () => {
+            const fileList: FileList = elm.files;
 
             for (let i = 0; i < fileList.length; i++) {
                 const file = fileList.item(i);
@@ -38,12 +38,12 @@ export function fileInputObservable(elm: HTMLElement): Observable<string> {
 /**
  * Returns an observable of the values of a slider
  */
-export function sliderToObservable(elm: HTMLElement): Observable<number> {
+export function sliderToObservable(elm: HTMLInputElement): Observable<number> {
     return new Observable(sub => {
-        sub.next(+(elm as any).value)
+        sub.next(+elm.value)
 
         elm.addEventListener("input", (e: any) => {
-            sub.next(+e.target.value)    
+            sub.next(+elm.value)
         })    
     })
 }
@@ -51,33 +51,33 @@ export function sliderToObservable(elm: HTMLElement): Observable<number> {
 /**
  * Returns an observable of booleans representing whether the given checkbox is checked
  */
-export function checkBoxObserable(elm: HTMLElement): Observable<boolean> {
+export function checkBoxObserable(elm: HTMLInputElement): Observable<boolean> {
     return new Observable(sub => {
-        sub.next((elm as any).checked)
+        sub.next(elm.checked)
 
-        elm.addEventListener("change", (e: any) => {
-            sub.next(e.target.checked)
+        elm.addEventListener("change", () => {
+            sub.next(elm.checked)
         })
     })
 }
 
- export function selectorObserable(elm: HTMLElement): Observable<string> {
+ export function selectorObserable(elm: HTMLSelectElement): Observable<string> {
     return new Observable(sub => {
-        sub.next((elm as any).value)
+        sub.next(elm.value)
 
-        elm.addEventListener("change", (e: any) => {
-            sub.next(e.target.value)
+        elm.addEventListener("change", () => {
+            sub.next(elm.value)
         })
     })
 }
 
 
- export function textAreaObserable(elm: HTMLElement): Observable<string> {
+ export function textAreaObserable(elm: HTMLTextAreaElement): Observable<string> {
     return new Observable(sub => {
-        sub.next((elm as any).value)
+        sub.next(elm.value)
 
         elm.addEventListener("change", (e: any) => {
-            sub.next(e.target.value)
+            sub.next(elm.value)
         })
     })
 }
