@@ -425,6 +425,7 @@ export class AdjacencyMatrix {
               const amount = sortedOnTitle[i][1]; // get how many cells there are in this group
               const boxLength = amount * size;
               const spaceBefore = before * size;
+              const strokeWeight = 2;
 
               // do top bar
               let topTitlePart = topWrapper.append("g")
@@ -433,11 +434,11 @@ export class AdjacencyMatrix {
                 .attr('transform', "translate(" + spaceBefore + ", 0)");  //placement at the right spot
               topTitlePart.insert('rect')
                 .attr('y', -10)
-                .attr('width', boxLength) // make sure each box is wide enough for the number of cells
+                .attr('width', boxLength - strokeWeight) // make sure each box is wide enough for the number of cells
                 .attr('height', sideBarWidth + 10)
                 .attr('stroke', "black")
                 .attr('rx', '10px')
-                .attr('stroke-width', '2px')
+                .attr('stroke-width', strokeWeight + "px")
                 .attr('stroke', titleColors[sortedOnTitle[i][0]].color.border)
                 .attr('fill', "url(#grad-" + sortedOnTitle[i][0].replace(" ", "-") + "-top)");
               // .attr('fill', titleColors[sortedOnTitle[i][0]].color.background);
@@ -454,10 +455,10 @@ export class AdjacencyMatrix {
                 .attr('x', -10)
                 .attr('y', 0) // start at the right spot
                 .attr('width', sideBarWidth + 10)
-                .attr('height', boxLength) // make sure each box is wide enough for the number of cells
+                .attr('height', boxLength - strokeWeight) // make sure each box is wide enough for the number of cells
                 .attr('stroke', "black")
                 .attr('rx', '10px')
-                .attr('stroke-width', '2px')
+                .attr('stroke-width', strokeWeight + "px")
                 .attr('stroke', titleColors[sortedOnTitle[i][0]].color.border)
                 .attr('fill', "url(#grad-" + sortedOnTitle[i][0].replace(" ", "-") + "-left)");
               // .attr('fill', titleColors[sortedOnTitle[i][0]].color.background);
@@ -471,6 +472,55 @@ export class AdjacencyMatrix {
 
             break;
           case "name":
+            const strokeWeight = 2;
+
+            // top bar
+            topWrapper.insert('rect')
+            .attr('id', "SB-content")
+            .attr('y', -10)
+            .attr('width', width - sideBarWidth - strokeWeight)
+            .attr('height', sideBarWidth + 10)
+            .attr('stroke', "black")
+            .attr('rx', '10px')
+            .attr('stroke-width', '2px')
+            .attr('stroke', "black")
+            .attr('fill', "aquamarine");
+            // top A
+            topWrapper.append('text')
+              .attr('transform', "translate(10," + 2 * sideBarWidth / 3 + ")")
+              .text('A')
+              .attr('id', "SB-content");
+            // top Z
+            topWrapper.append('text')
+              .attr('transform', "translate(" + (width - sideBarWidth - 10) + "," + 2 * sideBarWidth / 3 + ")")
+              .text('Z')
+              .attr('text-anchor', "end")
+              .attr('id', "SB-content");
+
+            // left bar
+            leftWrapper.insert('rect')
+            .attr('id', "SB-content")
+            .attr('x', -10)
+            .attr('width', sideBarWidth + 10)
+            .attr('height', width - sideBarWidth - strokeWeight)
+            .attr('stroke', "black")
+            .attr('rx', '10px')
+            .attr('stroke-width', '2px')
+            .attr('stroke', "black")
+            .attr('fill', "aquamarine");
+            // left A
+            leftWrapper.append('text')
+              .attr('transform', "translate(" + 2 * sideBarWidth / 3 + ", 18)")
+              .text('A')
+              .attr('text-anchor', "end")
+              .attr('id', "SB-content");
+            // left Z
+            leftWrapper.append('text')
+              .attr('transform', "translate(" + 2 * sideBarWidth / 3 + "," + (width - sideBarWidth - 10) + ")")
+              .text('Z')
+              .attr('text-anchor', "end")
+              .attr('id', "SB-content");
+
             break;
           case "sentiment":
             break;
