@@ -121,10 +121,10 @@ export class AdjacencyMatrix {
       // declare SVG namespace so we can create SVG elements properly
       const svgns = 'http://www.w3.org/2000/svg';
 
-      // define and add gradients to be used later
+      // make def block to put all gradient definitions in
       const defs = document.createElementNS(svgns, "defs");
 
-      // define gradients for the top bar
+      // define gradients for titles for the top bar
       for (let i = 0; i < titleArr.length; i++) {
         const t: Title = titleArr[i]; // current title
         const linearGradient = document.createElementNS(svgns, "linearGradient");
@@ -147,7 +147,7 @@ export class AdjacencyMatrix {
         linearGradient.appendChild(stop2);
         defs.appendChild(linearGradient);
       }
-      // define gradients for the left bar
+      // define gradients for titles for the left bar
       for (let i = 0; i < titleArr.length; i++) {
         const t: Title = titleArr[i]; // current title
         const linearGradient = document.createElementNS(svgns, "linearGradient");
