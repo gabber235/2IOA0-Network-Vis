@@ -73,6 +73,9 @@ export class DataSetDiff<A> {
         }
     }
 
+    /**
+     * Applies the changes to a set of id's
+     */
     applySet(set: Set<ID>) {
         for (const {id} of this.insertions) {
             set.add(id)
@@ -82,33 +85,53 @@ export class DataSetDiff<A> {
         }
     }
 
+    /**
+     * Applies just the insertions
+     */
     applyInsertions(dataset: DataSet<A>) {
         for (const {id, value} of this.insertions)
             dataset[id] = value
     }
+    /**
+     * Applies just the updates
+     */
     applyUpdates(dataset: DataSet<A>) {
         for (const {id, value} of this.updates)
             dataset[id] = value
     }
+    /**
+     * Applies just the deletions
+     */
     applyDeletions(dataset: DataSet<A>) {
         for (const {id} of this.deletions)
             delete dataset[id]
     }
 
+    /**
+     * Applies just the insertions to a set of id's
+     */
     applySetInsertions(set: Set<ID>) {
         for (const {id} of this.insertions)
             set.add(id)
     }
 
+    /**
+     * Applies just the deletions to a set of id's
+     */
     applySetDeletions(set: Set<ID>) {
         for (const {id} of this.deletions) 
             set.delete(id)
     }
 
+    /**
+     * Returns true if the diff represents no changes to a dataset, it return false otherwise
+     */
     get isEmpty(): boolean { 
         return this.insertions.length === 0 && this.updates.length === 0 && this.deletions.length === 0 
     }
-
+    /**
+     * Applies the insertions of a diff of diff's to a dataset of datasets 
+     */
     static applyGroupInsertions<A>(diff: DataSetDiff<DataSetDiff<A>>, dataGroups: DataSet<DataSet<A>>) {
         for (const {id, value} of diff.insertions) {
             dataGroups[id] = {}
@@ -116,11 +139,17 @@ export class DataSetDiff<A> {
         }
         
     }
+    /**
+     * Applies the updates of a diff of diff's to a dataset of datasets
+     */
     static applyGroupUpdates<A>(diff: DataSetDiff<DataSetDiff<A>>, dataGroups: DataSet<DataSet<A>>) {
         for (const {id, value} of diff.updates) {
             value.apply(dataGroups[id])
         }
     }
+    /**
+     * Applies the deletions of  a diff of diff's to a dataset of datasets
+     */
     static applyGroupDeletions<A>(diff: DataSetDiff<DataSetDiff<A>>, dataGroups: DataSet<DataSet<A>>) {
         for (const {id} of diff.deletions) {
             delete dataGroups[id]
@@ -137,13 +166,15 @@ export type IDSetDiff = DataSetDiff<any>
 
 
 /**
- * Computes the difference between two datasets which may include pointers
+ * Computes the difference between two datasets which may include pointers.
+ * So this will always assume that a value is updated if its key appears in both datasets
  */
 export function diffDataSet<A>(prev: DataSet<A>, cur: DataSet<A>): DataSetDiff<A> {
     const diff = new DataSetDiff<A>()
 
     for (const id in cur) {
-        if (id in prev) {
+        if (id in prev) { 
+            // NOTE: We always update because we don't have a way to compare values
             diff.update(id, cur[id])
         } else {
             diff.add(id, cur[id])
@@ -157,14 +188,16 @@ export function diffDataSet<A>(prev: DataSet<A>, cur: DataSet<A>): DataSetDiff<A
 }
 
 /**
- * Computes the difference between two datasets that DON'T INCLUDE POINTERS
+ * Computes the difference between two datasets that DON'T INCLUDE POINTERS.
+ * This means that it will only update a value if the value was already present and not equal to the previous value
  */
  export function diffPureDataSet<A>(prev: DataSet<A>, cur: DataSet<A>): DataSetDiff<A> {
     const diff = new DataSetDiff<A>()
 
     for (const id in cur) {
         if (id in prev) {
-            if (prev[id] !== cur[id])
+            // NOTE: Because values are not pointers they are directly comparable
+            if (prev[id] !== cur[id]) 
                 diff.update(id, cur[id])
         } else {
             diff.add(id, cur[id])
@@ -181,48 +214,10 @@ export function diffDataSet<A>(prev: DataSet<A>, cur: DataSet<A>): DataSetDiff<A
 
 
 /**
- * Applies diff to acc
+ * Applies diff to acc.
  * WARNING: MUTATES ACC
  */
 export function foldDataSet<A>(acc: DataSet<A>, diff: DataSetDiff<A>): DataSet<A> {
     diff.apply(acc)
     return acc
 }
-
-// /**
-//  * Ignore double insertions and deletions.
-//  */
-//  export function ignoreDoubles<A, X>(data: Observable<[DataSetDiff<A>, X]>): Observable<[DataSetDiff<A>, X]> {
-
-//     const idSet = new Set<number>()
-
-//     return new Observable(sub => {
-//         data.subscribe({
-//             next([diff, x]) {
-
-//                 const newDiff = new DataSetDiff<A>()
-
-//                 for (const change of diff.insertions) {
-//                     if (!idSet.has(change.id)) {
-//                         idSet.add(change.id)
-//                         newDiff.add(change.id, change.value)
-//                     }
-//                 }
-//                 for (const change of diff.updates) {
-//                     if (idSet.has(change.id)) {
-//                         newDiff.update(change.id, change.value)
-//                     }
-//                 }
-//                 for (const change of diff.deletions) {
-//                     if (idSet.has(change.id)) {
-//                         newDiff.remove(change.id)
-//                         idSet.delete(change.id)
-//                     }
-//                 }
-
-//                 sub.next([newDiff, x])
-//             }
-//         })
-//     })
-// }
-
