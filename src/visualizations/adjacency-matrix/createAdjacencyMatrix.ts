@@ -257,7 +257,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
     }
     // if counter is more than 4, use that as threshold, else use 4
     const threshold = counter > 4 ? counter : 4;
-    const opacityScaler = d3.scaleLinear().domain([0, threshold]).clamp(true);
+    const opacityScaler = d3.scaleLinear().domain([0, threshold]).clamp(true).range([0,0.5]);
 
     // Precompute the sorting orders
     const orders = {
@@ -318,13 +318,13 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
 
     function row(row: Cell[]) {
         d3.select(this).selectAll(".cell")
-            .data(row.filter(function (d) { return d.emailCount; }))
+            .data(row.filter(function (d) { return d.emailCount }))
             .enter().append("rect")
             .attr("class", "cell")
             .attr("x", function (d) { return xScale(d.unsortedPositionX); })
             .attr("width", xScale.bandwidth())
             .attr("height", xScale.bandwidth())
-            .style("fill-opacity", function (d) { return opacityScaler(d.emailCount) })
+            .style("fill-opacity", function (d) { return (d.selected) ? 1 : opacityScaler(d.emailCount) })
             .style("fill", function (d) { return selectColor(d, sorter) /*"FF0000"*/ })
             .on("mouseover", () => {
                 return tooltip.style("visibility", "visible");
@@ -618,8 +618,8 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
         }
     }
 
-    d3.select("#order").on("change", function () {
-        order((<any>this).value);
+    d3.select("#order").on("change", e => {
+        order(e.target.value);
     });
 
     function order(sorter: sortingSetting): void {
