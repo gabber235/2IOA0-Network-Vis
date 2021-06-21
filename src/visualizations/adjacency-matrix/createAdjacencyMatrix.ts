@@ -617,12 +617,12 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
         }
     }
 
-    d3.select("#order").on("change", () => {
+    d3.select("#order").on("change", function () {
         order((<any>this).value);
     });
 
     function order(sorter: sortingSetting): void {
-        xScale.domain((<any>orders)[sorter]);
+        xScale.domain(orders[sorter]);
 
         const t = svg.transition().duration(2500);
 
