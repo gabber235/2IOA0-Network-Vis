@@ -3,6 +3,7 @@ import { handleDefaultScroll, handleScrollAnimaton } from './page/scroll';
 
 const nodeRiv = require('../resources/static/node-link.riv')
 const adjacencyRiv = require('../resources/static/adjacency-matrix.riv')
+const interactionsRiv = require('../resources/static/interactions.riv')
 
 handleDefaultScroll()
 handleScrollAnimaton(document.getElementById("nodeLinkCanvas"), 50, (el) => {
@@ -14,6 +15,12 @@ handleScrollAnimaton(document.getElementById("nodeLinkCanvas"), 50, (el) => {
 handleScrollAnimaton(document.getElementById("adjacencyCanvas"), 50, (el) => {
     if (el instanceof HTMLCanvasElement) {
         runRive(el, adjacencyRiv.default).catch(e => console.error(e))
+    }
+})
+
+handleScrollAnimaton(document.getElementById("interactionsCanvas"), 50, (el) => {
+    if (el instanceof HTMLCanvasElement) {
+        runRive(el, interactionsRiv.default).catch(e => console.error(e))
     }
 })
 
