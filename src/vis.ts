@@ -1,6 +1,9 @@
 import "vis/dist/vis.min.css"
 import "prismjs/themes/prism.css"
 
+import "../resources/static/logo.png"
+import "../resources/static/dwayne-the-rock.jpg"
+
 import { AdjacencyMatrix } from "./visualizations/adjacency-matrix";
 import { createLegend, NodeLinkVisualisation } from './visualizations/node-link/node-link';
 import { Email, getCorrespondants, parseData, Person } from "./data"
