@@ -362,7 +362,6 @@ export class AdjacencyMatrix {
           })
           .on("mousemove", (d: Cell) => {
             return tooltip
-              // this works but doesn't handle scaling
               .style("left", (`${(<any>d3).event.pageX/* Its weird that this needs to be pageX, I don't know why this is*/}px`)).style("top", `${(<any>d3).event.offsetY}px`)
               .html(tooltipHTML(d));
           })
