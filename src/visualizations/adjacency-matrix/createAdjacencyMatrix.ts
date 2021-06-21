@@ -105,7 +105,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
 
 
     // scale dispalying the right cell at the right place
-    const xScale = d3.scaleBand<number>().rangeRound([sideBarWidth, width])
+    const xScale = d3.scaleBand<number>().range([sideBarWidth, width])
 
 
     const existingSVG = document.getElementById("AM-SVG");
