@@ -17,7 +17,7 @@ type Node = {
 type Edge = {
   source: number,
   target: number,
-  value: number,
+  emailCount: number,
   sentiment: number,
   selected: boolean,
 }
@@ -206,13 +206,13 @@ export class AdjacencyMatrix {
       document.getElementById("AM-SVG").appendChild(defs);
 
       type Cell = {
-        x: number,
-        y: number,
-        z: number,
+        unsortedPositionX: number,
+        unsortedPositionY: number,
+        emailCount: number,
         selected?: boolean,
         from: Node,
         to: Node,
-        sentiment: number, // total sentiment
+        totalSentiment: number,
       }
 
       // declare variable to store the matrix values
@@ -228,13 +228,13 @@ export class AdjacencyMatrix {
         node.count = 0;
         matrix[i] = d3.range(n).map(function (j) {
           return {
-            x: j,
-            y: i,
-            z: 0,
+            unsortedPositionX: j,
+            unsortedPositionY: i,
+            emailCount: 0,
             selected: false,
             from: node,
             to: nodes[j],
-            sentiment: 0,
+            totalSentiment: 0,
           };
         });
       });
@@ -243,14 +243,14 @@ export class AdjacencyMatrix {
       // Convert links to matrix, add values where appropriate
       links.forEach(function (link) {
         // add amount
-        matrix[link.source][link.target].z += link.value;
+        matrix[link.source][link.target].emailCount += link.emailCount;
 
         // add sentiment to node
-        matrix[link.source][link.target].sentiment += link.sentiment;
+        matrix[link.source][link.target].totalSentiment += link.sentiment;
 
         // add count and sentiment to nodes
-        nodes[link.source].count += link.value;
-        nodes[link.target].count += link.value;
+        nodes[link.source].count += link.emailCount;
+        nodes[link.target].count += link.emailCount;
         nodes[link.source].sentiment += link.sentiment;
         nodes[link.target].sentiment += link.sentiment;
 
@@ -263,7 +263,7 @@ export class AdjacencyMatrix {
       let countValues: number[] = []; // index indicated value, value on that index is count (ignore 0's)
       for (let i = 0; i < matrix.length; i++) {
         for (let j = 0; j < matrix.length; j++) {
-          const val = matrix[i][j].z;
+          const val = matrix[i][j].emailCount;
           if (val) {
             if (countValues[val] !== undefined) {
               countValues[val]++;
@@ -349,14 +349,14 @@ export class AdjacencyMatrix {
 
       function row(row: Cell[]) {
         d3.select(this).selectAll(".cell")
-          .data(row.filter(function (d) { return d.z; }))
+          .data(row.filter(function (d) { return d.emailCount; }))
           .enter().append("rect")
           .attr("class", "cell")
-          .attr("x", function (d) { return xScale(d.x); })
+          .attr("x", function (d) { return xScale(d.unsortedPositionX); })
           .attr("width", xScale.rangeBand())
           .attr("height", xScale.rangeBand())
-          .style("fill-opacity", function (d) { return opacityScaler(d.z); })
-          .style("fill", function (d) { return selectColor(d, sorter) })
+          .style("fill-opacity", function (d) { return opacityScaler(d.emailCount)  })
+          .style("fill", function (d) { return /*selectColor(d, sorter)*/ "FF0000" })
           .on("mouseover", () => {
             return tooltip.style("visibility", "visible");
           })
@@ -589,10 +589,10 @@ export class AdjacencyMatrix {
         html += `To: <br>${receiver.name}, ${receiver.group}<br>`;
 
         // num of emails
-        html += `n.o. emails: ${c.z}<br>`;
+        html += `n.o. emails: ${c.emailCount}<br>`;
 
         // total sentiment
-        html += `Sum sentiment: ${c.sentiment.toFixed(3)}`;
+        html += `Sum sentiment: ${c.totalSentiment.toFixed(3)}`;
 
         return html;
       }
@@ -620,21 +620,21 @@ export class AdjacencyMatrix {
 
 
       function titleColoring(d: Cell): String {
-        return nodes[d.x].group == nodes[d.y].group ? titleColors[nodes[d.x].group].color.border : null;
+        return nodes[d.unsortedPositionX].group == nodes[d.unsortedPositionY].group ? titleColors[nodes[d.unsortedPositionX].group].color.border : null;
       }
 
       function sentimentColoring(d: Cell) {
         // take sentiment and map to spectrum from red to green
 
         // pos enough when sentiment > 0.01
-        if (d.sentiment > 0.01) {
-          const hue = d.sentiment > 0.05 ? 120 : 90 + (d.sentiment - 0.01) * 750;
+        if (d.totalSentiment > 0.01) {
+          const hue = d.totalSentiment > 0.05 ? 120 : 90 + (d.totalSentiment - 0.01) * 750;
           return "hsl(" + hue.toString() + ", 100%, 45%)"
         }
 
         // neg enough when sentiment < -0.01
-        if (d.sentiment < -0.01) {
-          const hue = d.sentiment < -0.05 ? 0 : 30 - + (d.sentiment + 0.01) * 750;
+        if (d.totalSentiment < -0.01) {
+          const hue = d.totalSentiment < -0.05 ? 0 : 30 - + (d.totalSentiment + 0.01) * 750;
           return "hsl(" + hue.toString() + ", 100%, 45%)"
         }
 
@@ -689,8 +689,8 @@ export class AdjacencyMatrix {
           .delay(function (d, i) { return xScale(i) * 4; })
           .attr("transform", function (d, i) { return "translate(0," + xScale(i) + ")"; })
           .selectAll(".cell")
-          .delay(function (d: Cell) { return xScale(d.x) * 4; })
-          .attr("x", function (d: Cell) { return xScale(d.x); })
+          .delay(function (d: Cell) { return xScale(d.unsortedPositionX) * 4; })
+          .attr("x", function (d: Cell) { return xScale(d.unsortedPositionX); })
           .style("fill", function (d: any) { return selectColor(d, sorter) });
 
         t.selectAll(".column")
@@ -805,6 +805,7 @@ function edgeHash(emails: Email[], nodes: Node[], selEmIDs: number[]) {
       return email.toId === node.id;
     });
 
+    // NOTE: This is slow
     const indexInEdges = edges.findIndex((edge) => {
       return edge.source === source && edge.target === target;
     })
@@ -821,14 +822,14 @@ function edgeHash(emails: Email[], nodes: Node[], selEmIDs: number[]) {
       const edge: Edge = {
         source: source,
         target: target,
-        value: 1,
-        sentiment: email.sentiment,
+        emailCount: 1,
+        sentiment: email.sentiment, // BUG: We don't update this sentiment later at all
         selected: selected,
       }
       edges.push(edge);
     } else {
       // edge already exists
-      edges[indexInEdges].value++;
+      edges[indexInEdges].emailCount++;
     }
 
   })
