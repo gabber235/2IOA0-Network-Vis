@@ -53,6 +53,7 @@ function createMatrix(nodes: Node[], links: Edge[]): Cell[][] {
     nodes.forEach((node: Node, i) => {
         node.index = i;
         node.count = 0;
+
         matrix[i] = d3.range(nodes.length).map(j => ({
             unsortedPositionX: j,
             unsortedPositionY: i,
@@ -104,7 +105,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
 
 
     // scale dispalying the right cell at the right place
-    const xScale = (<any>d3).scale.ordinal().rangeBands([sideBarWidth, width]);
+    const xScale = d3.scaleBand<number>().rangeRound([sideBarWidth, width])
 
 
     const existingSVG = document.getElementById("AM-SVG");
@@ -256,7 +257,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
     }
     // if counter is more than 4, use that as threshold, else use 4
     const threshold = counter > 4 ? counter : 4;
-    const opacityScaler = (<any>d3).scale.linear().domain([0, threshold]).clamp(true);
+    const opacityScaler = d3.scaleLinear().domain([0, threshold]).clamp(true);
 
     // Precompute the sorting orders
     const orders = {
@@ -321,16 +322,16 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
             .enter().append("rect")
             .attr("class", "cell")
             .attr("x", function (d) { return xScale(d.unsortedPositionX); })
-            .attr("width", xScale.rangeBand())
-            .attr("height", xScale.rangeBand())
+            .attr("width", xScale.bandwidth())
+            .attr("height", xScale.bandwidth())
             .style("fill-opacity", function (d) { return opacityScaler(d.emailCount) })
             .style("fill", function (d) { return selectColor(d, sorter) /*"FF0000"*/ })
             .on("mouseover", () => {
                 return tooltip.style("visibility", "visible");
             })
-            .on("mousemove", (d: Cell) => {
+            .on("mousemove", (event, d) => {
                 return tooltip
-                    .style("left", (`${(<any>d3).event.pageX/* Its weird that this needs to be pageX, I don't know why this is*/}px`)).style("top", `${(<any>d3).event.offsetY}px`)
+                    .style("left", (`${event.pageX/* Its weird that this needs to be pageX, I don't know why this is*/}px`)).style("top", `${event.offsetY}px`)
                     .html(tooltipHTML(d));
             })
             .on("mouseout", () => {
@@ -419,7 +420,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
 
                 //
                 let before = 0; // used to know how many cells there were before the current
-                const size = xScale.rangeBand();
+                const size = xScale.bandwidth();
                 for (let i = 0; i < sortedOnTitle.length; i++) {
                     const amount = sortedOnTitle[i][1]; // get how many cells there are in this group
                     const boxLength = amount * size;
@@ -593,7 +594,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
     }
 
 
-    function clickCell(cell: Cell): void {
+    function clickCell(e: Event, cell: Cell): void {
         if (cell.selected) {
             // cell is selected -> unselect
             pushToSelectionSubject(
