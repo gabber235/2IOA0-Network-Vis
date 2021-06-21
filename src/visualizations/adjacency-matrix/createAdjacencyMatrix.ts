@@ -1,4 +1,4 @@
-import { Node, Edge } from "./types";
+import { Node, Edge, Cell } from "./types";
 import * as d3 from "d3";
 import { titleColors, titleRanks } from "../constants";
 import { Email, Title } from "../../data";
@@ -42,6 +42,48 @@ function getMatchingEmailIDs(senderID: number, receiverID: number, emails: Email
     return IDs;
 }
 
+
+
+
+function createMatrix(nodes: Node[], links: Edge[]): Cell[][] {
+    // declare variable to store the matrix values
+    const matrix: Cell[][] = []
+
+    // Compute most importantly index but also other values for each node.
+    nodes.forEach((node: Node, i) => {
+        node.index = i;
+        node.count = 0;
+        matrix[i] = d3.range(nodes.length).map(j => ({
+            unsortedPositionX: j,
+            unsortedPositionY: i,
+            emailCount: 0,
+            selected: false,
+            from: node,
+            to: nodes[j],
+            totalSentiment: 0,
+        }))
+    });
+
+    // Convert links to matrix, add values where appropriate
+    links.forEach(link => {
+        // add amount
+        matrix[link.source][link.target].emailCount += link.emailCount;
+
+        // add sentiment to node
+        matrix[link.source][link.target].totalSentiment += link.sentiment;
+
+        // add count and sentiment to nodes
+        nodes[link.source].count += link.emailCount;
+        nodes[link.target].count += link.emailCount;
+        nodes[link.source].sentiment += link.sentiment;
+        nodes[link.target].sentiment += link.sentiment;
+
+        // set selected
+        matrix[link.source][link.target].selected = link.selected;
+    });
+
+    return matrix
+}
 
 
 
@@ -180,57 +222,8 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
     // append all the defined gradients to the SVG
     document.getElementById("AM-SVG").appendChild(defs);
 
-    type Cell = {
-        unsortedPositionX: number,
-        unsortedPositionY: number,
-        emailCount: number,
-        selected?: boolean,
-        from: Node,
-        to: Node,
-        totalSentiment: number,
-    }
 
-    // declare variable to store the matrix values
-    const matrix: Cell[][] = []
-
-    // variable to keep current number of nodes
-    const n = nodes.length
-
-
-    // Compute most importantly index but also other values for each node.
-    nodes.forEach((node: Node, i) => {
-        node.index = i;
-        node.count = 0;
-        matrix[i] = d3.range(n).map(function (j) {
-            return {
-                unsortedPositionX: j,
-                unsortedPositionY: i,
-                emailCount: 0,
-                selected: false,
-                from: node,
-                to: nodes[j],
-                totalSentiment: 0,
-            };
-        });
-    });
-
-    // Convert links to matrix, add values where appropriate
-    links.forEach(link => {
-        // add amount
-        matrix[link.source][link.target].emailCount += link.emailCount;
-
-        // add sentiment to node
-        matrix[link.source][link.target].totalSentiment += link.sentiment;
-
-        // add count and sentiment to nodes
-        nodes[link.source].count += link.emailCount;
-        nodes[link.target].count += link.emailCount;
-        nodes[link.source].sentiment += link.sentiment;
-        nodes[link.target].sentiment += link.sentiment;
-
-        // set selected
-        matrix[link.source][link.target].selected = link.selected;
-    });
+    const matrix = createMatrix(nodes, links);
 
     // use a threshold as bound on 0 to 100% opacity scale, so everything more than the threshold is 100% opacity
     // start by collecting all values
@@ -267,10 +260,10 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
 
     // Precompute the sorting orders
     const orders = {
-        name: d3.range(n).sort(function (a, b) { return d3.ascending(nodes[a].name, nodes[b].name); }),
-        count: d3.range(n).sort(function (a, b) { return nodes[b].count - nodes[a].count; }),
-        group: d3.range(n).sort(function (a, b) { return titleRanks[nodes[a].group] - titleRanks[nodes[b].group]; }),
-        sentiment: d3.range(n).sort(function (a, b) { return nodes[b].sentiment - nodes[a].sentiment; }),
+        name: d3.range(nodes.length).sort(function (a, b) { return d3.ascending(nodes[a].name, nodes[b].name); }),
+        count: d3.range(nodes.length).sort(function (a, b) { return nodes[b].count - nodes[a].count; }),
+        group: d3.range(nodes.length).sort(function (a, b) { return titleRanks[nodes[a].group] - titleRanks[nodes[b].group]; }),
+        sentiment: d3.range(nodes.length).sort(function (a, b) { return nodes[b].sentiment - nodes[a].sentiment; }),
     };
 
     type sortingSetting = "name" | "count" | "group" | "sentiment";
@@ -552,25 +545,6 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
         }
     }
 
-    function tooltipHTML(c: Cell): string {
-        let html = "";
-        const sender = c.from;
-        const receiver = c.to;
-
-        // sender
-        html += `From: <br>${sender.name}, ${sender.group}<br>`;
-
-        // receiver
-        html += `To: <br>${receiver.name}, ${receiver.group}<br>`;
-
-        // num of emails
-        html += `n.o. emails: ${c.emailCount}<br>`;
-
-        // total sentiment
-        html += `Sum sentiment: ${c.totalSentiment.toFixed(3)}`;
-
-        return html;
-    }
 
     function selectColor(d: Cell, sorting: String): any {
         if (d.selected) {
@@ -593,10 +567,6 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
         }
     }
 
-
-    function titleColoring(d: Cell): String {
-        return nodes[d.unsortedPositionX].group == nodes[d.unsortedPositionY].group ? titleColors[nodes[d.unsortedPositionX].group].color.border : null;
-    }
 
     function sentimentColoring(d: Cell) {
         // take sentiment and map to spectrum from red to green
@@ -647,31 +617,61 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
         }
     }
 
-    d3.select("#order").on("change", function () {
+    d3.select("#order").on("change", () => {
         order((<any>this).value);
     });
 
-    function order(value: string): void {
-        xScale.domain((<any>orders)[value]);
+    function order(sorter: sortingSetting): void {
+        xScale.domain((<any>orders)[sorter]);
 
         const t = svg.transition().duration(2500);
 
-        // get sort order from page for coloring
-        const dropDown: any = document.getElementById("order")
-        const sorter: sortingSetting = dropDown.value;
         // redo sidebars
         fillSidebars(sorter);
 
         t.selectAll(".row")
-            .delay(function (d, i) { return xScale(i) * 4; })
-            .attr("transform", function (d, i) { return "translate(0," + xScale(i) + ")"; })
+            .delay((_, i) => xScale(i) * 4)
+            .attr("transform", (d, i) => "translate(0," + xScale(i) + ")")
             .selectAll(".cell")
-            .delay(function (d: Cell) { return xScale(d.unsortedPositionX) * 4; })
-            .attr("x", function (d: Cell) { return xScale(d.unsortedPositionX); })
-            .style("fill", function (d: any) { return selectColor(d, sorter) });
+            .delay((d: Cell) => xScale(d.unsortedPositionX) * 4)
+            .attr("x", (d: Cell) => xScale(d.unsortedPositionX))
+            .style("fill", (d: any) => selectColor(d, sorter))
 
         t.selectAll(".column")
-            .delay(function (d, i) { return xScale(i) * 4; })
-            .attr("transform", function (d, i) { return "translate(" + xScale(i) + ")rotate(-90)"; });
+            .delay((_, i) => xScale(i) * 4 )
+            .attr("transform", (_, i) => "translate(" + xScale(i) + ")rotate(-90)");
     }
+}
+
+
+
+
+function titleColoring(d: Cell): String {
+    return d.from.group == d.to.group ? titleColors[d.from.group].color.border : null;
+}
+
+
+
+
+
+
+
+function tooltipHTML(c: Cell): string {
+    let html = "";
+    const sender = c.from;
+    const receiver = c.to;
+
+    // sender
+    html += `From: <br>${sender.name}, ${sender.group}<br>`;
+
+    // receiver
+    html += `To: <br>${receiver.name}, ${receiver.group}<br>`;
+
+    // num of emails
+    html += `n.o. emails: ${c.emailCount}<br>`;
+
+    // total sentiment
+    html += `Sum sentiment: ${c.totalSentiment.toFixed(3)}`;
+
+    return html;
 }

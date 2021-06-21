@@ -16,3 +16,13 @@ export type Edge = {
     sentiment: number,
     selected: boolean,
 }
+
+export type Cell = {
+    unsortedPositionX: number,
+    unsortedPositionY: number,
+    emailCount: number,
+    selected?: boolean,
+    from: Node,
+    to: Node,
+    totalSentiment: number,
+}
