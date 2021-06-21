@@ -363,7 +363,7 @@ export class AdjacencyMatrix {
           .on("mousemove", (d: Cell) => {
             return tooltip
               // this works but doesn't handle scaling
-              .style("left", (`${(<any>d3).event.pageX}px`)).style("top", `${(<any>d3).event.pageY - 650}px`)
+              .style("left", (`${(<any>d3).event.pageX/* Its weird that this needs to be pageX, I don't know why this is*/}px`)).style("top", `${(<any>d3).event.offsetY}px`)
               .html(tooltipHTML(d));
           })
           .on("mouseout", () => {
@@ -387,7 +387,7 @@ export class AdjacencyMatrix {
           .style("border-radius", "3px")
           .style("padding", "4px")
           .style("font-size", "12px")
-          .style("left", "10px").style("top", "10px")
+          .style("left", "0px").style("top", "0px")
           .style("text-align", "left")
       }
       tooltip = d3.select("#AM-tooltip");
