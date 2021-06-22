@@ -173,6 +173,7 @@ function emailsToEdges(emails: Email[], nodes: Node[], selEmIDs: number[]): Edge
         } else {
             // edge already exists
             edges[indexInEdges].emailCount++;
+            edges[indexInEdges].sentiment += email.sentiment;
         }
 
     })
