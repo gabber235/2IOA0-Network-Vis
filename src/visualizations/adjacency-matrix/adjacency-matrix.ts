@@ -150,7 +150,7 @@ function emailsToEdges(emails: Email[], nodes: Node[], selEmIDs: number[]): Edge
 
         // NOTE: This is slow
         const indexInEdges = edges.findIndex((edge) => {
-            return edge.source === source && edge.target === target;
+            return edge.sourceMatrixIndex === source && edge.targetMatrixIndex === target;
         })
 
         if (indexInEdges === -1) {
@@ -163,8 +163,8 @@ function emailsToEdges(emails: Email[], nodes: Node[], selEmIDs: number[]): Edge
             }
 
             const edge: Edge = {
-                source: source,
-                target: target,
+                sourceMatrixIndex: source,
+                targetMatrixIndex: target,
                 emailCount: 1,
                 sentiment: email.sentiment, // BUG: We don't update this sentiment later at all
                 selected: selected,

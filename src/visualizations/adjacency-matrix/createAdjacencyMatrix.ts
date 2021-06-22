@@ -68,19 +68,19 @@ function createMatrix(nodes: Node[], links: Edge[]): Cell[][] {
     // Convert links to matrix, add values where appropriate
     links.forEach(link => {
         // add amount
-        matrix[link.source][link.target].emailCount += link.emailCount;
+        matrix[link.sourceMatrixIndex][link.targetMatrixIndex].emailCount += link.emailCount;
 
         // add sentiment to node
-        matrix[link.source][link.target].totalSentiment += link.sentiment;
+        matrix[link.sourceMatrixIndex][link.targetMatrixIndex].totalSentiment += link.sentiment;
 
         // add count and sentiment to nodes
-        nodes[link.source].emailCount += link.emailCount;
-        nodes[link.target].emailCount += link.emailCount;
-        nodes[link.source].totalSentiment += link.sentiment;
-        nodes[link.target].totalSentiment += link.sentiment;
+        nodes[link.sourceMatrixIndex].emailCount += link.emailCount;
+        nodes[link.targetMatrixIndex].emailCount += link.emailCount;
+        nodes[link.sourceMatrixIndex].totalSentiment += link.sentiment;
+        nodes[link.targetMatrixIndex].totalSentiment += link.sentiment;
 
         // set selected
-        matrix[link.source][link.target].selected = link.selected;
+        matrix[link.sourceMatrixIndex][link.targetMatrixIndex].selected = link.selected;
     });
 
     return matrix

@@ -10,8 +10,8 @@ export type Node = {
 }
 
 export type Edge = {
-    source: number,
-    target: number,
+    sourceMatrixIndex: number,
+    targetMatrixIndex: number,
     emailCount: number,
     sentiment: number,
     selected: boolean,
