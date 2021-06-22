@@ -51,8 +51,8 @@ function createMatrix(nodes: Node[], links: Edge[]): Cell[][] {
 
     // Compute most importantly index but also other values for each node.
     nodes.forEach((node: Node, i) => {
-        node.index = i;
-        node.count = 0;
+        node.matrixIndex = i;
+        node.emailCount = 0;
 
         matrix[i] = d3.range(nodes.length).map(j => ({
             unsortedPositionX: j,
@@ -68,19 +68,19 @@ function createMatrix(nodes: Node[], links: Edge[]): Cell[][] {
     // Convert links to matrix, add values where appropriate
     links.forEach(link => {
         // add amount
-        matrix[link.source][link.target].emailCount += link.emailCount;
+        matrix[link.sourceMatrixIndex][link.targetMatrixIndex].emailCount += link.emailCount;
 
         // add sentiment to node
-        matrix[link.source][link.target].totalSentiment += link.sentiment;
+        matrix[link.sourceMatrixIndex][link.targetMatrixIndex].totalSentiment += link.sentiment;
 
         // add count and sentiment to nodes
-        nodes[link.source].count += link.emailCount;
-        nodes[link.target].count += link.emailCount;
-        nodes[link.source].sentiment += link.sentiment;
-        nodes[link.target].sentiment += link.sentiment;
+        nodes[link.sourceMatrixIndex].emailCount += link.emailCount;
+        nodes[link.targetMatrixIndex].emailCount += link.emailCount;
+        nodes[link.sourceMatrixIndex].totalSentiment += link.sentiment;
+        nodes[link.targetMatrixIndex].totalSentiment += link.sentiment;
 
         // set selected
-        matrix[link.source][link.target].selected = link.selected;
+        matrix[link.sourceMatrixIndex][link.targetMatrixIndex].selected = link.selected;
     });
 
     return matrix
@@ -133,7 +133,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
     // get used titles
     const titleSet: any = new Set();
     nodes.forEach((p) => {
-        titleSet.add(p.group);
+        titleSet.add(p.jobTitle);
     });
     const titleArr: Title[] = Array.from(titleSet);
 
@@ -257,21 +257,21 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
     }
     // if counter is more than 4, use that as threshold, else use 4
     const threshold = counter > 4 ? counter : 4;
-    const opacityScaler = d3.scaleLinear().domain([0, threshold]).clamp(true);
+    const opacityScaler = d3.scaleLinear().domain([0, threshold]).clamp(true).range([0,0.5]);
 
     // Precompute the sorting orders
     const orders = {
         name: d3.range(nodes.length).sort(function (a, b) { return d3.ascending(nodes[a].name, nodes[b].name); }),
-        count: d3.range(nodes.length).sort(function (a, b) { return nodes[b].count - nodes[a].count; }),
-        group: d3.range(nodes.length).sort(function (a, b) { return titleRanks[nodes[a].group] - titleRanks[nodes[b].group]; }),
-        sentiment: d3.range(nodes.length).sort(function (a, b) { return nodes[b].sentiment - nodes[a].sentiment; }),
+        count: d3.range(nodes.length).sort(function (a, b) { return nodes[b].emailCount - nodes[a].emailCount; }),
+        group: d3.range(nodes.length).sort(function (a, b) { return titleRanks[nodes[a].jobTitle] - titleRanks[nodes[b].jobTitle]; }),
+        sentiment: d3.range(nodes.length).sort(function (a, b) { return nodes[b].totalSentiment - nodes[a].totalSentiment; }),
     };
 
-    type sortingSetting = "name" | "count" | "group" | "sentiment";
+    type SortingSetting = "name" | "count" | "group" | "sentiment";
 
     // get sort order from page
     let dropDown: any = document.getElementById("order")
-    let sorter: sortingSetting = dropDown.value;
+    let sorter: SortingSetting = dropDown.value;
 
 
     // The default sort order.
@@ -318,13 +318,13 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
 
     function row(row: Cell[]) {
         d3.select(this).selectAll(".cell")
-            .data(row.filter(function (d) { return d.emailCount; }))
+            .data(row.filter(function (d) { return d.emailCount }))
             .enter().append("rect")
             .attr("class", "cell")
             .attr("x", function (d) { return xScale(d.unsortedPositionX); })
             .attr("width", xScale.bandwidth())
             .attr("height", xScale.bandwidth())
-            .style("fill-opacity", function (d) { return opacityScaler(d.emailCount) })
+            .style("fill-opacity", function (d) { return (d.selected) ? 1 : opacityScaler(d.emailCount) })
             .style("fill", function (d) { return selectColor(d, sorter) /*"FF0000"*/ })
             .on("mouseover", () => {
                 return tooltip.style("visibility", "visible");
@@ -391,7 +391,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
     fillSidebars(sorter);
 
     // puts the right content in the sidebars based on current data and sorting settings 
-    function fillSidebars(sorting: sortingSetting): void {
+    function fillSidebars(sorting: SortingSetting): void {
         let topWrapper = d3.select('#top-bar-wrapper');
         let leftWrapper = d3.select('#left-bar-wrapper');
 
@@ -408,10 +408,10 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                 // get which groups are currently used and tally the number of each
                 const groupTally: { [group: string]: number } = {};
                 nodes.forEach((n) => {
-                    if (groupTally[n.group] === undefined) {
-                        groupTally[n.group] = 1;
+                    if (groupTally[n.jobTitle] === undefined) {
+                        groupTally[n.jobTitle] = 1;
                     } else {
-                        groupTally[n.group]++;
+                        groupTally[n.jobTitle]++;
                     }
                 });
 
@@ -603,7 +603,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                 selSubj,
                 [],
                 [],
-                getMatchingEmailIDs(cell.from.id, cell.to.id, Object.values(emails)
+                getMatchingEmailIDs(cell.from.personId, cell.to.personId, Object.values(emails)
                 ),
                 [],
             )
@@ -611,7 +611,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
             // cell is not selected -> select
             pushToSelectionSubject(
                 selSubj,
-                getMatchingEmailIDs(cell.from.id, cell.to.id, Object.values(emails)
+                getMatchingEmailIDs(cell.from.personId, cell.to.personId, Object.values(emails)
                 ),
                 [],
                 [],
@@ -620,11 +620,11 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
         }
     }
 
-    d3.select("#order").on("change", function () {
-        order((<any>this).value);
+    d3.select("#order").on("change", e => {
+        order(e.target.value);
     });
 
-    function order(sorter: sortingSetting): void {
+    function order(sorter: SortingSetting): void {
         xScale.domain(orders[sorter]);
 
         const t = svg.transition().duration(2500);
@@ -650,7 +650,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
 
 
 function titleColoring(d: Cell): String {
-    return d.from.group == d.to.group ? titleColors[d.from.group].color.border : null;
+    return d.from.jobTitle == d.to.jobTitle ? titleColors[d.from.jobTitle].color.border : null;
 }
 
 
@@ -665,10 +665,10 @@ function tooltipHTML(c: Cell): string {
     const receiver = c.to;
 
     // sender
-    html += `From: <br>${sender.name}, ${sender.group}<br>`;
+    html += `From: <br>${sender.name}, ${sender.jobTitle}<br>`;
 
     // receiver
-    html += `To: <br>${receiver.name}, ${receiver.group}<br>`;
+    html += `To: <br>${receiver.name}, ${receiver.jobTitle}<br>`;
 
     // num of emails
     html += `n.o. emails: ${c.emailCount}<br>`;
