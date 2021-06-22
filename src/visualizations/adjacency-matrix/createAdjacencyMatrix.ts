@@ -257,7 +257,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
     }
     // if counter is more than 4, use that as threshold, else use 4
     const threshold = counter > 4 ? counter : 4;
-    const opacityScaler = d3.scaleLinear().domain([0, threshold]).clamp(true).range([0,0.5]);
+    const opacityScaler = d3.scaleLinear().domain([0, threshold]).clamp(true).range([0.1,0.5]);
 
     // Precompute the sorting orders
     const orders = {
