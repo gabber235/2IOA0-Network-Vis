@@ -35,34 +35,36 @@
     <div class="container">
         <div class="box image"><canvas id="nodeLinkCanvas" width=300 height=300></canvas></div>
         <div class="box js-scroll slide-right"> <strong> Node-Link diagram</strong><br />
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce ac ultricies
-            quam, sagittis vehicula magna. Sed gravida ac ipsum non congue. Aenean consequat pulvinar mauris. Maecenas
-            vitae rhoncus nulla. Sed luctus interdum libero in rhoncus. Morbi efficitur congue egestas. Vivamus ut neque
-            lacinia, ultricies enim quis, vulputate nisi. Nam pulvinar metus enim, quis varius nisi egestas vitae. Ut
-            hendrerit sit amet mi tincidunt mattis. Donec a augue condimentum, varius mi in, pellentesque ligula.
-            Quisque vel urna sagittis, facilisis purus ac, luctus sapien. Donec euismod, lacus ac pellentesque vehicula,
-            velit nisl ultricies mi, et maximus tortor urna nec urna. Vivamus nibh felis, lobortis sed enim interdum,
-            porttitor interdum elit.</div>
+            The most straight-forward way to visualise a dataset of emails is through the use of a node-link diagram.
+            Here we draw dots to represent the correspondants and then we draw arrows between them to represent an email sent.
+            The dots have a color which represents the job-title of the correspondant and the edges are colored according to their sentiment.
+            This allows one to find patterns in the data using one's intuition.
+            One may find, for instance, a notably isolated group of correspondants, or maybe an unusually negative batch of emails coming from the CEO.
+        </div>
         <div class="box js-scroll slide-left"> <strong> Adjacency Matrix</strong><br />
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce ac ultricies
-            quam, sagittis vehicula magna. Sed gravida ac ipsum non congue. Aenean consequat pulvinar mauris. Maecenas
-            vitae rhoncus nulla. Sed luctus interdum libero in rhoncus. Morbi efficitur congue egestas. Vivamus ut neque
-            lacinia, ultricies enim quis, vulputate nisi. Nam pulvinar metus enim, quis varius nisi egestas vitae. Ut
-            hendrerit sit amet mi tincidunt mattis. Donec a augue condimentum, varius mi in, pellentesque ligula.
-            Quisque vel urna sagittis, facilisis purus ac, luctus sapien. Donec euismod, lacus ac pellentesque vehicula,
-            velit nisl ultricies mi, et maximus tortor urna nec urna. Vivamus nibh felis, lobortis sed enim interdum,
-            porttitor interdum elit.</div>
+            <p>Our adjacency matrix is usefull in cases where the amount of emails is very large compared to the amount of correspondants.
+                This is a table where every row represents all of the emails sent by some person and every column represents the emails recieved by some person.
+                So a cell represents a batch of emails sent from the person represented by its row to some person represented by its column.
+                The cell will appear darker the more emails where sent between these people.
+                Cells may also have some color, indicating its total sentiment or the job titles of the people involved.
+            </p>
+            <p>
+                We allow the user to choose the way in which the rows and columns are ordered. 
+                This allows one to find larger patterns in the data.
+                For example one may change the ordering so that correspondants of the same job title are clustered together.
+                This would then allow one to easily observe whether correspondants of some job title disproportionatly sent emails to people of some other job title for example.
+            </p>
+        </div>
         <div class="box image"><canvas id="adjacencyCanvas" width=300 height=300></canvas></div>
         <div class="box image"><canvas id="interactionsCanvas" width=300 height=300></div>
         <div class="box js-scroll slide-right"><strong>Interaction techniques</strong> <br />
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce ac ultricies
-            quam, sagittis vehicula magna. Sed gravida ac ipsum non congue. Aenean consequat pulvinar mauris. Maecenas
-            vitae rhoncus nulla. Sed luctus interdum libero in rhoncus. Morbi efficitur congue egestas. Vivamus ut neque
-            lacinia, ultricies enim quis, vulputate nisi. Nam pulvinar metus enim, quis varius nisi egestas vitae. Ut
-            hendrerit sit amet mi tincidunt mattis. Donec a augue condimentum, varius mi in, pellentesque ligula.
-            Quisque vel urna sagittis, facilisis purus ac, luctus sapien. Donec euismod, lacus ac pellentesque vehicula,
-            velit nisl ultricies mi, et maximus tortor urna nec urna. Vivamus nibh felis, lobortis sed enim interdum,
-            porttitor interdum elit.</div>
+            Because datasets may be very large we allow the user to interact with the data in various ways.
+            Users can choose a timeframe to which the displayed emails are restricted for example.
+            The user can also decide to display only the emails that adhere to some specified criterion.
+            To specify such a criterion, users may write arbitrary javascript or pick from a list of presets.
+            Lastly, users may find an iteresting set of emails in one visualisation which they may then want to locate in the other visualisation.
+            For this reason we allow users to select emails in one visualisation using the mouse, which will then highlight the same set of emails in the other visualisation.
+        </div>
     </div>
 
     <!-- Footer -->
