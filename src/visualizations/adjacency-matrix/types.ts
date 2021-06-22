@@ -2,11 +2,11 @@ import { Title } from "../../data"
 
 export type Node = {
     name: string,
-    id: number,
-    group: Title,  // used for titles in our dataset
-    index?: number, // used in adjacency matrix
-    count?: number, // used in adjacency matrix
-    sentiment?: number, // total sentiment
+    personId: number,
+    jobTitle: Title,  // used for titles in our dataset
+    matrixIndex?: number, // used in adjacency matrix
+    emailCount?: number, // used in adjacency matrix
+    totalSentiment?: number, // total sentiment
 }
 
 export type Edge = {

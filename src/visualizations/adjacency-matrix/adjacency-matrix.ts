@@ -94,9 +94,9 @@ function peopleToNodes(people: Person[]): Node[] {
     people.forEach((person) => {
         const newNode: Node = {
             name: emailToName(person.emailAdress),
-            id: person.id,
-            group: person.title,
-            sentiment: 0,
+            personId: person.id,
+            jobTitle: person.title,
+            totalSentiment: 0,
         };
         nodes.push(newNode);
     })
@@ -141,11 +141,11 @@ function emailsToEdges(emails: Email[], nodes: Node[], selEmIDs: number[]): Edge
     emails.forEach((email) => {
         // get source in nodelist
         const source = nodes.findIndex((node) => {
-            return email.fromId === node.id;
+            return email.fromId === node.personId;
         });
         // get target in nodelist
         const target = nodes.findIndex((node) => {
-            return email.toId === node.id;
+            return email.toId === node.personId;
         });
 
         // NOTE: This is slow
