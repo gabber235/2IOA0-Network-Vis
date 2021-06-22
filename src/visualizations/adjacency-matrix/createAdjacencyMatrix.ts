@@ -330,8 +330,10 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                 return tooltip.style("visibility", "visible");
             })
             .on("mousemove", (event, d) => {
+                const tooltipX = event.pageX + 20;
+                const tooltipY = event.offsetY + 20;
                 return tooltip
-                    .style("left", (`${event.pageX/* Its weird that this needs to be pageX, I don't know why this is*/}px`)).style("top", `${event.offsetY}px`)
+                    .style("left", (`${tooltipX/* Its weird that this needs to be pageX, I don't know why this is*/}px`)).style("top", `${tooltipY}px`)
                     .html(tooltipHTML(d));
             })
             .on("mouseout", () => {
