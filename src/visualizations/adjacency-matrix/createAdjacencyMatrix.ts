@@ -383,6 +383,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                     const titleText = sortedOnTitle[i][0];
                     const titleBoxWidth = boxLength - strokeWeight;
                     const color = titleColors[sortedOnTitle[i][0]].color.background;
+                    const padding = 10; // in pixels
 
                     // do top bar
                     const topTitlePart = topWrapper.append("g")
@@ -413,12 +414,15 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                     // .attr('fill', titleColors[sortedOnTitle[i][0]].color.background);
                     let topText = topTitlePart.insert('text')
                         .text(titleText)
-                        .attr('transform', "translate(" + boxLength / 2 + "," + sideBarWidth*0.75 + ")")
+                        .attr('transform', "translate(" + boxLength / 2 + "," + sideBarWidth * 0.75 + ")")
                         .attr('text-anchor', 'middle');
                     // if text overflows, shorten it
                     if (getSelectedSVGTextWidth(topText) > titleBoxWidth) {
-                        topText.text('')
+                        do {
+                            topText.text(topText.text().slice(0,-3) + "..");
+                        } while (getSelectedSVGTextWidth(topText) + padding > titleBoxWidth && topText.text() != "..");
                     }
+
 
                     // do left bar
                     const leftTitlePart = leftWrapper.append("g")
@@ -450,7 +454,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                     // .attr('fill', titleColors[sortedOnTitle[i][0]].color.background);
                     leftTitlePart.insert('text')
                         .text(topText.text())
-                        .attr('transform', "translate(" + sideBarWidth*0.75 + "," + boxLength / 2 + ")rotate(-90)")
+                        .attr('transform', "translate(" + sideBarWidth * 0.75 + "," + boxLength / 2 + ")rotate(-90)")
                         .attr('text-anchor', "middle");
 
                     before += amount;
