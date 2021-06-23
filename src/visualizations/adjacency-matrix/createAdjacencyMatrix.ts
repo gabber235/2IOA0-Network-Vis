@@ -101,7 +101,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
 
     const width = 750;
     const height = 750;
-    const sideBarWidth = 25;
+    const sideBarWidth = 20;
 
 
     // scale dispalying the right cell at the right place
@@ -302,7 +302,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
             .append("div")
             .style("position", "absolute")
             .style("visibility", "hidden")
-            .attr("class", "tooltip")
+            .attr("class", "vis-tooltip")
             .attr("id", "AM-tooltip")
             .style("background-color", "white")
             .style("border", "solid")
@@ -413,7 +413,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                     // .attr('fill', titleColors[sortedOnTitle[i][0]].color.background);
                     let topText = topTitlePart.insert('text')
                         .text(titleText)
-                        .attr('transform', "translate(" + boxLength / 2 + "," + sideBarWidth / 2 + ")")
+                        .attr('transform', "translate(" + boxLength / 2 + "," + sideBarWidth*0.75 + ")")
                         .attr('text-anchor', 'middle');
                     // if text overflows, shorten it
                     if (getSelectedSVGTextWidth(topText) > titleBoxWidth) {
@@ -450,7 +450,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                     // .attr('fill', titleColors[sortedOnTitle[i][0]].color.background);
                     leftTitlePart.insert('text')
                         .text(topText.text())
-                        .attr('transform', "translate(" + sideBarWidth / 2 + "," + boxLength / 2 + ")rotate(-90)")
+                        .attr('transform', "translate(" + sideBarWidth*0.75 + "," + boxLength / 2 + ")rotate(-90)")
                         .attr('text-anchor', "middle");
 
                     before += amount;
