@@ -160,17 +160,25 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
 
     const SentStop1 = document.createElementNS(svgns, "stop");
     SentStop1.setAttribute('offset', "0%");
-    SentStop1.setAttribute('style', "stop-color:rgb(255,0,0);stop-opacity:1");
+    SentStop1.setAttribute('style', "stop-color:hsl(0,100%,50%);stop-opacity:1");
 
     const SentStop2 = document.createElementNS(svgns, "stop");
-    SentStop2.setAttribute('offset', "100%");
-    SentStop2.setAttribute('style', "stop-color:rgb(0,255,0);stop-opacity:1");
+    SentStop2.setAttribute('offset', "50%");
+    SentStop2.setAttribute('style', "stop-color:hsl(60,100%,50%);stop-opacity:1");
+
+    const SentStop3 = document.createElementNS(svgns, "stop");
+    SentStop3.setAttribute('offset', "100%");
+    SentStop3.setAttribute('style', "stop-color:hsl(120,100%,50%);stop-opacity:1");
+
+    
 
     // append all the elements together and add it to defs
     topSentGrad.appendChild(SentStop1);
     topSentGrad.appendChild(SentStop2);
+    topSentGrad.appendChild(SentStop3);
     leftSentGrad.appendChild(SentStop1.cloneNode());
     leftSentGrad.appendChild(SentStop2.cloneNode());
+    leftSentGrad.appendChild(SentStop3.cloneNode());
     defs.appendChild(topSentGrad);
     defs.appendChild(leftSentGrad);
 
@@ -359,6 +367,54 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
         const strokeWeight = 0;
         switch (sorting) {
             case "count":
+                const minCount = roundTo(Math.min(...nodes.map(i => i.emailCount)), 3)
+                const maxCount = roundTo(Math.max(...nodes.map(i => i.emailCount)), 3)
+
+                // top bar
+                topWrapper.insert('rect')
+                    .attr('id', "SB-content")
+                    .attr('y', -10)
+                    .attr('width', width - sideBarWidth - strokeWeight)
+                    .attr('height', sideBarWidth + 10)
+                    .attr('stroke', "black")
+                    .attr('stroke-width', strokeWeight + "px")
+                    .attr('stroke', "black")
+                    .attr('fill', "url(#grad-sent-top");
+                // left bar
+                leftWrapper.insert('rect')
+                    .attr('id', "SB-content")
+                    .attr('x', -10)
+                    .attr('width', sideBarWidth + 10)
+                    .attr('height', width - sideBarWidth - strokeWeight)
+                    .attr('stroke', "black")
+                    .attr('stroke-width', strokeWeight + "px")
+                    .attr('stroke', "black")
+                    .attr('fill', "url(#grad-sent-left");
+
+                // top A
+                topWrapper.append('text')
+                    .attr('transform', "translate(10," + 2 * sideBarWidth / 3 + ")")
+                    .text(maxCount)
+                    .attr('id', "SB-content");
+                // top Z
+                topWrapper.append('text')
+                    .attr('transform', "translate(" + (width - sideBarWidth - 10) + "," + 2 * sideBarWidth / 3 + ")")
+                    .text(minCount)
+                    .attr('text-anchor', "end")
+                    .attr('id', "SB-content");
+
+                // left A
+                leftWrapper.append('text')
+                    .attr('transform', `translate(${2 * sideBarWidth / 3 + 4}, 15)rotate(-90)`)
+                    .text(maxCount)
+                    .attr('text-anchor', "end")
+                    .attr('id', "SB-content")
+                // left Z
+                leftWrapper.append('text')
+                    .attr('transform', `translate(${2 * sideBarWidth / 3 + 5},${width - sideBarWidth - 15})rotate(-90)`)
+                    .text(minCount)
+                    .attr('text-anchor', "begin")
+                    .attr('id', "SB-content")
                 break;
             case "group":
                 // get which groups are currently used and tally the number of each
@@ -549,50 +605,6 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
 
                     lettersBefore += amount;
                 }
-
-                // // top bar
-                // topWrapper.insert('rect')
-                //     .attr('id', "SB-content")
-                //     .attr('y', -10)
-                //     .attr('width', width - sideBarWidth - strokeWeight)
-                //     .attr('height', sideBarWidth + 10)
-                //     .attr('rx', '10px')
-                //     .attr('stroke-width', strokeWeight + "px")
-                //     .attr('fill', "aquamarine");
-                // // top A
-                // topWrapper.append('text')
-                //     .attr('transform', "translate(10," + 2 * sideBarWidth / 3 + ")")
-                //     .text('A')
-                //     .attr('id', "SB-content");
-                // // top Z
-                // topWrapper.append('text')
-                //     .attr('transform', "translate(" + (width - sideBarWidth - 10) + "," + 2 * sideBarWidth / 3 + ")")
-                //     .text('Z')
-                //     .attr('text-anchor', "end")
-                //     .attr('id', "SB-content");
-
-                // // left bar
-                // leftWrapper.insert('rect')
-                //     .attr('id', "SB-content")
-                //     .attr('x', -10)
-                //     .attr('width', sideBarWidth + 10)
-                //     .attr('height', width - sideBarWidth - strokeWeight)
-                //     .attr('rx', '10px')
-                //     .attr('stroke-width', strokeWeight + "px")
-                //     .attr('fill', "aquamarine");
-                // // left A
-                // leftWrapper.append('text')
-                //     .attr('transform', "translate(" + 2 * sideBarWidth / 3 + ", 18)")
-                //     .text('A')
-                //     .attr('text-anchor', "end")
-                //     .attr('id', "SB-content");
-                // // left Z
-                // leftWrapper.append('text')
-                //     .attr('transform', "translate(" + 2 * sideBarWidth / 3 + "," + (width - sideBarWidth - 10) + ")")
-                //     .text('Z')
-                //     .attr('text-anchor', "end")
-                //     .attr('id', "SB-content");
-
                 break;
             case "sentiment":
 
