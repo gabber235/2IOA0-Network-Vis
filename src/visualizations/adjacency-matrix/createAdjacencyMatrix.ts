@@ -400,7 +400,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                             const tooltipY = event.offsetY + 20;
                             return tooltip
                                 .style("left", (`${tooltipX}px`)).style("top", `${tooltipY}px`)
-                                .html(titleTooltipHTML(titleText, amount));
+                                .html(sidebarTooltipHTML(titleText, amount));
                         })
                         .on("mouseout", () => {
                             return tooltip.style("visibility", "hidden");
@@ -409,7 +409,6 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                         .attr('y', -10)
                         .attr('width', titleBoxWidth) // make sure each box is wide enough for the number of cells
                         .attr('height', sideBarWidth + 10)
-                        .attr('stroke', "black")
                         .attr('stroke-width', strokeWeight + "px")
                         .attr('stroke', color)
                         .attr('fill', color);
@@ -421,7 +420,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                     // if text overflows, shorten it
                     if (getSelectedSVGTextWidth(topText) > titleBoxWidth) {
                         do {
-                            topText.text(topText.text().slice(0,-3) + "..");
+                            topText.text(topText.text().slice(0, -3) + "..");
                         } while (getSelectedSVGTextWidth(topText) + padding > titleBoxWidth && topText.text() != "..");
                     }
 
@@ -439,7 +438,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                             const tooltipY = event.offsetY + 20;
                             return tooltip
                                 .style("left", (`${tooltipX}px`)).style("top", `${tooltipY}px`)
-                                .html(titleTooltipHTML(titleText, amount));
+                                .html(sidebarTooltipHTML(titleText, amount));
                         })
                         .on("mouseout", () => {
                             return tooltip.style("visibility", "hidden");
@@ -449,7 +448,6 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                         .attr('y', 0) // start at the right spot
                         .attr('width', sideBarWidth + 10)
                         .attr('height', titleBoxWidth) // make sure each box is wide enough for the number of cells
-                        .attr('stroke', "black")
                         .attr('stroke-width', strokeWeight + "px")
                         .attr('stroke', color)
                         .attr('fill', color);
@@ -464,48 +462,136 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
 
                 break;
             case "name":
-                // top bar
-                topWrapper.insert('rect')
-                    .attr('id', "SB-content")
-                    .attr('y', -10)
-                    .attr('width', width - sideBarWidth - strokeWeight)
-                    .attr('height', sideBarWidth + 10)
-                    .attr('rx', '10px')
-                    .attr('stroke-width', strokeWeight + "px")
-                    .attr('fill', "aquamarine");
-                // top A
-                topWrapper.append('text')
-                    .attr('transform', "translate(10," + 2 * sideBarWidth / 3 + ")")
-                    .text('A')
-                    .attr('id', "SB-content");
-                // top Z
-                topWrapper.append('text')
-                    .attr('transform', "translate(" + (width - sideBarWidth - 10) + "," + 2 * sideBarWidth / 3 + ")")
-                    .text('Z')
-                    .attr('text-anchor', "end")
-                    .attr('id', "SB-content");
+                const alphabetTally: { [group: string]: number } = {};
+                nodes.forEach((n) => {
+                    const initial = n.name.charAt(0)
+                    if (alphabetTally[initial] === undefined) {
+                        alphabetTally[initial] = 1;
+                    } else {
+                        alphabetTally[initial]++;
+                    }
+                });
 
-                // left bar
-                leftWrapper.insert('rect')
-                    .attr('id', "SB-content")
-                    .attr('x', -10)
-                    .attr('width', sideBarWidth + 10)
-                    .attr('height', width - sideBarWidth - strokeWeight)
-                    .attr('rx', '10px')
-                    .attr('stroke-width', strokeWeight + "px")
-                    .attr('fill', "aquamarine");
-                // left A
-                leftWrapper.append('text')
-                    .attr('transform', "translate(" + 2 * sideBarWidth / 3 + ", 18)")
-                    .text('A')
-                    .attr('text-anchor', "end")
-                    .attr('id', "SB-content");
-                // left Z
-                leftWrapper.append('text')
-                    .attr('transform', "translate(" + 2 * sideBarWidth / 3 + "," + (width - sideBarWidth - 10) + ")")
-                    .text('Z')
-                    .attr('text-anchor', "end")
-                    .attr('id', "SB-content");
+                // sort the tally so we use alphabetical ordering
+                let alphabetTallySorted = Object.entries(alphabetTally).sort();
+
+                let lettersBefore = 0; // used to know how many cells there were before the current
+                const sizeBlock = xScale.bandwidth();
+                for (let i = 0; i < alphabetTallySorted.length; i++) {
+                    const amount = alphabetTallySorted[i][1]; // get how many people there are in this group
+                    const boxLength = amount * sizeBlock;
+                    const spaceBefore = lettersBefore * sizeBlock;
+                    const color = "lightgreen";
+                    const letter = alphabetTallySorted[i][0];
+
+                    // do top bar
+                    const topAlphabetPart = topWrapper.append("g")
+                        .attr("class", "name-part")
+                        .attr('id', "SB-content")
+                        .attr('transform', "translate(" + spaceBefore + ", 0)") //placement at the right spot
+                        .on("mouseover", () => {
+                            return tooltip.style("visibility", "visible");
+                        })
+                        .on("mousemove", (event, d) => {
+                            const tooltipX = event.pageX + 20;
+                            const tooltipY = event.offsetY + 20;
+                            return tooltip
+                                .style("left", (`${tooltipX}px`)).style("top", `${tooltipY}px`)
+                                .html(sidebarTooltipHTML(letter, amount));
+                        })
+                        .on("mouseout", () => {
+                            return tooltip.style("visibility", "hidden");
+                        });
+                    topAlphabetPart.insert('rect')
+                        .attr('y', -10)
+                        .attr('width', boxLength) // make sure each box is wide enough for the number of cells
+                        .attr('height', sideBarWidth + 10)
+                        .attr('stroke', "black")
+                        .attr('stroke-width', "1px")
+                        .attr('fill', color);
+                    // .attr('fill', titleColors[sortedOnTitle[i][0]].color.background);
+                    let topText = topAlphabetPart.insert('text')
+                        .text(letter)
+                        .attr('transform', "translate(" + boxLength / 2 + "," + sideBarWidth * 0.75 + ")")
+                        .attr('text-anchor', 'middle');
+
+                    // do left bar
+                    const leftAlphabetPart = leftWrapper.append("g")
+                        .attr("class", "name-part")
+                        .attr('id', "SB-content")
+                        .attr('transform', "translate(0, " + spaceBefore + ")")  //placement at the right spot
+                        .on("mouseover", () => {
+                            return tooltip.style("visibility", "visible");
+                        })
+                        .on("mousemove", (event, d) => {
+                            const tooltipX = event.pageX + 20;
+                            const tooltipY = event.offsetY + 20;
+                            return tooltip
+                                .style("left", (`${tooltipX}px`)).style("top", `${tooltipY}px`)
+                                .html(sidebarTooltipHTML(letter, amount));
+                        })
+                        .on("mouseout", () => {
+                            return tooltip.style("visibility", "hidden");
+                        });
+                    leftAlphabetPart.insert('rect')
+                        .attr('x', -10)
+                        .attr('y', 0) // start at the right spot
+                        .attr('width', sideBarWidth + 10)
+                        .attr('height', boxLength) // make sure each box is wide enough for the number of cells
+                        .attr('stroke', "black")
+                        .attr('stroke-width', "1px")
+                        .attr('fill', color);
+                    // .attr('fill', titleColors[sortedOnTitle[i][0]].color.background);
+                    leftAlphabetPart.insert('text')
+                        .text(topText.text())
+                        .attr('transform', "translate(" + sideBarWidth * 0.75 + "," + boxLength / 2 + ")rotate(-90)")
+                        .attr('text-anchor', "middle");
+
+                    lettersBefore += amount;
+                }
+
+                // // top bar
+                // topWrapper.insert('rect')
+                //     .attr('id', "SB-content")
+                //     .attr('y', -10)
+                //     .attr('width', width - sideBarWidth - strokeWeight)
+                //     .attr('height', sideBarWidth + 10)
+                //     .attr('rx', '10px')
+                //     .attr('stroke-width', strokeWeight + "px")
+                //     .attr('fill', "aquamarine");
+                // // top A
+                // topWrapper.append('text')
+                //     .attr('transform', "translate(10," + 2 * sideBarWidth / 3 + ")")
+                //     .text('A')
+                //     .attr('id', "SB-content");
+                // // top Z
+                // topWrapper.append('text')
+                //     .attr('transform', "translate(" + (width - sideBarWidth - 10) + "," + 2 * sideBarWidth / 3 + ")")
+                //     .text('Z')
+                //     .attr('text-anchor', "end")
+                //     .attr('id', "SB-content");
+
+                // // left bar
+                // leftWrapper.insert('rect')
+                //     .attr('id', "SB-content")
+                //     .attr('x', -10)
+                //     .attr('width', sideBarWidth + 10)
+                //     .attr('height', width - sideBarWidth - strokeWeight)
+                //     .attr('rx', '10px')
+                //     .attr('stroke-width', strokeWeight + "px")
+                //     .attr('fill', "aquamarine");
+                // // left A
+                // leftWrapper.append('text')
+                //     .attr('transform', "translate(" + 2 * sideBarWidth / 3 + ", 18)")
+                //     .text('A')
+                //     .attr('text-anchor', "end")
+                //     .attr('id', "SB-content");
+                // // left Z
+                // leftWrapper.append('text')
+                //     .attr('transform', "translate(" + 2 * sideBarWidth / 3 + "," + (width - sideBarWidth - 10) + ")")
+                //     .text('Z')
+                //     .attr('text-anchor', "end")
+                //     .attr('id', "SB-content");
 
                 break;
             case "sentiment":
@@ -691,10 +777,10 @@ function cellTooltipHTML(c: Cell): string {
     return html;
 }
 // function to update tooltip HTML for hovering over a title in title sorting
-function titleTooltipHTML(title: string, persons?: number): string {
+function sidebarTooltipHTML(text: string, persons?: number): string {
     let html = "";
 
-    html += title;
+    html += text;
 
     if (persons !== undefined) {
         if (persons === 1) {
