@@ -434,7 +434,20 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                     const topTitlePart = topWrapper.append("g")
                         .attr("class", "title-part")
                         .attr('id', "SB-content")
-                        .attr('transform', "translate(" + spaceBefore + ", 0)");  //placement at the right spot
+                        .attr('transform', "translate(" + spaceBefore + ", 0)") //placement at the right spot
+                        .on("mouseover", () => {
+                            return tooltip.style("visibility", "visible");
+                        })
+                        .on("mousemove", (event, d) => {
+                            const tooltipX = event.pageX + 20;
+                            const tooltipY = event.offsetY + 20;
+                            return tooltip
+                                .style("left", (`${tooltipX}px`)).style("top", `${tooltipY}px`)
+                                .html(titleTooltipHTML(titleText, amount));
+                        })
+                        .on("mouseout", () => {
+                            return tooltip.style("visibility", "hidden");
+                        });
                     topTitlePart.insert('rect')
                         .attr('y', -10)
                         .attr('width', titleBoxWidth) // make sure each box is wide enough for the number of cells
@@ -450,15 +463,28 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                         .attr('transform', "translate(" + boxLength / 2 + "," + sideBarWidth / 2 + ")")
                         .attr('text-anchor', 'middle');
                     // if text overflows, shorten it
-                    while (getSelectedSVGTextWidth(topText) > titleBoxWidth) {
-                        topText.text(topText.text().slice(0, -1))
+                    if (getSelectedSVGTextWidth(topText) > titleBoxWidth) {
+                        topText.text('')
                     }
 
                     // do left bar
                     const leftTitlePart = leftWrapper.append("g")
                         .attr("class", "title-part")
                         .attr('id', "SB-content")
-                        .attr('transform', "translate(0, " + spaceBefore + ")");  //placement at the right spot
+                        .attr('transform', "translate(0, " + spaceBefore + ")")  //placement at the right spot
+                        .on("mouseover", () => {
+                            return tooltip.style("visibility", "visible");
+                        })
+                        .on("mousemove", (event, d) => {
+                            const tooltipX = event.pageX + 20;
+                            const tooltipY = event.offsetY + 20;
+                            return tooltip
+                                .style("left", (`${tooltipX}px`)).style("top", `${tooltipY}px`)
+                                .html(titleTooltipHTML(titleText, amount));
+                        })
+                        .on("mouseout", () => {
+                            return tooltip.style("visibility", "hidden");
+                        }); 
                     leftTitlePart.insert('rect')
                         .attr('x', -10)
                         .attr('y', 0) // start at the right spot
@@ -663,7 +689,7 @@ function titleColoring(d: Cell): String {
 
 
 
-// function to update tooltip HTML for cell selection
+// function to update tooltip HTML for hovering over a cell
 function cellTooltipHTML(c: Cell): string {
     let html = "";
     const sender = c.from;
@@ -682,6 +708,22 @@ function cellTooltipHTML(c: Cell): string {
     html += `Sum sentiment: ${c.totalSentiment.toFixed(3)}`;
 
     return html;
+}
+// function to update tooltip HTML for hovering over a title in title sorting
+function titleTooltipHTML(title: string, persons?: number): string {
+    let html = "";
+
+    html += title;
+
+    if (persons !== undefined){
+        if (persons === 1){
+            html += "<br> 1 person"
+        } else {
+            html += "<br>" + persons + " persons"
+        }
+    }
+
+    return html
 }
 
 
