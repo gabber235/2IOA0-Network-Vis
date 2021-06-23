@@ -177,7 +177,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
     for (let i = 0; i < titleArr.length; i++) {
         const t: Title = titleArr[i]; // current title
         const linearGradient = document.createElementNS(svgns, "linearGradient");
-        linearGradient.setAttribute('id', "grad-" + t.toString().replace(" ", "-") + "-top");
+        linearGradient.setAttribute('id', "grad-" + t.toString().replace(/\s/g, '-') + "-top");
         linearGradient.setAttribute('x1', '0%');
         linearGradient.setAttribute('y1', '100%');
         linearGradient.setAttribute('x2', '0%');
@@ -200,7 +200,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
     for (let i = 0; i < titleArr.length; i++) {
         const t: Title = titleArr[i]; // current title
         const linearGradient = document.createElementNS(svgns, "linearGradient");
-        linearGradient.setAttribute('id', "grad-" + t.toString().replace(" ", "-") + "-left");
+        linearGradient.setAttribute('id', "grad-" + t.toString().replace(/\s/g, '-') + "-left");
         linearGradient.setAttribute('x1', '100%');
         linearGradient.setAttribute('y1', '0%');
         linearGradient.setAttribute('x2', '0%');
@@ -257,7 +257,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
     }
     // if counter is more than 4, use that as threshold, else use 4
     const threshold = counter > 4 ? counter : 4;
-    const opacityScaler = d3.scaleLinear().domain([0, threshold]).clamp(true).range([0.1,0.5]);
+    const opacityScaler = d3.scaleLinear().domain([0, threshold]).clamp(true).range([0.1, 0.5]);
 
     // Precompute the sorting orders
     const orders = {
@@ -334,7 +334,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                 const tooltipY = event.offsetY + 20;
                 return tooltip
                     .style("left", (`${tooltipX/* Its weird that this needs to be pageX, I don't know why this is*/}px`)).style("top", `${tooltipY}px`)
-                    .html(tooltipHTML(d));
+                    .html(cellTooltipHTML(d));
             })
             .on("mouseout", () => {
                 return tooltip.style("visibility", "hidden");
@@ -427,28 +427,35 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                     const amount = sortedOnTitle[i][1]; // get how many cells there are in this group
                     const boxLength = amount * size;
                     const spaceBefore = before * size;
+                    const titleText = sortedOnTitle[i][0];
+                    const titleBoxWidth = boxLength - strokeWeight;
 
                     // do top bar
-                    let topTitlePart = topWrapper.append("g")
+                    const topTitlePart = topWrapper.append("g")
                         .attr("class", "title-part")
                         .attr('id', "SB-content")
                         .attr('transform', "translate(" + spaceBefore + ", 0)");  //placement at the right spot
                     topTitlePart.insert('rect')
                         .attr('y', -10)
-                        .attr('width', boxLength - strokeWeight) // make sure each box is wide enough for the number of cells
+                        .attr('width', titleBoxWidth) // make sure each box is wide enough for the number of cells
                         .attr('height', sideBarWidth + 10)
                         .attr('stroke', "black")
                         .attr('rx', '10px')
                         .attr('stroke-width', strokeWeight + "px")
                         .attr('stroke', titleColors[sortedOnTitle[i][0]].color.border)
-                        .attr('fill', "url(#grad-" + sortedOnTitle[i][0].replace(" ", "-") + "-top)");
+                        .attr('fill', "url(#grad-" + sortedOnTitle[i][0].replace(/\s/g, '-') + "-top)");
                     // .attr('fill', titleColors[sortedOnTitle[i][0]].color.background);
-                    topTitlePart.insert('text')
-                        .text(sortedOnTitle[i][0])
+                    let topText = topTitlePart.insert('text')
+                        .text(titleText)
                         .attr('transform', "translate(" + boxLength / 2 + "," + sideBarWidth / 2 + ")")
                         .attr('text-anchor', 'middle');
+                    // if text overflows, shorten it
+                    while (getSelectedSVGTextWidth(topText) > titleBoxWidth) {
+                        topText.text(topText.text().slice(0, -1))
+                    }
+
                     // do left bar
-                    let leftTitlePart = leftWrapper.append("g")
+                    const leftTitlePart = leftWrapper.append("g")
                         .attr("class", "title-part")
                         .attr('id', "SB-content")
                         .attr('transform', "translate(0, " + spaceBefore + ")");  //placement at the right spot
@@ -456,15 +463,15 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                         .attr('x', -10)
                         .attr('y', 0) // start at the right spot
                         .attr('width', sideBarWidth + 10)
-                        .attr('height', boxLength - strokeWeight) // make sure each box is wide enough for the number of cells
+                        .attr('height', titleBoxWidth) // make sure each box is wide enough for the number of cells
                         .attr('stroke', "black")
                         .attr('rx', '10px')
                         .attr('stroke-width', strokeWeight + "px")
                         .attr('stroke', titleColors[sortedOnTitle[i][0]].color.border)
-                        .attr('fill', "url(#grad-" + sortedOnTitle[i][0].replace(" ", "-") + "-left)");
+                        .attr('fill', "url(#grad-" + sortedOnTitle[i][0].replace(/\s/g, '-') + "-left)");
                     // .attr('fill', titleColors[sortedOnTitle[i][0]].color.background);
                     leftTitlePart.insert('text')
-                        .text(sortedOnTitle[i][0])
+                        .text(topText.text())
                         .attr('transform', "translate(" + sideBarWidth / 2 + "," + boxLength / 2 + ")rotate(-90)")
                         .attr('text-anchor', "middle");
 
@@ -641,7 +648,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
             .style("fill", (d: any) => selectColor(d, sorter))
 
         t.selectAll(".column")
-            .delay((_, i) => xScale(i) * 4 )
+            .delay((_, i) => xScale(i) * 4)
             .attr("transform", (_, i) => "translate(" + xScale(i) + ")rotate(-90)");
     }
 }
@@ -656,10 +663,8 @@ function titleColoring(d: Cell): String {
 
 
 
-
-
-
-function tooltipHTML(c: Cell): string {
+// function to update tooltip HTML for cell selection
+function cellTooltipHTML(c: Cell): string {
     let html = "";
     const sender = c.from;
     const receiver = c.to;
@@ -677,4 +682,10 @@ function tooltipHTML(c: Cell): string {
     html += `Sum sentiment: ${c.totalSentiment.toFixed(3)}`;
 
     return html;
+}
+
+
+
+function getSelectedSVGTextWidth(sel: d3.Selection<SVGTextElement, unknown, HTMLElement, any>) {
+    return sel.nodes()[0].getComputedTextLength();
 }
