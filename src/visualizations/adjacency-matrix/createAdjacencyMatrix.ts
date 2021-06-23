@@ -4,6 +4,7 @@ import { titleColors, titleRanks } from "../constants";
 import { Email, Title } from "../../data";
 import { DataSet, DataSetDiff, ID, IDSetDiff } from "../../pipeline/dynamicDataSet";
 import { Subject } from "rxjs";
+import { roundTo } from "../../utils";
 
 
 
@@ -343,6 +344,8 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
 
     fillSidebars(sorter);
 
+
+
     // puts the right content in the sidebars based on current data and sorting settings 
     function fillSidebars(sorting: SortingSetting): void {
         let topWrapper = d3.select('#top-bar-wrapper');
@@ -373,7 +376,6 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                     return titleRanks[a[0]] - titleRanks[b[0]];
                 });
 
-                //
                 let before = 0; // used to know how many cells there were before the current
                 const size = xScale.bandwidth();
                 for (let i = 0; i < sortedOnTitle.length; i++) {
@@ -507,6 +509,10 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
 
                 break;
             case "sentiment":
+
+                const minSentiment = roundTo(Math.min(...nodes.map(i => i.totalSentiment)), 3)
+                const maxSentiment = roundTo(Math.max(...nodes.map(i => i.totalSentiment)), 3)
+
                 // top bar
                 topWrapper.insert('rect')
                     .attr('id', "SB-content")
@@ -527,6 +533,31 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                     .attr('stroke-width', strokeWeight + "px")
                     .attr('stroke', "black")
                     .attr('fill', "url(#grad-sent-left");
+
+                // top A
+                topWrapper.append('text')
+                    .attr('transform', "translate(10," + 2 * sideBarWidth / 3 + ")")
+                    .text(maxSentiment)
+                    .attr('id', "SB-content");
+                // top Z
+                topWrapper.append('text')
+                    .attr('transform', "translate(" + (width - sideBarWidth - 10) + "," + 2 * sideBarWidth / 3 + ")")
+                    .text(minSentiment)
+                    .attr('text-anchor', "end")
+                    .attr('id', "SB-content");
+
+                // left A
+                leftWrapper.append('text')
+                    .attr('transform', `translate(${2 * sideBarWidth / 3 + 4}, 15)rotate(-90)`)
+                    .text(maxSentiment)
+                    .attr('text-anchor', "end")
+                    .attr('id', "SB-content")
+                // left Z
+                leftWrapper.append('text')
+                    .attr('transform', `translate(${2 * sideBarWidth / 3 + 5},${width - sideBarWidth - 15})rotate(-90)`)
+                    .text(minSentiment)
+                    .attr('text-anchor', "begin")
+                    .attr('id', "SB-content")
                 break;
         }
     }
