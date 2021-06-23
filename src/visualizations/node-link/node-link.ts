@@ -423,6 +423,7 @@ function emailToEdge(e: Email): vis.Edge {
         to:   getPersonVisId(e.toId,   e.toJobtitle,   /* groupNodes */ false),
         title: emailTitle(e),
         color: edgeColor(e.sentiment),
+        width: 5
     }
 }
 
@@ -436,6 +437,7 @@ function emailToEdgeGroupedNodes(e: Email): vis.Edge {
         to:   getPersonVisId(e.toId,   e.toJobtitle,   /* groupNodes */ true),
         title: emailTitle(e),
         color: edgeColor(e.sentiment),
+        width: 5
     }
 }
 
@@ -453,7 +455,7 @@ function emailGroupByPersonToEdge(g: EmailGroup): vis.Edge {
         id: getEmailVisId(someEmail, /* groupNodes: */ false, /* groupEdges: */ true),
         from: getPersonVisId(someEmail.fromId, someEmail.fromJobtitle, /* groupNodes */ false),
         to:   getPersonVisId(someEmail.toId,   someEmail.toJobtitle,   /* groupNodes */ false),
-        width: Math.log(emailList.length) * 2,
+        width: edgeGroupWith(emailList.length),
         title: emailGroupTitle(toCount, ccCount, avSent),
         color: edgeColor(avSent),
     }
@@ -473,11 +475,17 @@ function emailGroupByTitleToEdge(g: EmailGroup): vis.Edge {
         id: getEmailVisId(someEmail, /* groupNodes: */ true, /* groupEdges: */ true),
         from: getPersonVisId(someEmail.fromId, someEmail.fromJobtitle, /* groupNodes */ true),
         to:   getPersonVisId(someEmail.toId,   someEmail.toJobtitle,   /* groupNodes */ true),
-        width: Math.log(emailList.length) * 2,
+        width: edgeGroupWith(emailList.length),
         title: emailGroupTitle(toCount, ccCount, avSent),
         color: edgeColor(avSent),
     }
 }
+
+function edgeGroupWith(count: number): number {
+    return Math.log(count) * 2 + 3
+}
+
+
 
 function emailTitle(e: Email): string {
     return `${e.messageType}, ${e.date}, Sentiment: ${Math.round(e.sentiment * 1000) / 10}%`
@@ -493,8 +501,8 @@ function edgeColor(sentiment: number): any {
     const hue = Math.tanh(sentiment * edgeColorContrast) / 2 + 0.5
 
     return {
-        color:     hueGradient(hue, 1, 0.5, 0.2), 
-        hover:     hueGradient(hue, 1, 0.5, 0.5), 
+        color:     hueGradient(hue, 1, 0.5, 0.3), 
+        hover:     hueGradient(hue, 1, 0.5, 0.6), 
         highlight: hueGradient(hue, 1, 0.5, 1  ), 
         inherit: false
     }
