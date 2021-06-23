@@ -173,53 +173,6 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
     defs.appendChild(topSentGrad);
     defs.appendChild(leftSentGrad);
 
-    // define gradients for titles for the top bar
-    for (let i = 0; i < titleArr.length; i++) {
-        const t: Title = titleArr[i]; // current title
-        const linearGradient = document.createElementNS(svgns, "linearGradient");
-        linearGradient.setAttribute('id', "grad-" + t.toString().replace(/\s/g, '-') + "-top");
-        linearGradient.setAttribute('x1', '0%');
-        linearGradient.setAttribute('y1', '100%');
-        linearGradient.setAttribute('x2', '0%');
-        linearGradient.setAttribute('y2', '0%');
-
-        const stop1 = document.createElementNS(svgns, "stop");
-        stop1.setAttribute('offset', "0%");
-        stop1.setAttribute('style', "stop-color:" + titleColors[t].color.border + ";stop-opacity:1");
-
-        const stop2 = document.createElementNS(svgns, "stop");
-        stop2.setAttribute('offset', "70%");
-        stop2.setAttribute('style', "stop-color:rgb(255,255,255);stop-opacity:1");
-
-        // append all the elements together and add it to defs
-        linearGradient.appendChild(stop1);
-        linearGradient.appendChild(stop2);
-        defs.appendChild(linearGradient);
-    }
-    // define gradients for titles for the left bar
-    for (let i = 0; i < titleArr.length; i++) {
-        const t: Title = titleArr[i]; // current title
-        const linearGradient = document.createElementNS(svgns, "linearGradient");
-        linearGradient.setAttribute('id', "grad-" + t.toString().replace(/\s/g, '-') + "-left");
-        linearGradient.setAttribute('x1', '100%');
-        linearGradient.setAttribute('y1', '0%');
-        linearGradient.setAttribute('x2', '0%');
-        linearGradient.setAttribute('y2', '0%');
-
-        const stop1 = document.createElementNS(svgns, "stop");
-        stop1.setAttribute('offset', "0%");
-        stop1.setAttribute('style', "stop-color:" + titleColors[t].color.border + ";stop-opacity:1");
-
-        const stop2 = document.createElementNS(svgns, "stop");
-        stop2.setAttribute('offset', "70%");
-        stop2.setAttribute('style', "stop-color:rgb(255,255,255);stop-opacity:1");
-
-        // append all the elements together and add it to defs
-        linearGradient.appendChild(stop1);
-        linearGradient.appendChild(stop2);
-        defs.appendChild(linearGradient);
-    }
-
     // append all the defined gradients to the SVG
     document.getElementById("AM-SVG").appendChild(defs);
 
@@ -400,7 +353,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
         leftWrapper.selectAll('#SB-content').remove();
 
         // add content to sidebars based on sorting setting
-        const strokeWeight = 2;
+        const strokeWeight = 0;
         switch (sorting) {
             case "count":
                 break;
@@ -429,6 +382,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                     const spaceBefore = before * size;
                     const titleText = sortedOnTitle[i][0];
                     const titleBoxWidth = boxLength - strokeWeight;
+                    const color = titleColors[sortedOnTitle[i][0]].color.background;
 
                     // do top bar
                     const topTitlePart = topWrapper.append("g")
@@ -453,10 +407,9 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                         .attr('width', titleBoxWidth) // make sure each box is wide enough for the number of cells
                         .attr('height', sideBarWidth + 10)
                         .attr('stroke', "black")
-                        .attr('rx', '10px')
                         .attr('stroke-width', strokeWeight + "px")
-                        .attr('stroke', titleColors[sortedOnTitle[i][0]].color.border)
-                        .attr('fill', "url(#grad-" + sortedOnTitle[i][0].replace(/\s/g, '-') + "-top)");
+                        .attr('stroke', color)
+                        .attr('fill', color);
                     // .attr('fill', titleColors[sortedOnTitle[i][0]].color.background);
                     let topText = topTitlePart.insert('text')
                         .text(titleText)
@@ -484,17 +437,16 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                         })
                         .on("mouseout", () => {
                             return tooltip.style("visibility", "hidden");
-                        }); 
+                        });
                     leftTitlePart.insert('rect')
                         .attr('x', -10)
                         .attr('y', 0) // start at the right spot
                         .attr('width', sideBarWidth + 10)
                         .attr('height', titleBoxWidth) // make sure each box is wide enough for the number of cells
                         .attr('stroke', "black")
-                        .attr('rx', '10px')
                         .attr('stroke-width', strokeWeight + "px")
-                        .attr('stroke', titleColors[sortedOnTitle[i][0]].color.border)
-                        .attr('fill', "url(#grad-" + sortedOnTitle[i][0].replace(/\s/g, '-') + "-left)");
+                        .attr('stroke', color)
+                        .attr('fill', color);
                     // .attr('fill', titleColors[sortedOnTitle[i][0]].color.background);
                     leftTitlePart.insert('text')
                         .text(topText.text())
@@ -512,10 +464,8 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                     .attr('y', -10)
                     .attr('width', width - sideBarWidth - strokeWeight)
                     .attr('height', sideBarWidth + 10)
-                    .attr('stroke', "black")
                     .attr('rx', '10px')
                     .attr('stroke-width', strokeWeight + "px")
-                    .attr('stroke', "black")
                     .attr('fill', "aquamarine");
                 // top A
                 topWrapper.append('text')
@@ -535,10 +485,8 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                     .attr('x', -10)
                     .attr('width', sideBarWidth + 10)
                     .attr('height', width - sideBarWidth - strokeWeight)
-                    .attr('stroke', "black")
                     .attr('rx', '10px')
                     .attr('stroke-width', strokeWeight + "px")
-                    .attr('stroke', "black")
                     .attr('fill', "aquamarine");
                 // left A
                 leftWrapper.append('text')
@@ -562,7 +510,6 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                     .attr('width', width - sideBarWidth - strokeWeight)
                     .attr('height', sideBarWidth + 10)
                     .attr('stroke', "black")
-                    .attr('rx', '10px')
                     .attr('stroke-width', strokeWeight + "px")
                     .attr('stroke', "black")
                     .attr('fill', "url(#grad-sent-top");
@@ -573,7 +520,6 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                     .attr('width', sideBarWidth + 10)
                     .attr('height', width - sideBarWidth - strokeWeight)
                     .attr('stroke', "black")
-                    .attr('rx', '10px')
                     .attr('stroke-width', strokeWeight + "px")
                     .attr('stroke', "black")
                     .attr('fill', "url(#grad-sent-left");
@@ -715,8 +661,8 @@ function titleTooltipHTML(title: string, persons?: number): string {
 
     html += title;
 
-    if (persons !== undefined){
-        if (persons === 1){
+    if (persons !== undefined) {
+        if (persons === 1) {
             html += "<br> 1 person"
         } else {
             html += "<br>" + persons + " persons"
