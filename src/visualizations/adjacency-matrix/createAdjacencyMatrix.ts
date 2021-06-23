@@ -201,7 +201,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
         const t: Title = titleArr[i]; // current title
         const linearGradient = document.createElementNS(svgns, "linearGradient");
         linearGradient.setAttribute('id', "grad-" + t.toString().replace(/\s/g, '-') + "-left");
-        linearGradient.setAttribute('x1', '70%');
+        linearGradient.setAttribute('x1', '100%');
         linearGradient.setAttribute('y1', '0%');
         linearGradient.setAttribute('x2', '0%');
         linearGradient.setAttribute('y2', '0%');
