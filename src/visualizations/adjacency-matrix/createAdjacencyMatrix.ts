@@ -188,8 +188,8 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
         stop1.setAttribute('style', "stop-color:" + titleColors[t].color.border + ";stop-opacity:1");
 
         const stop2 = document.createElementNS(svgns, "stop");
-        stop2.setAttribute('offset', "100%");
-        stop2.setAttribute('style', "stop-color:" + titleColors[t].color.background + ";stop-opacity:1");
+        stop2.setAttribute('offset', "70%");
+        stop2.setAttribute('style', "stop-color:rgb(255,255,255);stop-opacity:1");
 
         // append all the elements together and add it to defs
         linearGradient.appendChild(stop1);
@@ -201,7 +201,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
         const t: Title = titleArr[i]; // current title
         const linearGradient = document.createElementNS(svgns, "linearGradient");
         linearGradient.setAttribute('id', "grad-" + t.toString().replace(/\s/g, '-') + "-left");
-        linearGradient.setAttribute('x1', '100%');
+        linearGradient.setAttribute('x1', '70%');
         linearGradient.setAttribute('y1', '0%');
         linearGradient.setAttribute('x2', '0%');
         linearGradient.setAttribute('y2', '0%');
@@ -211,8 +211,8 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
         stop1.setAttribute('style', "stop-color:" + titleColors[t].color.border + ";stop-opacity:1");
 
         const stop2 = document.createElementNS(svgns, "stop");
-        stop2.setAttribute('offset', "100%");
-        stop2.setAttribute('style', "stop-color:" + titleColors[t].color.background + ";stop-opacity:1");
+        stop2.setAttribute('offset', "70%");
+        stop2.setAttribute('style', "stop-color:rgb(255,255,255);stop-opacity:1");
 
         // append all the elements together and add it to defs
         linearGradient.appendChild(stop1);
