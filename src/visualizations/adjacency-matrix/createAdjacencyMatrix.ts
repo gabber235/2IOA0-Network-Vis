@@ -373,9 +373,8 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                 // top bar
                 topWrapper.insert('rect')
                     .attr('id', "SB-content")
-                    .attr('y', -10)
                     .attr('width', width - sideBarWidth - strokeWeight)
-                    .attr('height', sideBarWidth + 10)
+                    .attr('height', sideBarWidth)
                     .attr('stroke', "black")
                     .attr('stroke-width', strokeWeight + "px")
                     .attr('stroke', "black")
@@ -383,8 +382,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                 // left bar
                 leftWrapper.insert('rect')
                     .attr('id', "SB-content")
-                    .attr('x', -10)
-                    .attr('width', sideBarWidth + 10)
+                    .attr('width', sideBarWidth)
                     .attr('height', width - sideBarWidth - strokeWeight)
                     .attr('stroke', "black")
                     .attr('stroke-width', strokeWeight + "px")
@@ -462,9 +460,8 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                             return tooltip.style("visibility", "hidden");
                         });
                     topTitlePart.insert('rect')
-                        .attr('y', -10)
                         .attr('width', titleBoxWidth) // make sure each box is wide enough for the number of cells
-                        .attr('height', sideBarWidth + 10)
+                        .attr('height', sideBarWidth)
                         .attr('stroke-width', strokeWeight + "px")
                         .attr('stroke', color)
                         .attr('fill', color);
@@ -500,9 +497,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                             return tooltip.style("visibility", "hidden");
                         });
                     leftTitlePart.insert('rect')
-                        .attr('x', -10)
-                        .attr('y', 0) // start at the right spot
-                        .attr('width', sideBarWidth + 10)
+                        .attr('width', sideBarWidth)
                         .attr('height', titleBoxWidth) // make sure each box is wide enough for the number of cells
                         .attr('stroke-width', strokeWeight + "px")
                         .attr('stroke', color)
@@ -559,10 +554,9 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                             return tooltip.style("visibility", "hidden");
                         });
                     topAlphabetPart.insert('rect')
-                        .attr('y', -10)
                         .attr('width', boxLength) // make sure each box is wide enough for the number of cells
-                        .attr('height', sideBarWidth + 10)
-                        .attr('stroke', "black")
+                        .attr('height', sideBarWidth)
+                        .attr('stroke', "white")
                         .attr('stroke-width', "1px")
                         .attr('fill', color);
                     // .attr('fill', titleColors[sortedOnTitle[i][0]].color.background);
@@ -590,11 +584,9 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                             return tooltip.style("visibility", "hidden");
                         });
                     leftAlphabetPart.insert('rect')
-                        .attr('x', -10)
-                        .attr('y', 0) // start at the right spot
-                        .attr('width', sideBarWidth + 10)
+                        .attr('width', sideBarWidth)
                         .attr('height', boxLength) // make sure each box is wide enough for the number of cells
-                        .attr('stroke', "black")
+                        .attr('stroke', "white")
                         .attr('stroke-width', "1px")
                         .attr('fill', color);
                     // .attr('fill', titleColors[sortedOnTitle[i][0]].color.background);
@@ -614,9 +606,8 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                 // top bar
                 topWrapper.insert('rect')
                     .attr('id', "SB-content")
-                    .attr('y', -10)
                     .attr('width', width - sideBarWidth - strokeWeight)
-                    .attr('height', sideBarWidth + 10)
+                    .attr('height', sideBarWidth)
                     .attr('stroke', "black")
                     .attr('stroke-width', strokeWeight + "px")
                     .attr('stroke', "black")
@@ -624,8 +615,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                 // left bar
                 leftWrapper.insert('rect')
                     .attr('id', "SB-content")
-                    .attr('x', -10)
-                    .attr('width', sideBarWidth + 10)
+                    .attr('width', sideBarWidth)
                     .attr('height', width - sideBarWidth - strokeWeight)
                     .attr('stroke', "black")
                     .attr('stroke-width', strokeWeight + "px")
