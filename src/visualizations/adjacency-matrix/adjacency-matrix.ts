@@ -17,13 +17,11 @@ export class AdjacencyMatrix {
         const selectedEmails: DataSet<number> = {};
 
         // make updates work
-        data.subscribe(event => {
+        data.subscribe(([personDiff, emailsDiff]) => {
             // console.log(event)
 
             // implement the changes given by the diffs
-            const personDiff = event[0];
             personDiff.apply(persons)
-            const emailsDiff = event[1];
             emailsDiff.apply(emails);
 
             // get arrays from dataset objects
@@ -36,13 +34,11 @@ export class AdjacencyMatrix {
         });
 
         // make selections works
-        selSub.subscribe(event => {
+        selSub.subscribe(([personDiff, emailsDiff]) => {
             // console.log(event)
 
             // implement the changes given by the diffs
-            const personDiff = event[0];
             personDiff.apply(selectedPersons)
-            const emailsDiff = event[1];
             emailsDiff.apply(selectedEmails);
 
             // get arrays from dataset objects
@@ -61,21 +57,9 @@ export class AdjacencyMatrix {
         // takes persons, emails and selections and update the on-screen matrix accordingly
         function updateAM(persons: Person[], emailList: Email[], selPerIDs: number[], selEmIDs: number[]) {
 
-            // get if user wants to see all nodes
-            const showAllNodes: any = document.getElementById("show-all-nodes");
-            const boolShowAllNodes: boolean = showAllNodes.checked;
-
             let nodes: Node[];
 
-            //depending on if the user wants to see all nodes, calc what nodes we want
-            if (!boolShowAllNodes) {
-                // Creating array with person object
-                const correspondants = Object.values(getCorrespondants(emailList)); //dictionary with persons
-                // turn personlist into nodes for adjacency matrix
-                nodes = peopleToNodes(correspondants);
-            } else {
-                nodes = peopleToNodes(persons);
-            }
+            nodes = peopleToNodes(persons);
 
             // get edges
             const links = emailsToEdges(emailList, nodes, selEmIDs);

@@ -115,7 +115,6 @@ window.addEventListener("load", async () => {
     )
 
 
-    new AdjacencyMatrix().visualize(dataWithAllNodes.pipe(map(([_, diffs]) => diffs)), selectionSubject).catch(e => console.error(e))
 
 
     const nodeLinkOptions = merge(
@@ -154,6 +153,10 @@ window.addEventListener("load", async () => {
         map(([_, [peopleDiff, emailDiff]]) => pair(peopleDiff, emailDiff)),
         share()
     )
+    
+    new AdjacencyMatrix().visualize(maybeShowAllNodes, selectionSubject).catch(e => console.error(e))
+    
+    
     createLegend(document.getElementById("node-link-legend"))
 
     const nodeLinkDiagram = new NodeLinkVisualisation(document.getElementById("node-links"), maybeShowAllNodes, selectionSubject, nodeLinkOptions, 150)
