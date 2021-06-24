@@ -390,25 +390,26 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                     .attr('stroke', "black")
                     .attr('fill', "url(#grad-sent-left");
 
-                // top A
+                // top max
                 topWrapper.append('text')
                     .attr('transform', "translate(10," + sideBarWidth * 0.75 + ")")
                     .text(maxCount)
                     .attr('id', "SB-content");
-                // top Z
+                // top min
                 topWrapper.append('text')
                     .attr('transform', "translate(" + (width - sideBarWidth - 10) + "," + sideBarWidth * 0.75 + ")")
                     .text(minCount)
                     .attr('text-anchor', "end")
                     .attr('id', "SB-content");
 
-                // left A
+
+                // left max
                 leftWrapper.append('text')
                     .attr('transform', `translate(${sideBarWidth * 0.75}, 15)rotate(-90)`)
                     .text(maxCount)
                     .attr('text-anchor', "end")
                     .attr('id', "SB-content")
-                // left Z
+                // left min
                 leftWrapper.append('text')
                     .attr('transform', `translate(${sideBarWidth * 0.75},${width - sideBarWidth - 15})rotate(-90)`)
                     .text(minCount)
@@ -498,7 +499,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                             .attr("fill", "none")
                             .attr("stroke", lineColor)
                             .attr("stroke-width", 0.5)
-                            .attr("d", lineGenerator([[0, 0], [0, height]]))
+                            .attr("d", lineGenerator([[0, 0], [0, height]]));
                     }
 
 
@@ -551,7 +552,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                             .attr("fill", "none")
                             .attr("stroke", lineColor)
                             .attr("stroke-width", 0.5)
-                            .attr("d", lineGenerator([[0, 0], [width, 0]]))
+                            .attr("d", lineGenerator([[0, 0], [width, 0]]));
                     }
 
                     before += amount;
@@ -575,12 +576,14 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                 let alphabetTallySorted = Object.entries(alphabetTally).sort();
 
                 let lettersBefore = 0; // used to know how many cells there were before the current
+                const alphabetLineGenerator = d3.line();
                 const sizeBlock = xScale.bandwidth();
                 for (let i = 0; i < alphabetTallySorted.length; i++) {
                     const amount = alphabetTallySorted[i][1]; // get how many people there are in this group
                     const boxLength = amount * sizeBlock;
                     const spaceBefore = lettersBefore * sizeBlock;
                     const color = "lightgreen";
+                    const lineColor = "green";
                     const letter = alphabetTallySorted[i][0];
 
                     // do top bar
@@ -612,6 +615,14 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                         .text(letter)
                         .attr('transform', "translate(" + boxLength / 2 + "," + sideBarWidth * 0.75 + ")")
                         .attr('text-anchor', 'middle');
+                    // top to botton line
+                    if (lettersBefore !== 0) {
+                        topAlphabetPart.append("path")
+                            .attr("fill", "none")
+                            .attr("stroke", lineColor)
+                            .attr("stroke-width", 0.5)
+                            .attr("d", alphabetLineGenerator([[0, 0], [0, height]]));
+                    }
 
                     // do left bar
                     const leftAlphabetPart = leftWrapper.append("g")
@@ -642,6 +653,14 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                         .text(topText.text())
                         .attr('transform', "translate(" + sideBarWidth * 0.75 + "," + boxLength / 2 + ")rotate(-90)")
                         .attr('text-anchor', "middle");
+                    // left to right line
+                    if (lettersBefore !== 0) {
+                        leftAlphabetPart.append("path")
+                            .attr("fill", "none")
+                            .attr("stroke", lineColor)
+                            .attr("stroke-width", 0.5)
+                            .attr("d", alphabetLineGenerator([[0, 0], [width, 0]]));
+                    }
 
                     lettersBefore += amount;
                 }
