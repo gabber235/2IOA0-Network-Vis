@@ -321,6 +321,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
             .style("font-size", "12px")
             .style("left", "0px").style("top", "0px")
             .style("text-align", "left")
+            .style("background-color", "#F5F4ED")
     }
     tooltip = d3.select("#AM-tooltip");
 
@@ -391,25 +392,25 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
 
                 // top A
                 topWrapper.append('text')
-                    .attr('transform', "translate(10," + 2 * sideBarWidth / 3 + ")")
+                    .attr('transform', "translate(10," + sideBarWidth * 0.75 + ")")
                     .text(maxCount)
                     .attr('id', "SB-content");
                 // top Z
                 topWrapper.append('text')
-                    .attr('transform', "translate(" + (width - sideBarWidth - 10) + "," + 2 * sideBarWidth / 3 + ")")
+                    .attr('transform', "translate(" + (width - sideBarWidth - 10) + "," + sideBarWidth * 0.75 + ")")
                     .text(minCount)
                     .attr('text-anchor', "end")
                     .attr('id', "SB-content");
 
                 // left A
                 leftWrapper.append('text')
-                    .attr('transform', `translate(${2 * sideBarWidth / 3 + 4}, 15)rotate(-90)`)
+                    .attr('transform', `translate(${sideBarWidth * 0.75}, 15)rotate(-90)`)
                     .text(maxCount)
                     .attr('text-anchor', "end")
                     .attr('id', "SB-content")
                 // left Z
                 leftWrapper.append('text')
-                    .attr('transform', `translate(${2 * sideBarWidth / 3 + 5},${width - sideBarWidth - 15})rotate(-90)`)
+                    .attr('transform', `translate(${sideBarWidth * 0.75},${width - sideBarWidth - 15})rotate(-90)`)
                     .text(minCount)
                     .attr('text-anchor', "begin")
                     .attr('id', "SB-content")
@@ -624,25 +625,25 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
 
                 // top A
                 topWrapper.append('text')
-                    .attr('transform', "translate(10," + 2 * sideBarWidth / 3 + ")")
+                    .attr('transform', "translate(10," + sideBarWidth * 0.75 + ")")
                     .text(maxSentiment)
                     .attr('id', "SB-content");
                 // top Z
                 topWrapper.append('text')
-                    .attr('transform', "translate(" + (width - sideBarWidth - 10) + "," + 2 * sideBarWidth / 3 + ")")
+                    .attr('transform', "translate(" + (width - sideBarWidth - 10) + "," + sideBarWidth * 0.75 + ")")
                     .text(minSentiment)
                     .attr('text-anchor', "end")
                     .attr('id', "SB-content");
 
                 // left A
                 leftWrapper.append('text')
-                    .attr('transform', `translate(${2 * sideBarWidth / 3 + 4}, 15)rotate(-90)`)
+                    .attr('transform', `translate(${sideBarWidth * 0.75}, 15)rotate(-90)`)
                     .text(maxSentiment)
                     .attr('text-anchor', "end")
                     .attr('id', "SB-content")
                 // left Z
                 leftWrapper.append('text')
-                    .attr('transform', `translate(${2 * sideBarWidth / 3 + 5},${width - sideBarWidth - 15})rotate(-90)`)
+                    .attr('transform', `translate(${sideBarWidth * 0.75},${width - sideBarWidth - 15})rotate(-90)`)
                     .text(minSentiment)
                     .attr('text-anchor', "begin")
                     .attr('id', "SB-content")
