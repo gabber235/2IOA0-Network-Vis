@@ -170,8 +170,6 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
     SentStop3.setAttribute('offset', "100%");
     SentStop3.setAttribute('style', "stop-color:hsl(120,100%,50%);stop-opacity:1");
 
-
-
     // append all the elements together and add it to defs
     topSentGrad.appendChild(SentStop1);
     topSentGrad.appendChild(SentStop2);
@@ -181,6 +179,36 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
     leftSentGrad.appendChild(SentStop3.cloneNode());
     defs.appendChild(topSentGrad);
     defs.appendChild(leftSentGrad);
+
+    // define gradients for frequency sorting
+    const topFreqGrad = document.createElementNS(svgns, "linearGradient");
+    const leftFreqGrad = document.createElementNS(svgns, "linearGradient");
+    topFreqGrad.setAttribute('id', "grad-freq-top");
+    topFreqGrad.setAttribute('x1', '100%');
+    topFreqGrad.setAttribute('y1', '0%');
+    topFreqGrad.setAttribute('x2', '0%');
+    topFreqGrad.setAttribute('y2', '0%');
+    leftFreqGrad.setAttribute('id', "grad-freq-left");
+    leftFreqGrad.setAttribute('x1', '0%');
+    leftFreqGrad.setAttribute('y1', '100%');
+    leftFreqGrad.setAttribute('x2', '0%');
+    leftFreqGrad.setAttribute('y2', '0%');
+
+    const FreqStop1 = document.createElementNS(svgns, "stop");
+    FreqStop1.setAttribute('offset', "0%");
+    FreqStop1.setAttribute('style', "stop-color:#BBB;stop-opacity:1");
+
+    const FreqStop2 = document.createElementNS(svgns, "stop");
+    FreqStop2.setAttribute('offset', "100%");
+    FreqStop2.setAttribute('style', "stop-color:#222;stop-opacity:1");
+
+    // append all the elements together and add it to defs
+    topFreqGrad.appendChild(FreqStop1);
+    topFreqGrad.appendChild(FreqStop2);
+    leftFreqGrad.appendChild(FreqStop1.cloneNode());
+    leftFreqGrad.appendChild(FreqStop2.cloneNode());
+    defs.appendChild(topFreqGrad);
+    defs.appendChild(leftFreqGrad);
 
     // append all the defined gradients to the SVG
     document.getElementById("AM-SVG").appendChild(defs);
@@ -379,7 +407,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                     .attr('stroke', "black")
                     .attr('stroke-width', strokeWeight + "px")
                     .attr('stroke', "black")
-                    .attr('fill', "url(#grad-sent-top");
+                    .attr('fill', "url(#grad-freq-top");
                 // left bar
                 leftWrapper.insert('rect')
                     .attr('id', "SB-content")
@@ -388,12 +416,13 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                     .attr('stroke', "black")
                     .attr('stroke-width', strokeWeight + "px")
                     .attr('stroke', "black")
-                    .attr('fill', "url(#grad-sent-left");
+                    .attr('fill', "url(#grad-freq-left");
 
                 // top max
                 topWrapper.append('text')
                     .attr('transform', "translate(10," + sideBarWidth * 0.75 + ")")
                     .text(maxCount)
+                    .style('fill', "white")
                     .attr('id', "SB-content");
                 // top min
                 topWrapper.append('text')
@@ -408,6 +437,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                     .attr('transform', `translate(${sideBarWidth * 0.75}, 15)rotate(-90)`)
                     .text(maxCount)
                     .attr('text-anchor', "end")
+                    .style('fill', "white")
                     .attr('id', "SB-content")
                 // left min
                 leftWrapper.append('text')
