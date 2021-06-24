@@ -210,12 +210,12 @@ export function loadTimelineGraph(counts: number[]) {
         }
     }
 
-    const x = (<any>d3).scale.linear().domain([0, counts.length]).range([0, width]);
-    const y = (<any>d3).scale.linear().domain([0, max]).range([height, 0]);
+    const x = d3.scaleLinear().domain([0, counts.length]).range([0, width]);
+    const y = d3.scaleLinear().domain([0, max]).range([height, 0]);
 
     // create a line function that can convert data[] into x and y points
-    const line = (<any>d3).svg.line()
-        .interpolate("basis")
+    const line = d3.line()
+        .curve(d3.curveBasis)
         .x((d: any, i: any) => x(i))
         .y((d: any) => y(d))
 
