@@ -10,30 +10,38 @@ export function getDynamicCorrespondants<A, B>(
     asEmails: (a: A) => DataSetDiff<Email>,
     finalize: (a: A, diff: DataSetDiff<Person>) => B
 ) {
-
     return (emails: Observable<A>): Observable<B> => {
-
+        /*
+        We need to keep track of every correspondant that has either send or recieved an email in the current set.
+        To do this we keep track of how many emails each person has send or recieved.
+        This is essentially like a reference count for each person. 
+        */
         const emailsSet: DataSet<Email> = {};
-        const personSet: DataSet<number> = {};
+        const personReferenceCounts: DataSet<number> = {};
 
+        // This function increases the reference count for a person.
+        // If the reference count increases to 1 we add the person as an insertion to the diff.
         function incr(id: ID, person: Person, diff: DataSetDiff<Person>) {
-            if (!(id in personSet)) {
-                personSet[id] = 0;
+            if (!(id in personReferenceCounts)) {
+                personReferenceCounts[id] = 0;
                 diff.add(id, person);
             }
-            personSet[id]++;
+            personReferenceCounts[id]++;
         }
+        // This function decreases the reference count for a person.
+        // If the reference count decreases to 0 we add the person as a deletion to the diff.
         function decr(id: ID, diff: DataSetDiff<Person>) {
 
-            personSet[id]--;
+            personReferenceCounts[id]--;
 
-            if (personSet[id] === 0) {
+            if (personReferenceCounts[id] === 0) {
                 diff.remove(id);
-                delete personSet[id];
+                delete personReferenceCounts[id];
             }
         }
 
         return emails.pipe(
+            // The messages are 1 to 1 so we use map
             map((a) => {
                 const diff = new DataSetDiff<Person>();
                 const emailDiff = asEmails(a);

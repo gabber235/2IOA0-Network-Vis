@@ -21,49 +21,27 @@
         </ul>
     </nav>
     <div id="heading">
-        <p>Visualizing data is a challenging task due to multiple reasons: One reason is selecting the most fitting
-            visualizationtechnique.
-            Data can be presented in different ways and choosing the right visualization technique is vital for
-            understanding whichinformation the data is representing.
-            As technology is on the rise these challenges become more important to be tackled.
-            Using thewrong visualization techniques can result to people misunderstanding the data and as as result come
-            to a wrong conclusion.
-            Thispaper describes two visualization techniques, the node-link diagram and the adjacency matrix, and how
-            these visualizations can bemade dynamic.
-            Dynamic visualizations are relevant since data is often collected over a period of time. Dynamic
-            visualizations help todiscover trends and changes in the data.
-            Different methods can be used to make a visualization dynamic, such as animation or the small multiples
-            method.
-            Furthermore, this report describes different ways of interacting with the visualization to make it fit to
-            theusers needs.
-            The methods include making use of a time slider, dragging nodes around, selecting certain data points to
-            focus on orselecting clusters of data to be presented in the visualization</p>
-
         <input type="file" name="file-selector" id="file-selector" accept=".csv">
         <label for="file-selector">Choose a dataset</label>
 
         <div id="selectors">
-            <div id="filter-options">
-                <div>
-                    <div>
-                        <label for="filter-menu">Filter </label>
-                        <select name="filter-menu" id="filter-menu">
-                            <option value="none"> None </option>
-                            <option value="custom"> Custom </option>
-                        </select>
-                    </div>
-                    <div>
-                        <button id="apply-filter-button">Apply filter</button>
-                    </div>
+
+            <div id="universal-options">
+                <div id="time-frame">
+                    <span id="duration">---</span>
+                    <spam class="deemphasise">from</spam>
+                    <span id="first-day">---</span>
+                    <span class="deemphasise">til</span>
+                    <span id="last-day">---</span>
                 </div>
-                <div id="filter-function-wrapper">
-                    <div id="filter-function-signature">(email, people, emails) =></div>
-                    <textarea id="filter-function">
-    // return a boolean
-                    </textarea>
-                    <div id="filter-function-error"></div>
-                </div>
+
+                <div id="filter-options"></div>
             </div>
+
+
+            <div id="timeline"><canvas id="timelineCanvas" width="1000" height="60"></canvas></div>
+
+
             <div id="split-options">
                 <div id="matrix-options">
                     <label for="order">Order:</label>
@@ -75,7 +53,7 @@
                     </select>
                 </div>
                 <div id="node-link-options">
-                    <label for="hierarchical">Hierarchical layout</label>
+                    <label for="hierarchical">Layered layout</label>
                     <input type="checkbox" id="hierarchical" name="hierarchical">
 
                     <label for="physics">Physics</label>
@@ -89,18 +67,16 @@
 
                     <label for="group-edges">Combine Edges</label>
                     <input type="checkbox" id="group-edges" name="group-edges" checked>
+
+                    <label for="solver">Physics solver</label>
+                    <select name="solver" id="solver">
+                        <option value="forceAtlas2Based">Pretty</option>
+                        <option value="barnesHut">Fast</option>
+                    </select>
                 </div>
             </div>
-            <div id="universal-options">
 
-                <span id="duration">---</span>
 
-                From
-                <span id="first-day">---</span>
-                til
-                <span id="last-day">---</span>
-            </div>
-            <div id="timeline"><canvas id="timelineCanvas" width="1000" height="60"></canvas></div>
         </div>
     </div>
 

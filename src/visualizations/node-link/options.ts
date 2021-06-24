@@ -4,6 +4,7 @@ import { nodeSize, titleColors } from "../constants"
 export type NodeLinkOptions = {
     hierarchical?: boolean,
     physics?: boolean,
+    solver?: "barnesHut"|"forceAtlas2Based",
     groupNodes?: boolean,
     groupEdges?: boolean,
 }
@@ -14,7 +15,8 @@ export const defaultNodeLinkOptions: NodeLinkOptions = {
     physics: true,
     hierarchical: false,
     groupNodes: false,
-    groupEdges: true
+    groupEdges: true,
+    solver: "barnesHut"
 }
 
 export const initialVisOptions = {
@@ -28,19 +30,46 @@ export const initialVisOptions = {
     layout: {
         hierarchical: {
             enabled: defaultNodeLinkOptions.hierarchical,
-            nodeSpacing: 20,
+            nodeSpacing: 70,
             treeSpacing: 10,
         },
         // improvedLayout: false
     },
     physics: {
         enabled: defaultNodeLinkOptions.physics,
-        barnesHut: {
-            centralGravity: 1
+        timestep: 0.5,
+        solver: defaultNodeLinkOptions.solver,
+
+        forceAtlas2Based: {
+            springLength: 10,
+            springConstant: 0.1,
+            damping: 0.5,
+            // theta: 1,
+            gravitationalConstant: -20,
+            centralGravity: 0.005
         },
-        // stabilizations:false
+        barnesHut: {
+            // theta: 1,
+            gravitationalConstant: -4000,
+            centralGravity: 1 ,
+            springLength: 300 	,
+            springConstant: 0.1,
+            damping: 0.7,
+            avoidOverlap: 0,
+        },
+        hierarchicalRepulsion: {
+            damping: 0.2,
+            nodeDistance: 100,
+            springLength: 200,
+            springConstant: 0.001,
+        }
     },
-    interaction: { multiselect: true },
+    interaction: { 
+        multiselect: true,
+        hover: true,
+        tooltipDelay: 0,
+        // selectConnectedEdges: false,
+    },
     groups: titleColors
 }
 
@@ -57,6 +86,7 @@ export function nodeLinkOptionsToVisOptions(config: NodeLinkOptions): vis.Option
         },
         physics: {
             enabled: config.physics,
+            solver: config.solver,
         },
     }
 }

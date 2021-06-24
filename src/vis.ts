@@ -1,22 +1,29 @@
 import "vis/dist/vis.min.css"
-import { AdjacencyMatrix } from "./visualizations/adjacency-matrix";
+import "prismjs/themes/prism.css"
+
+import "../resources/static/logo.png"
+import "../resources/static/dwayne-the-rock.jpg"
+
+import { AdjacencyMatrix } from "./visualizations/adjacency-matrix/adjacency-matrix";
 import { createLegend, NodeLinkVisualisation } from './visualizations/node-link/node-link';
 import { Email, getCorrespondants, parseData, Person } from "./data"
-import { combineLatest, fromEvent, merge, Observable, of, Subject, timer } from "rxjs";
+import { combineLatest, fromEvent, merge, of, Subject, timer } from "rxjs";
 import { debounce, map, scan, share, shareReplay, startWith } from "rxjs/operators";
 import { DataSet, DataSetDiff, diffDataSet, foldDataSet, IDSetDiff } from "./pipeline/dynamicDataSet";
 import { getDynamicCorrespondants } from "./pipeline/getDynamicCorrespondants";
-import { arrayToObject, binarySearch, ConstArray, millisInDay, pair, pairMap2, tripple } from "./utils";
+import { binarySearch, ConstArray, millisInDay, pair, pairMap2, tripple } from "./utils";
 import { prettifyFileInput, TimeSliders } from "./looks";
-import { checkBoxObserable, diffStream, fileInputObservable, selectorObserable, textAreaObserable } from "./pipeline/basics";
+import { checkBoxObserable, diffStream, fileInputObservable, selectorObserable } from "./pipeline/basics";
 import { dynamicSlice } from "./pipeline/dynamicSlice";
 import { diffSwitchAll } from "./pipeline/diffSwitchAll";
 import { NodeLinkOptions } from "./visualizations/node-link/options";
 import { loadTimelineGraph, startTimeline } from "./visualizations/timeline";
 import { groupEmailsToCount } from "./pipeline/timeline";
+import { FilterOptions } from "./filter";
 
 window.addEventListener("load", async () => {
-    const fileSelector = document.getElementById('file-selector');
+
+    const fileSelector = document.getElementById('file-selector') as HTMLInputElement;
 
     const timeLine = await startTimeline()
 
@@ -27,34 +34,10 @@ window.addEventListener("load", async () => {
         document.getElementById('duration'),
     )
 
-    const filterFunctionError = document.getElementById('filter-function-error')
+    const filterOptions = new FilterOptions(
+        document.getElementById('filter-options'),
+    )
 
-    const filterFunction = new Observable<(email: Email, people: DataSet<Person>, emails: DataSet<Email>) => boolean>(sub => {
-        const filterFunctionWrapper = document.getElementById('filter-function-wrapper')
-        const filterMenu: any = document.getElementById('filter-menu')
-        const applyFilterButton = document.getElementById('apply-filter-button')
-
-        selectorObserable(filterMenu).subscribe(option => {
-            if (option === 'custom') {
-                filterFunctionWrapper.style.display = 'grid'
-                applyFilterButton.style.visibility = 'visible'
-            } else {
-                sub.next(() => true)
-                filterFunctionWrapper.style.display = 'none'
-                applyFilterButton.style.visibility = 'hidden'
-            }
-        })
-        applyFilterButton.addEventListener('click', () => {
-            if (filterMenu.value === "custom") {
-                try {
-                    sub.next(eval("(email, people, emails) => " + (document.getElementById('filter-function') as any).value))
-                } catch(e) {
-                    filterFunctionError.textContent = e.message
-                }
-            }
-        })
-    })
-    
     prettifyFileInput(fileSelector)
 
     // This subject is used to represent selected correspondants and emails respectivly
@@ -70,23 +53,7 @@ window.addEventListener("load", async () => {
         shareReplay(1),
     )
 
-    const filteredEmails = new Observable<Email[]>(sub => {
-        combineLatest([
-            baseEmailObservable,
-            filterFunction
-        ]).subscribe(([emails, filterFunc]) => {
-            const emailMap = arrayToObject(emails, email => email.id)
-            const people = getCorrespondants(emails)
-
-            try {
-                sub.next(emails.filter(email => filterFunc(email, people, emailMap)))
-                filterFunctionError.textContent = ""
-            } catch (e) {
-                console.log(1)
-                filterFunctionError.textContent = e.message
-            }
-        })
-    })
+    const filteredEmails = filterOptions.filterEmails(baseEmailObservable)
 
     combineLatest([filteredEmails, fromEvent(window, 'resize').pipe(startWith(0))])
         .pipe(map(([emails]) => groupEmailsToCount(emails)))
@@ -95,6 +62,7 @@ window.addEventListener("load", async () => {
     const dataWithAllNodes = filteredEmails.pipe(
         map(emails => {
             if (emails.length > 0) {
+
                 const firstDate = new Date(emails[0].date).getTime()
                 const lastDate = new Date(emails[emails.length - 1].date).getTime()
 
@@ -147,22 +115,24 @@ window.addEventListener("load", async () => {
     )
 
 
-    new AdjacencyMatrix().visualize(dataWithAllNodes.pipe(map(([_, diffs]) => diffs)), selectionSubject).catch(e => console.error(e))
 
 
     const nodeLinkOptions = merge(
-        checkBoxObserable(document.getElementById('physics')).pipe(
+        checkBoxObserable(document.getElementById('physics') as HTMLInputElement).pipe(
             map((b): NodeLinkOptions => ({ physics: b }))
         ),
-        checkBoxObserable(document.getElementById('hierarchical')).pipe(
+        checkBoxObserable(document.getElementById('hierarchical') as HTMLInputElement).pipe(
             map((b): NodeLinkOptions => ({ hierarchical: b }))
         ),
-        checkBoxObserable(document.getElementById('group-nodes')).pipe(
+        checkBoxObserable(document.getElementById('group-nodes') as HTMLInputElement).pipe(
             map((b): NodeLinkOptions => ({ groupNodes: b }))
         ),
-        checkBoxObserable(document.getElementById('group-edges')).pipe(
+        checkBoxObserable(document.getElementById('group-edges') as HTMLInputElement).pipe(
             map((b): NodeLinkOptions => ({ groupEdges: b }))
         ),
+        selectorObserable(document.getElementById('solver') as HTMLSelectElement).pipe(
+            map((v: any): NodeLinkOptions => ({ solver: v }))
+        )
     )
 
     const allNodes = dataWithAllNodes.pipe(shareReplay(1))
@@ -172,7 +142,7 @@ window.addEventListener("load", async () => {
     fewerNodes.subscribe()
 
 
-    const maybeShowAllNodes = checkBoxObserable(document.getElementById('show-all-nodes')).pipe(
+    const maybeShowAllNodes = checkBoxObserable(document.getElementById('show-all-nodes') as HTMLInputElement).pipe(
         map(bool => bool ? allNodes : fewerNodes),
         diffSwitchAll(
             () => pair({} as DataSet<Person>, {} as DataSet<Email>),
@@ -183,8 +153,12 @@ window.addEventListener("load", async () => {
         map(([_, [peopleDiff, emailDiff]]) => pair(peopleDiff, emailDiff)),
         share()
     )
+    
+    new AdjacencyMatrix().visualize(maybeShowAllNodes, selectionSubject).catch(e => console.error(e))
+    
+    
     createLegend(document.getElementById("node-link-legend"))
 
     const nodeLinkDiagram = new NodeLinkVisualisation(document.getElementById("node-links"), maybeShowAllNodes, selectionSubject, nodeLinkOptions, 150)
-    nodeLinkDiagram.getVisNodeSeletions().subscribe(selectionSubject)
+    nodeLinkDiagram.getVisSelections().subscribe(selectionSubject)
 })

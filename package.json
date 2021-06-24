@@ -33,8 +33,6 @@
   },
   "homepage": "https://github.com/gabber235/2IOA0-Network-Vis#readme",
   "devDependencies": {
-    "@types/d3": "^6.5.0",
-    "@types/d3-scale": "^3.2.2",
     "@types/jest": "^26.0.23",
     "@types/vis": "^4.21.21",
     "css-loader": "^5.2.5",
@@ -58,8 +56,13 @@
     "webpack-encoding-plugin": "^0.3.1"
   },
   "dependencies": {
+    "@types/d3": "^6.7.1",
+    "@types/d3-zoom": "^2.0.1",
+    "@types/prismjs": "^1.16.5",
     "array-blur": "^1.1.0",
-    "d3": "^3.5.17",
+    "d3": "^7.0.0",
+    "d3-zoom": "^3.0.0",
+    "prismjs": "^1.23.0",
     "rive-canvas": "^0.7.5",
     "rxjs": "^7.0.1",
     "vis": "^4.21.0-EOL"
