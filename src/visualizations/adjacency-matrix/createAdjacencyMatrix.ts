@@ -170,7 +170,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
     SentStop3.setAttribute('offset', "100%");
     SentStop3.setAttribute('style', "stop-color:hsl(120,100%,50%);stop-opacity:1");
 
-    
+
 
     // append all the elements together and add it to defs
     topSentGrad.appendChild(SentStop1);
@@ -280,7 +280,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
 
     function row(row: Cell[]) {
         d3.select(this).selectAll(".cell")
-            .data(row.filter(d =>  d.emailCount ))
+            .data(row.filter(d => d.emailCount))
             .enter().append("rect")
             .attr("class", "cell")
             .attr("x", d => xScale(d.unsortedPositionX))
@@ -433,6 +433,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
 
                 let before = 0; // used to know how many cells there were before the current
                 const size = xScale.bandwidth();
+                const lineGenerator = d3.line();
                 for (let i = 0; i < sortedOnTitle.length; i++) {
                     const amount = sortedOnTitle[i][1]; // get how many cells there are in this group
                     const boxLength = amount * size;
@@ -446,7 +447,13 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                     const topTitlePart = topWrapper.append("g")
                         .attr("class", "title-part")
                         .attr('id', "SB-content")
-                        .attr('transform', "translate(" + spaceBefore + ", 0)") //placement at the right spot
+                        .attr('transform', "translate(" + spaceBefore + ", 0)"); //placement at the right spot
+                    topTitlePart.insert('rect')
+                        .attr('width', titleBoxWidth) // make sure each box is wide enough for the number of cells
+                        .attr('height', sideBarWidth)
+                        .attr('stroke-width', strokeWeight + "px")
+                        .attr('stroke', color)
+                        .attr('fill', color)
                         .on("mouseover", () => {
                             return tooltip.style("visibility", "visible");
                         })
@@ -460,22 +467,37 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                         .on("mouseout", () => {
                             return tooltip.style("visibility", "hidden");
                         });
-                    topTitlePart.insert('rect')
-                        .attr('width', titleBoxWidth) // make sure each box is wide enough for the number of cells
-                        .attr('height', sideBarWidth)
-                        .attr('stroke-width', strokeWeight + "px")
-                        .attr('stroke', color)
-                        .attr('fill', color);
                     // .attr('fill', titleColors[sortedOnTitle[i][0]].color.background);
                     let topText = topTitlePart.insert('text')
                         .text(titleText)
                         .attr('transform', "translate(" + boxLength / 2 + "," + sideBarWidth * 0.75 + ")")
-                        .attr('text-anchor', 'middle');
+                        .attr('text-anchor', 'middle')
+                        .on("mouseover", () => {
+                            return tooltip.style("visibility", "visible");
+                        })
+                        .on("mousemove", (event, d) => {
+                            const tooltipX = event.pageX + 20;
+                            const tooltipY = event.offsetY + 20;
+                            return tooltip
+                                .style("left", (`${tooltipX}px`)).style("top", `${tooltipY}px`)
+                                .html(sidebarTooltipHTML(titleText, amount));
+                        })
+                        .on("mouseout", () => {
+                            return tooltip.style("visibility", "hidden");
+                        });
                     // if text overflows, shorten it
                     if (getSelectedSVGTextWidth(topText) > titleBoxWidth) {
                         do {
                             topText.text(topText.text().slice(0, -3) + "..");
                         } while (getSelectedSVGTextWidth(topText) + padding > titleBoxWidth && topText.text() != "..");
+                    }
+                    // top to botton line
+                    if (before !== 0) {
+                        topTitlePart.append("path")
+                            .attr("fill", "none")
+                            .attr("stroke", "steelblue")
+                            .attr("stroke-width", 0.5)
+                            .attr("d", lineGenerator([[0, 0], [0, height]]))
                     }
 
 
@@ -484,6 +506,12 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                         .attr("class", "title-part")
                         .attr('id', "SB-content")
                         .attr('transform', "translate(0, " + spaceBefore + ")")  //placement at the right spot
+                    leftTitlePart.insert('rect')
+                        .attr('width', sideBarWidth)
+                        .attr('height', titleBoxWidth) // make sure each box is wide enough for the number of cells
+                        .attr('stroke-width', strokeWeight + "px")
+                        .attr('stroke', color)
+                        .attr('fill', color)
                         .on("mouseover", () => {
                             return tooltip.style("visibility", "visible");
                         })
@@ -497,20 +525,38 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                         .on("mouseout", () => {
                             return tooltip.style("visibility", "hidden");
                         });
-                    leftTitlePart.insert('rect')
-                        .attr('width', sideBarWidth)
-                        .attr('height', titleBoxWidth) // make sure each box is wide enough for the number of cells
-                        .attr('stroke-width', strokeWeight + "px")
-                        .attr('stroke', color)
-                        .attr('fill', color);
                     // .attr('fill', titleColors[sortedOnTitle[i][0]].color.background);
                     leftTitlePart.insert('text')
                         .text(topText.text())
                         .attr('transform', "translate(" + sideBarWidth * 0.75 + "," + boxLength / 2 + ")rotate(-90)")
-                        .attr('text-anchor', "middle");
+                        .attr('text-anchor', "middle")
+                        .on("mouseover", () => {
+                            return tooltip.style("visibility", "visible");
+                        })
+                        .on("mousemove", (event, d) => {
+                            const tooltipX = event.pageX + 20;
+                            const tooltipY = event.offsetY + 20;
+                            return tooltip
+                                .style("left", (`${tooltipX}px`)).style("top", `${tooltipY}px`)
+                                .html(sidebarTooltipHTML(titleText, amount));
+                        })
+                        .on("mouseout", () => {
+                            return tooltip.style("visibility", "hidden");
+                        });
+
+                    // left to right line
+                    if (before !== 0) {
+                        leftTitlePart.append("path")
+                            .attr("fill", "none")
+                            .attr("stroke", "steelblue")
+                            .attr("stroke-width", 0.5)
+                            .attr("d", lineGenerator([[0, 0], [width, 0]]))
+                    }
 
                     before += amount;
                 }
+
+
 
                 break;
             case "name":
