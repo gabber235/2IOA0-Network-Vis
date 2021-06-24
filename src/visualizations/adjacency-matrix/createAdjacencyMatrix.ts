@@ -442,6 +442,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                     const titleBoxWidth = boxLength - strokeWeight;
                     const color = titleColors[sortedOnTitle[i][0]].color.background;
                     const padding = 10; // in pixels
+                    const lineColor = "steelblue";
 
                     // do top bar
                     const topTitlePart = topWrapper.append("g")
@@ -495,7 +496,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                     if (before !== 0) {
                         topTitlePart.append("path")
                             .attr("fill", "none")
-                            .attr("stroke", "steelblue")
+                            .attr("stroke", lineColor)
                             .attr("stroke-width", 0.5)
                             .attr("d", lineGenerator([[0, 0], [0, height]]))
                     }
@@ -548,7 +549,7 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
                     if (before !== 0) {
                         leftTitlePart.append("path")
                             .attr("fill", "none")
-                            .attr("stroke", "steelblue")
+                            .attr("stroke", lineColor)
                             .attr("stroke-width", 0.5)
                             .attr("d", lineGenerator([[0, 0], [width, 0]]))
                     }
@@ -702,20 +703,8 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
         if (d.selected) {
             return "#FF00FF"
         } else {
-            switch (sorting) {
-                case "count":
-                    // use sentiment coloring
-                    return sentimentColoring(d);
-                case "group":
-                    // use title coloring
-                    return titleColoring(d);
-                case "name":
-                    // use title coloring
-                    return titleColoring(d);
-                case "sentiment":
-                    // use sentiment coloring
-                    return sentimentColoring(d);
-            }
+            // use sentiment coloring
+            return sentimentColoring(d);
         }
     }
 
@@ -794,14 +783,6 @@ export function createAdjacencyMatrix(selSubj: Subject<[IDSetDiff, IDSetDiff]>, 
             .attr("transform", (_, i) => "translate(" + xScale(i) + ")rotate(-90)");
     }
 }
-
-
-
-
-function titleColoring(d: Cell): String {
-    return d.from.jobTitle == d.to.jobTitle ? titleColors[d.from.jobTitle].color.border : null;
-}
-
 
 
 
