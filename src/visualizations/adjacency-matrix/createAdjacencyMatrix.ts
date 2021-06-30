@@ -78,7 +78,7 @@ function createMatrix(nodes: Node[], links: Edge[]): Cell[][] {
         nodes[link.sourceMatrixIndex].emailCount += link.emailCount;
         nodes[link.targetMatrixIndex].emailCount += link.emailCount;
         nodes[link.sourceMatrixIndex].totalSentiment += link.sentiment;
-        nodes[link.targetMatrixIndex].totalSentiment += link.sentiment;
+        // nodes[link.targetMatrixIndex].totalSentiment += link.sentiment;
 
         // set selected
         matrix[link.sourceMatrixIndex][link.targetMatrixIndex].selected = link.selected;
