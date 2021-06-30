@@ -67,12 +67,27 @@ body {
     height          : 90vh;
     width           : 99vw;
     background-size : cover;
+
+    #covis-acronym {
+        padding-top: 10%;
+        font-size: 30px;
+        color: white;
+        display: grid;
+        font-family: mono;
+
+        div {
+            justify-self: center;
+            text-align: left;
+            margin-left: 0.6em;
+        }
+    }
 }
 
 #scroll {
     font-size  : 28px;
     color      : #dddddd;
-    padding-top: 18em;
+    // padding-top: 18em;
+    padding-top: 5em;
     font-weight: bold;
     animation  : mover 6s cubic-bezier(0.64, 0, 0.34, 0.96) infinite;
 }

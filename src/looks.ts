@@ -1,5 +1,5 @@
 import { Observable, ReplaySubject, Subject } from "rxjs";
-import { millisInDay } from "./utils";
+import { div, millisInDay, newElm, span, text } from "./utils";
 
 /**
  * Adds some aesthetic flourish to a given file input element
@@ -72,3 +72,58 @@ export class TimeSliders {
     }
 }
 
+export async function animateAcronym(container: HTMLElement) {
+
+    const typingDelay = 100
+
+    const acronym = [
+        "Covert",
+        "Operational",
+        "Visualisation",
+        "Inspection",
+        "Society",
+        "19"
+    ]
+
+    const acronymChars = 
+        acronym.map(word => {
+            if (word !== '19') { // For everything except the '19' we make just the first character bold
+                return [...word].map((char, charIndex) => {
+                    if (charIndex == 0) // We make just the first character bold
+                        return newElm("b", {}, [text(char)])
+                    else
+                        return span({style: "visibility: hidden"}, [text(char)])
+                })
+            } else { // For the '19' we make everthing bold
+                return [...word].map(char => newElm("b",{style: "visibility: hidden"}, [text(char)]))
+            }
+        })
+
+    div({}, acronymChars.map(elms => div({}, elms)), container)
+
+    for (let i = 0; i < acronym.length; i++) {
+        await typeOutElements(acronymChars[i], typingDelay)
+    }
+}
+
+
+function typeOutElements(list: HTMLElement[], delay: number): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+        let index = 0
+
+        const interval = setInterval(() => {
+
+            list[index].style.visibility = "visible"
+            list[index].style.borderRight = "1px solid white"
+            if (index > 0) list[index - 1].style.borderRight = "none"
+
+            index++
+
+            if (index >= list.length) {
+                list[list.length - 1].style.borderRight = "none"
+                clearInterval(interval)
+                resolve()
+            }
+        }, delay)
+    })
+}

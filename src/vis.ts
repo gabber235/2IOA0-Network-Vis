@@ -37,7 +37,6 @@ window.addEventListener("load", async () => {
     const filterOptions = new FilterOptions(
         document.getElementById('filter-options'),
     )
-
     prettifyFileInput(fileSelector)
 
     // This subject is used to represent selected correspondants and emails respectivly

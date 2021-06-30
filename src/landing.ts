@@ -1,9 +1,16 @@
 import Rive, { File, RiveCanvas } from 'rive-canvas';
+import { animateAcronym } from './looks';
 import { handleDefaultScroll, handleScrollAnimaton } from './page/scroll';
 
 const nodeRiv = require('../resources/static/node-link.riv')
 const adjacencyRiv = require('../resources/static/adjacency-matrix.riv')
 const interactionsRiv = require('../resources/static/interactions.riv')
+
+
+window.addEventListener('load', () => {
+    animateAcronym(document.getElementById("covis-acronym"))    
+})
+
 
 handleDefaultScroll()
 handleScrollAnimaton(document.getElementById("nodeLinkCanvas"), 50, (el) => {
